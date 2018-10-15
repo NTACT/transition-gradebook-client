@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "scripts": {
     "start": "node scripts/start.js",
-    "build": "node scripts/build.js && cp -R build/* ../server/public",
+    "build": "node scripts/build.js && rm -rf ../server/public && cp -R build ../server/public",
     "test": "jest"
   },
   "proxy": "http://localhost:9090",
@@ -62,6 +62,7 @@
     "styled-components": "^3.2.6",
     "sw-precache-webpack-plugin": "0.11.4",
     "sweetalert2": "^7.20.5",
+    "tgb-shared": "git+https://github.com/NTACT/transition-gradebook-shared.git",
     "url-loader": "0.6.2",
     "webpack": "3.8.1",
     "webpack-dev-server": "2.9.4",

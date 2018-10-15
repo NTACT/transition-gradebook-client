@@ -1,10 +1,10 @@
 import { capitalize } from 'lodash';
 import { observable, computed } from 'mobx';
 import swal from 'sweetalert2';
+import { riskUtils } from 'tgb-shared';
 import Model from './Model';
 import Disability from './Disability';
 import getId from '../utils/getId';
-import riskUtils from '../utils/riskUtils';
 
 class StudentTermInfo extends Model {
   static sorter(a, b) {
