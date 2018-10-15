@@ -1,0 +1,13 @@
+
+button.swal2-styled[type="button"] {
+  border-radius: 0 !important;
+  font-family: "Oswald" !important;
+}
+
+button.swal2-styled[type="button"].swal2-confirm {
+  background-color: #D43425 !important;
+}
+
+button.swal2-styled[type="button"].swal2-cancel {
+  background-color: #4A4A4A !important;
+}
