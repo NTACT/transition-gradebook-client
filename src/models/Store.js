@@ -37,10 +37,27 @@ export default class Store {
   @computed get axios() {
     const { authToken } = this;
     if(!authToken) return axios;
-    return axios.create({
+    const axiosInstance = axios.create({
       headers: { 'Authorization': authToken }
     });
+
+    if(authToken) {
+      // Logout automatically if a 401 response is received
+      axiosInstance.interceptors.response.use(
+        response => response,
+        error => {
+          if(error.response && error.response.status === 401) {
+            this.logout();
+          }
+          throw error;
+        }
+      );
+    }
+
+    return axiosInstance;
   }
+
+  
 
   @computed get loggedIn() {
     return !!this.authToken;
