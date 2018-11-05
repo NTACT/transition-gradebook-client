@@ -22,6 +22,7 @@ import NumberOfStudentsCross from '../components/reports/NumberOfStudentsCross';
 import StudentReport from '../components/reports/StudentReport';
 import StudentRiskReport from '../components/reports/StudentRiskReport';
 import PostSchoolReport from '../components/reports/PostSchoolReport';
+import ActivitiesOverTime from '../components/reports/ActivitiesOverTime';
 import Divider from '../components/Divider';
 import * as breakpoints from '../breakpoints';
 
@@ -38,6 +39,7 @@ const pathNames = {
   student: subroute + individual + '/Student',
   studentRisk: subroute + individual + '/StudentRisk',
   postSchool: subroute + individual + '/PostSchool',
+  activitiesOverTime: subroute + individual + '/ActivitiesOverTime',
 };
 
 @inject('store')
@@ -156,19 +158,32 @@ class Reports extends Component {
                     </div>
                   </ListItem>
                 </ReportLink>
+                <ReportLink onClick={() => handleReportClick(pathNames.activitiesOverTime)}>
+                  <ListItem active={checkRoute(pathNames.activitiesOverTime)}>
+                    <div>
+                      Student Activities
+                      <ListItemInfo>over time</ListItemInfo>
+                    </div>
+                  </ListItem>
+                </ReportLink>
                 <ReportLink onClick={() => handleReportClick(pathNames.postSchool)}>
-                <ListItem active={checkRoute(pathNames.postSchool)}>
-                  <div>
-                    Post-School Student Report
-                    <ListItemInfo>for one year</ListItemInfo>
-                  </div>
-                </ListItem>
-              </ReportLink>
+                  <ListItem active={checkRoute(pathNames.postSchool)}>
+                    <div>
+                      Post-School Student Report
+                      <ListItemInfo>for one year</ListItemInfo>
+                    </div>
+                  </ListItem>
+                </ReportLink>
               </List>
             </ListWrapper>
 
             <StyledDivider/>
 
+            <Route path={pathNames.numberOfStudentCross} render={props =>
+              <SubRouteWrapper>
+                <NumberOfStudentsCross store={store} schoolYears={schoolYears}/>
+              </SubRouteWrapper>
+            }/>
             <Route exact path={pathNames.summary} render={props =>
               <SubRouteWrapper>
                 <SummaryReport store={store} schoolYears={schoolYears}/>
@@ -204,9 +219,9 @@ class Reports extends Component {
                 <PostSchoolReport store={store} schoolYears={schoolYears} closePath="/Reports/Individual"/>
               </SubRouteWrapper>
             }/>
-            <Route path={pathNames.numberOfStudentCross} render={props =>
+            <Route path={pathNames.activitiesOverTime} render={props =>
               <SubRouteWrapper>
-                <NumberOfStudentsCross store={store} schoolYears={schoolYears} closePath="/Reports/Individual"/>
+                <ActivitiesOverTime store={store} schoolYears={schoolYears} closePath="/Reports/Individual"/>
               </SubRouteWrapper>
             }/>
           </Content>
