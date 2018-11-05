@@ -49,10 +49,12 @@ export default function FormError(props) {
     return (<SimpleError message={error.message} {...rest}/>);
   }
 
-  if(error.response.data.error.data) {
+  if(error.response.data.error && error.response.data.error.data) {
     return (<DataError data={error.response.data.error.data} keyNames={keyNames} {...rest}/>);
+  } else if (error.response && error.response.data && error.response.data.error) {
+    return (<SimpleError message={error.response.data.error.message} {...rest}/>);
   } else {
-    return (<SimpleError message={error.response.data.error.message}  {...rest}/>);
+    return (<SimpleError message={error.message} {...rest}/>)
   }
 }
 
