@@ -7,20 +7,25 @@ import ReportFormDefaultLayout from './ReportFormDefaultLayout';
 import Label from '../Label';
 import RadioButton from '../RadioButton';
 import Select from '../Select';
-import Checkbox from '../Checkbox';
 import TermSelect from '../TermSelect';
 import getReportFileName from '../../utils/getReportFileName';
 
+const dataCategories = [
+  {label: 'Post-school Outcome', key: 'postSchoolOutcome'},
+  {label: 'Skill Training', key: 'skillTraining'},
+  {label: 'Support Needed', key: 'supportNeed'},
+  {label: 'Risk Level', key: 'riskLevel'},
+  {label: 'Disabilities', key: 'disability'},
+  {label: 'IEP Role', key: 'iepRole'},
+  {label: 'Activity Types', key: 'activityGroupTypes'},
+];
+
 @observer
-export default class SummaryReport extends Component {
+export default class NumberOfStudentsReport extends Component {
   @observable longitudinal = false;
-  @observable byDisability = false;
-  @observable byRiskLevel = false;
-  @observable byIEPRole = false;
-  @observable bySupportNeed = false;
-  @observable bySkillTraining = false;
-  @observable byPostSchoolOutcome = false;
-  @observable byActivityGroupTypes = false;
+
+  @observable criteria1 = null;
+  @observable criteria2 = null;
 
   @observable startYearId = null;
   @observable startTermId = null;
@@ -65,40 +70,34 @@ export default class SummaryReport extends Component {
       endYear,
       endTerm,
       longitudinal,
-      byDisability,
-      byRiskLevel,
-      byIEPRole,
-      bySupportNeed,
-      bySkillTraining,
-      byPostSchoolOutcome,
-      byActivityGroupTypes,
+      criteria1,
     } = this;
 
     return (
       startYear &&
       startTerm &&
-      (!longitudinal || (endYear && endTerm)) &&
-      (
-        byDisability ||
-        byRiskLevel ||
-        byIEPRole ||
-        bySupportNeed ||
-        bySkillTraining ||
-        byPostSchoolOutcome ||
-        byActivityGroupTypes
-      )
+      criteria1 &&
+      (!longitudinal || (endYear && endTerm))
     );
   }
 
-  handleToggle = key => action(event => (this[key] = !this[key]));
-  handleLongitudinalToggle = this.handleToggle('longitudinal');
-  handleByDisabilityToggle = this.handleToggle('byDisability');
-  handleByRiskLevelToggle = this.handleToggle('byRiskLevel');
-  handleByIEPRoleToggle = this.handleToggle('byIEPRole');
-  handleBySupportNeedToggle = this.handleToggle('bySupportNeed');
-  handleBySkillTrainingToggle = this.handleToggle('bySkillTraining');
-  handleByPostSchoolOutcomeToggle = this.handleToggle('byPostSchoolOutcome');
-  handleByActivityGroupTypesToggle = this.handleToggle('byActivityGroupTypes');
+  @action.bound handleLongitudinalToggle() {
+    this.longitudinal = !this.longitudinal;
+  }
+
+  @action.bound handleCriteria1Change(event) {
+    const criteria = event.target.value;
+
+    if(this.criteria2 === criteria) this.criteria2 = this.criteria1;
+    this.criteria1 = criteria;
+  }
+
+  @action.bound handleCriteria2Change(event) {
+    const criteria = event.target.value;
+
+    if(this.criteria1 === criteria) this.criteria1 = this.criteria2;
+    this.criteria2 = criteria;
+  }
 
   @action.bound handleStartYearIdChange(event) {
     this.startYearId = +event.target.value;
@@ -125,13 +124,8 @@ export default class SummaryReport extends Component {
       startTerm,
       endYear,
       endTerm,
-      byDisability,
-      byRiskLevel,
-      byIEPRole,
-      bySupportNeed,
-      bySkillTraining,
-      byPostSchoolOutcome,
-      byActivityGroupTypes,
+      criteria1,
+      criteria2,
     } = this;
 
     let fileName, endpoint;
@@ -143,6 +137,12 @@ export default class SummaryReport extends Component {
         endYear,
         endTerm,
       }) + '-longitudinal';
+    } else if(criteria2) {
+      endpoint = '/numberOfStudentsCross';
+      fileName = getReportFileName('number-of-students-cross', {
+        startYear,
+        startTerm,
+      });
     } else {
       endpoint = '/numberOfStudents/standard';
       fileName = getReportFileName('number-of-students-standard', {
@@ -161,13 +161,8 @@ export default class SummaryReport extends Component {
         startTermId: startTerm && startTerm.id,
         endYearId: endYear && endYear.id,
         endTermId: endTerm && endTerm.id,
-        byDisability,
-        byRiskLevel,
-        byIEPRole,
-        bySupportNeed,
-        bySkillTraining,
-        byPostSchoolOutcome,
-        byActivityGroupTypes,
+        primaryCriteria: criteria1,
+        secondaryCriteria: criteria2,
       },
     );
   }
@@ -180,13 +175,8 @@ export default class SummaryReport extends Component {
       startTerm,
       endYear,
       endTerm,
-      byDisability,
-      byRiskLevel,
-      byIEPRole,
-      bySupportNeed,
-      bySkillTraining,
-      byPostSchoolOutcome,
-      byActivityGroupTypes,
+      criteria1,
+      criteria2,
       canRun,
       submitTask,
     } = this;
@@ -235,22 +225,29 @@ export default class SummaryReport extends Component {
               placeholder={`Ending ${endTermName}`}
             />
           </div>
+          <div>
+            <Label>{longitudinal ? 'Data Category' : 'Primary Data Category'}</Label>
+            <DataCategorySelect placeholder="None" value={criteria1} onChange={this.handleCriteria1Change}/>
+          </div>
+
+          <div hidden={longitudinal}>
+            <Label>Secondary Data Category (not required)</Label>
+            <DataCategorySelect placeholder="None" value={criteria2} onChange={this.handleCriteria2Change} canSelectPlaceholder/>
+          </div>
         </ReportFormDefaultLayout>
-        <ChooseCategories>
-          <CategoryLabel>Choose report category</CategoryLabel>
-          <ReportCategories>
-            <Checkbox checked={byDisability} onChange={this.handleByDisabilityToggle}>by disability</Checkbox>
-            <Checkbox checked={byRiskLevel} onChange={this.handleByRiskLevelToggle}>by risk level</Checkbox>
-            <Checkbox checked={byIEPRole} onChange={this.handleByIEPRoleToggle}>role in IEP meeting</Checkbox>
-            <Checkbox checked={bySupportNeed} onChange={this.handleBySupportNeedToggle}>needing support</Checkbox>
-            <Checkbox checked={bySkillTraining} onChange={this.handleBySkillTrainingToggle}>skills training</Checkbox>
-            <Checkbox checked={byPostSchoolOutcome} onChange={this.handleByPostSchoolOutcomeToggle}>post-school outcomes</Checkbox>
-            <Checkbox checked={byActivityGroupTypes} onChange={this.handleByActivityGroupTypesToggle}>activity types</Checkbox>
-          </ReportCategories>
-        </ChooseCategories>
       </ReportFormContainer>
     )
   }
+}
+
+function DataCategorySelect(props) {
+  return (
+    <Select {...props}>
+      {dataCategories.map(c =>
+        <option key={c.key} value={c.key}>{c.label}</option>
+      )}
+    </Select>
+  );
 }
 
 const CountType = styled.div`
@@ -260,24 +257,5 @@ const CountType = styled.div`
   & > * {
     width: 140px;
     margin-top: 5px;
-  }
-`;
-
-const ChooseCategories = styled.div`
-  margin-top: 20px;
-`;
-
-const CategoryLabel = styled(Label)`
-  margin-bottom: 0;
-`;
-
-const ReportCategories = styled.div`
-  display: flex;
-  flex-wrap: wrap;
-
-  & > * {
-    margin-top: 10px;
-    margin-right: 20px;
-    width: calc(33.33% - 40px);
   }
 `;
