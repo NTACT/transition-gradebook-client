@@ -21,6 +21,7 @@ import NumberOfStudents from '../components/reports/NumberOfStudents';
 import StudentReport from '../components/reports/StudentReport';
 import StudentRiskReport from '../components/reports/StudentRiskReport';
 import PostSchoolReport from '../components/reports/PostSchoolReport';
+import ActivitiesOverTime from '../components/reports/ActivitiesOverTime';
 import Divider from '../components/Divider';
 import * as breakpoints from '../breakpoints';
 
@@ -36,6 +37,7 @@ const pathNames = {
   student: subroute + individual + '/Student',
   studentRisk: subroute + individual + '/StudentRisk',
   postSchool: subroute + individual + '/PostSchool',
+  activitiesOverTime: subroute + individual + '/ActivitiesOverTime',
 };
 
 @inject('store')
@@ -146,14 +148,22 @@ class Reports extends Component {
                     </div>
                   </ListItem>
                 </ReportLink>
+                <ReportLink onClick={() => handleReportClick(pathNames.activitiesOverTime)}>
+                  <ListItem active={checkRoute(pathNames.activitiesOverTime)}>
+                    <div>
+                      Student Activities
+                      <ListItemInfo>over time</ListItemInfo>
+                    </div>
+                  </ListItem>
+                </ReportLink>
                 <ReportLink onClick={() => handleReportClick(pathNames.postSchool)}>
-                <ListItem active={checkRoute(pathNames.postSchool)}>
-                  <div>
-                    Post-School Student Report
-                    <ListItemInfo>for one year</ListItemInfo>
-                  </div>
-                </ListItem>
-              </ReportLink>
+                  <ListItem active={checkRoute(pathNames.postSchool)}>
+                    <div>
+                      Post-School Student Report
+                      <ListItemInfo>for one year</ListItemInfo>
+                    </div>
+                  </ListItem>
+                </ReportLink>
               </List>
             </ListWrapper>
 
@@ -192,6 +202,11 @@ class Reports extends Component {
             <Route path={pathNames.postSchool} render={props =>
               <SubRouteWrapper>
                 <PostSchoolReport store={store} schoolYears={schoolYears} closePath="/Reports/Individual"/>
+              </SubRouteWrapper>
+            }/>
+            <Route path={pathNames.activitiesOverTime} render={props =>
+              <SubRouteWrapper>
+                <ActivitiesOverTime store={store} schoolYears={schoolYears} closePath="/Reports/Individual"/>
               </SubRouteWrapper>
             }/>
           </Content>
