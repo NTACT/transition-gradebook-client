@@ -9,6 +9,7 @@ export default function Select(props) {
     placeholder,
     inverted,
     disabled,
+    canSelectPlaceholder,
     Handle=DefaultHandle,
     name,
     ...rest,
@@ -17,7 +18,7 @@ export default function Select(props) {
   return (
     <Root {...rest} inverted={inverted}>
       <Dropdown name={name} onChange={onChange} value={value || ''} disabled={disabled}>
-        {placeholder && <option value='' disabled>{placeholder}</option>}
+        {placeholder && <option value='' disabled={!canSelectPlaceholder}>{placeholder}</option>}
         {children}
       </Dropdown>
       <HandleWrapper>
