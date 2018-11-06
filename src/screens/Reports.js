@@ -18,7 +18,6 @@ import SummaryReport from '../components/reports/SummaryReport';
 import RiskRosterReport from '../components/reports/RiskRosterReport';
 import RiskSummaryReport from '../components/reports/RiskSummaryReport';
 import NumberOfStudents from '../components/reports/NumberOfStudents';
-import NumberOfStudentsCross from '../components/reports/NumberOfStudentsCross';
 import StudentReport from '../components/reports/StudentReport';
 import StudentRiskReport from '../components/reports/StudentRiskReport';
 import PostSchoolReport from '../components/reports/PostSchoolReport';
@@ -35,7 +34,6 @@ const pathNames = {
   riskRoster: subroute + summary + '/RiskRoster',
   riskSummary: subroute + summary + '/RiskSummary',
   numberOfStudents: subroute + summary + '/StudentCount',
-  numberOfStudentCross: subroute + summary + '/StudentCountCross',
   student: subroute + individual + '/Student',
   studentRisk: subroute + individual + '/StudentRisk',
   postSchool: subroute + individual + '/PostSchool',
@@ -132,14 +130,6 @@ class Reports extends Component {
                     </div>
                   </ListItem>
                 </ReportLink>
-                <ReportLink onClick={() => handleReportClick(pathNames.numberOfStudentCross)}>
-                  <ListItem active={checkRoute(pathNames.numberOfStudentCross)}>
-                    <div>
-                      Number of Students (Cross)
-                      <ListItemInfo>by disability, risk level, IEP role, support need, skills training, post-school outcomes (chart)</ListItemInfo>
-                    </div>
-                  </ListItem>
-                </ReportLink>
               </List>
               <List hidden={reportType !== 'individual'}>
                 <ReportLink onClick={() => handleReportClick(pathNames.student)}>
@@ -179,11 +169,6 @@ class Reports extends Component {
 
             <StyledDivider/>
 
-            <Route path={pathNames.numberOfStudentCross} render={props =>
-              <SubRouteWrapper>
-                <NumberOfStudentsCross store={store} schoolYears={schoolYears}/>
-              </SubRouteWrapper>
-            }/>
             <Route exact path={pathNames.summary} render={props =>
               <SubRouteWrapper>
                 <SummaryReport store={store} schoolYears={schoolYears}/>
