@@ -201,7 +201,7 @@ export default class NumberOfStudentsReport extends Component {
       <ReportFormContainer title="Total Number Of Students" onSubmit={this.handleSubmit} closePath={closePath} submitTask={submitTask} canRun={canRun}>
         <CountType>
           <RadioButton checked={!longitudinal} onChange={this.handleLongitudinalToggle}>Standard</RadioButton>
-          <RadioButton checked={longitudinal} onChange={this.handleLongitudinalToggle}>Longitudinal</RadioButton>
+          <RadioButton checked={longitudinal} onChange={this.handleLongitudinalToggle}>Longitudinal<br/>(one data category)</RadioButton>
         </CountType>
         <ReportFormDefaultLayout>
           <div>
