@@ -190,7 +190,7 @@ export default class ActivitiesOverTime extends Component {
           </div>
           <div>
             <Label>Student</Label>
-            <Select value={selectedStudent && selectedStudent.id} onChange={this.handleSelectedStudentIdChange} placeholder="Choose a student or select 'All'">
+            <Select value={selectedStudent && selectedStudent.id} onChange={this.handleSelectedStudentIdChange} placeholder="Choose a student">
               {selectableStudents && selectableStudents.map(student =>
                 <option key={student.id} value={student.id}>{student.firstName} {student.lastName}</option>
               )}

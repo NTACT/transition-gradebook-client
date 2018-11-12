@@ -20,6 +20,19 @@ const dataCategories = [
   {label: 'Activity Types', key: 'activityGroupTypes'},
 ];
 
+function criteriaFilenameString(criteria) {
+  switch(criteria) {
+    case 'postSchoolOutcome': return 'post-school-outcome';
+    case 'skillTraining': return 'skill-training';
+    case 'supportNeed': return 'support-needed';
+    case 'riskLevel': return 'risk-level';
+    case 'disability': return 'disabilities';
+    case 'iepRole': return 'iep-roles';
+    case 'activityGroupTypes': return 'activity-types';
+    default: return 'unknown';
+  }
+}
+
 @observer
 export default class NumberOfStudentsReport extends Component {
   @observable longitudinal = false;
@@ -131,7 +144,7 @@ export default class NumberOfStudentsReport extends Component {
     let fileName, endpoint;
     if(longitudinal) {
       endpoint = '/numberOfStudents/longitudinal';
-      fileName = getReportFileName('number-of-students-longitudinal', {
+      fileName = getReportFileName(`number-of-students-longitudinal-${criteriaFilenameString(criteria1)}`, {
         startYear,
         startTerm,
         endYear,
@@ -139,13 +152,13 @@ export default class NumberOfStudentsReport extends Component {
       }) + '-longitudinal';
     } else if(criteria2) {
       endpoint = '/numberOfStudentsCross';
-      fileName = getReportFileName('number-of-students-cross', {
+      fileName = getReportFileName(`number-of-students-${criteriaFilenameString(criteria1)}-by-${criteriaFilenameString(criteria2)}-cross`, {
         startYear,
         startTerm,
       });
     } else {
       endpoint = '/numberOfStudents/standard';
-      fileName = getReportFileName('number-of-students-standard', {
+      fileName = getReportFileName(`number-of-students-${criteriaFilenameString(criteria1)}`, {
         startYear,
         startTerm,
         endYear,
@@ -188,7 +201,7 @@ export default class NumberOfStudentsReport extends Component {
       <ReportFormContainer title="Total Number Of Students" onSubmit={this.handleSubmit} closePath={closePath} submitTask={submitTask} canRun={canRun}>
         <CountType>
           <RadioButton checked={!longitudinal} onChange={this.handleLongitudinalToggle}>Standard</RadioButton>
-          <RadioButton checked={longitudinal} onChange={this.handleLongitudinalToggle}>Longitudinal</RadioButton>
+          <RadioButton checked={longitudinal} onChange={this.handleLongitudinalToggle}>Longitudinal<br/>(one data category)</RadioButton>
         </CountType>
         <ReportFormDefaultLayout>
           <div>
