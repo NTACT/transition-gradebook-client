@@ -18,6 +18,7 @@ class StudentTermInfo extends Model {
   @observable studentId = '';
   @observable firstName = '';
   @observable lastName = '';
+  @observable race = '';
   @observable gender = '';
   @observable birthday = '';
   @observable birthdayString = '';
@@ -220,7 +221,7 @@ class StudentTermInfo extends Model {
     super.patch(fields);
     const { student } = fields;
     if(student) {
-      this.studentTermInfoId = this.id;
+      this.studentTermInfoId = this.studentTermInfoId || this.id;
       Object.assign(this, student);
       this.birthdayString = this.birthday;
       this.modelFields({
