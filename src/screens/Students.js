@@ -29,7 +29,7 @@ import * as breakpoints from '../breakpoints';
 @observer
 class Students extends Component {
   @observable search = '';
-  @observable filtersOpen = false;
+  @observable filtersOpen = true;
   @observable filter = null;
   @observable loadTask = null;
 

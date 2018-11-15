@@ -8,6 +8,7 @@ import Checkbox from './Checkbox';
 import toggleArrayValue from '../utils/toggleArrayValue';
 import * as Icons from './Icons';
 import enums from '../enums';
+import * as breakpoints from '../breakpoints';
 
 @inject('store')
 @observer
@@ -16,6 +17,7 @@ export default class StudentFilterForm extends Component {
   @observable selectedDisabilities =  (this.props.filter && this.props.filter.disabilities.slice()) || [];
   @observable selectedRiskLevels = (this.props.filter && this.props.filter.riskLevels.slice()) || [];
   @observable selectedSupportNeeded = (this.props.filter && this.props.filter.supportNeeded.slice()) || [];
+  @observable selectedRaces = (this.props.filter && this.props.filter.races.slice()) || [];
 
   @action.bound handleGradeToggle(grade) {
     toggleArrayValue(this.selectedGrades, grade);
@@ -58,6 +60,10 @@ export default class StudentFilterForm extends Component {
     toggleArrayValue(this.selectedSupportNeeded, supportNeeded);
   }
 
+  @action.bound handleRaceToggle(race) {
+    toggleArrayValue(this.selectedRaces, race);
+  }
+
   @action.bound handleSupportNeededHeaderClick() {
     if(this.selectedSupportNeeded.length === enums.supportNeeded.length) {
       this.selectedSupportNeeded = [];
@@ -66,20 +72,32 @@ export default class StudentFilterForm extends Component {
     }
   }
 
+  @action.bound handleRaceHeaderClick() {
+    if(this.selectedRaces.length === enums.races.length) {
+      this.selectedRaces = [];
+    } else {
+      this.selectedRaces = enums.supportNeeded.slice();
+    }
+  }
+
   @action.bound handleClearClick() {
     this.selectedGrades = [];
     this.selectedDisabilities = [];
+    this.selectedRiskLevels = [];
+    this.selectedSupportNeeded = [];
+    this.selectedRaces = [];
   }
 
   @action.bound handleSubmitClick() {
     const { onSubmit } = this.props;
     if(onSubmit) {
-      const { selectedGrades, selectedDisabilities, selectedRiskLevels, selectedSupportNeeded } = this;
+      const { selectedGrades, selectedDisabilities, selectedRiskLevels, selectedSupportNeeded, selectedRaces } = this;
       if(
         !selectedGrades.length &&
         !selectedDisabilities.length &&
         !selectedRiskLevels.length &&
-        !selectedSupportNeeded.length
+        !selectedSupportNeeded.length &&
+        !selectedRaces.length
       ) {
         onSubmit(null);
       } else {
@@ -88,6 +106,7 @@ export default class StudentFilterForm extends Component {
           disabilities: selectedDisabilities.slice(),
           riskLevels: selectedRiskLevels.slice(),
           supportNeeded: selectedSupportNeeded.slice(),
+          races: selectedRaces.slice(),
         });
       }
     }
@@ -96,7 +115,7 @@ export default class StudentFilterForm extends Component {
   render() {
     const { disabilities } = this.props.store;
     const { onClose } = this.props;
-    const { selectedDisabilities, selectedGrades, selectedRiskLevels, selectedSupportNeeded } = this;
+    const { selectedDisabilities, selectedGrades, selectedRiskLevels, selectedSupportNeeded, selectedRaces } = this;
 
     return (
       <Root>
@@ -110,29 +129,52 @@ export default class StudentFilterForm extends Component {
         </Header>
 
         <Checkboxes>
-          <CheckboxColumn>
-            <CheckboxColumnHeader onClick={this.handleGradeHeaderClick}>Grade</CheckboxColumnHeader>
-            {enums.grades.map(grade =>
-              <FilterCheckbox
-                key={grade}
-                label={grade}
-                checked={selectedGrades.includes(grade)}
-                onChange={this.handleGradeToggle.bind(null, grade)}
-              />
-            )}
-          </CheckboxColumn>
-
-          <CheckboxColumn>
-            <CheckboxColumnHeader onClick={this.handleDisabilityHeaderClick}>Category</CheckboxColumnHeader>
-            {disabilities.map(disability =>
-              <FilterCheckbox
-                key={disability.id}
-                label={disability.name}
-                checked={selectedDisabilities.includes(disability)}
-                onChange={this.handleDisabilityToggle.bind(null, disability)}
-              />
-            )}
-          </CheckboxColumn>
+          <CheckboxRow>
+            <CheckboxColumn>
+              <CheckboxColumnHeader onClick={this.handleGradeHeaderClick}>Grade</CheckboxColumnHeader>
+              {enums.grades.slice(0,7).map(grade =>
+                <FilterCheckbox
+                  key={grade}
+                  label={grade}
+                  checked={selectedGrades.includes(grade)}
+                  onChange={this.handleGradeToggle.bind(null, grade)}
+                />
+              )}
+            </CheckboxColumn>
+            <CheckboxColumn>
+              {enums.grades.slice(7).map(grade =>
+                <FilterCheckbox
+                  key={grade}
+                  label={grade}
+                  checked={selectedGrades.includes(grade)}
+                  onChange={this.handleGradeToggle.bind(null, grade)}
+                />
+              )}
+            </CheckboxColumn>
+          </CheckboxRow>
+          <CheckboxRow>
+            <CheckboxColumn>
+              <CheckboxColumnHeader onClick={this.handleDisabilityHeaderClick}>Category</CheckboxColumnHeader>
+              {disabilities.slice(0, 6).map(disability =>
+                <FilterCheckbox
+                  key={disability.id}
+                  label={disability.name}
+                  checked={selectedDisabilities.includes(disability)}
+                  onChange={this.handleDisabilityToggle.bind(null, disability)}
+                />
+              )}
+            </CheckboxColumn>
+            <CheckboxColumn>
+              {disabilities.slice(6).map(disability =>
+                <FilterCheckbox
+                  key={disability.id}
+                  label={disability.name}
+                  checked={selectedDisabilities.includes(disability)}
+                  onChange={this.handleDisabilityToggle.bind(null, disability)}
+                />
+              )}
+            </CheckboxColumn>
+          </CheckboxRow>
 
           <CheckboxColumn>
               <CheckboxColumnHeader onClick={this.handleRiskLevelHeaderClick}>Risk Level</CheckboxColumnHeader>
@@ -157,10 +199,23 @@ export default class StudentFilterForm extends Component {
               />  
             )}
           </CheckboxColumn>
+
+          <CheckboxColumn>
+            <CheckboxColumnHeader onClick={this.handleRaceHeaderClick}>Race</CheckboxColumnHeader>
+            {enums.races.map(race =>
+              <FilterCheckbox
+                key={race}
+                label={enums.raceLabels[race]}
+                checked={selectedRaces.includes(race)}
+                onChange={this.handleRaceToggle.bind(null, race)}
+              />  
+            )}
+          </CheckboxColumn>
         </Checkboxes>
 
         <Spacer/>
         <SaveButton onClick={this.handleSubmitClick}>SAVE FILTERS</SaveButton>
+        <SaveButtonPlaceholder/>
       </Root>
     );
   }
@@ -196,12 +251,26 @@ const Title = styled.div`
 `;
 
 const SaveButton = styled(Button)`
+  position: fixed;
+  bottom: 0;
+  left: 0;
   width: 100%;
+  max-width: 450px;
   height: 50px;
   color: white;
   font-family: "Oswald";
   font-size: 16px;
   background-color: #F5633A;
+  flex-shrink: 0;
+
+  @media ${breakpoints.mediumOrSmall} {
+    max-width: 100%;
+  }
+`;
+
+const SaveButtonPlaceholder = styled.div`
+  width: 100%;
+  height: 50px;
   flex-shrink: 0;
 `;
 
@@ -229,7 +298,7 @@ const ClearButton = styled(Button)`
 
 const Checkboxes = styled.div`
   display: flex;
-  flex-direction: row;
+  flex-direction: column;
   justify-content: space-between;
   margin: 0 40px 0 40px;
   flex-shrink: 0;
@@ -250,8 +319,16 @@ const CheckboxColumn = styled.div`
   overflow: visible;
   flex: 1 1 100%;
 
-  & + & {
-    margin-left: 5px;
+  * + & {
+    margin-top: 15px;
+  }
+`;
+
+const CheckboxRow = styled.div`
+  display: flex;
+  flex-direction: row;
+  * + & {
+    margin-top: 15px;
   }
 `;
 

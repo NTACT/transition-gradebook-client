@@ -194,15 +194,16 @@ class StudentTermInfo extends Model {
 
   filterMatches(filter) {
     if(!filter) return true;
-    const { riskData } = this;
-    const { grades, disabilities, riskLevels, supportNeeded } = filter;
+    const { riskData, race } = this;
+    const { grades, disabilities, riskLevels, supportNeeded, races } = filter;
     const { disabilityIds } = this;
 
     return (
       (!riskLevels.length || riskLevels.includes(this.risk)) &&
       (!grades.length || grades.includes(this.gradeLevel)) &&
       (!disabilities.length || disabilities.some(d => disabilityIds.includes(d.id))) &&
-      (!supportNeeded.length || supportNeeded.some(key => riskData.interventions[key]))
+      (!supportNeeded.length || supportNeeded.some(key => riskData.interventions[key])) &&
+      (!races.length || races.includes(race))
     );
   }
 
