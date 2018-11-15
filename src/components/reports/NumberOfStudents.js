@@ -18,6 +18,8 @@ const dataCategories = [
   {label: 'Disabilities', key: 'disability'},
   {label: 'IEP Role', key: 'iepRole'},
   {label: 'Activity Types', key: 'activityGroupTypes'},
+  {label: 'Gender', key: 'gender'},
+  {label: 'Race', key: 'race'},
 ];
 
 function criteriaFilenameString(criteria) {
@@ -27,6 +29,8 @@ function criteriaFilenameString(criteria) {
     case 'supportNeed': return 'support-needed';
     case 'riskLevel': return 'risk-level';
     case 'disability': return 'disabilities';
+    case 'gender': return 'gender';
+    case 'race': return 'race';
     case 'iepRole': return 'iep-roles';
     case 'activityGroupTypes': return 'activity-types';
     default: return 'unknown';

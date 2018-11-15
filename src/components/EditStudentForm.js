@@ -18,6 +18,8 @@ import Input from './Input';
 import SpinnerOverlay from './SpinnerOverlay';
 import enums from '../enums';
 
+const formatRaceLabel = race => enums.raceLabels[race];
+
 @withRouter
 @inject('store')
 @observer
@@ -28,6 +30,7 @@ class EditStudentForm extends Component {
   @observable birthday = '';
   @observable studentId = '';
   @observable gender = '';
+  @observable race = '';
   @observable ell = null;
   @observable gradeLevel = '';
   @observable postSchoolOutcome = null;
@@ -44,6 +47,7 @@ class EditStudentForm extends Component {
       birthday,
       studentId,
       gender,
+      race,
       ell,
       gradeLevel,
       postSchoolOutcome,
@@ -57,6 +61,7 @@ class EditStudentForm extends Component {
       lastName,
       studentId,
       gender,
+      race,
       ell,
       gradeLevel,
       exitCategory,
@@ -86,6 +91,10 @@ class EditStudentForm extends Component {
 
   @action.bound handleGenderChange(gender) {
     this.gender = gender;
+  }
+
+  @action.bound handleRaceChange(event) {
+    this.race = event.target.value;
   }
 
   @action.bound handleEllChange(enabled) {
@@ -198,6 +207,7 @@ class EditStudentForm extends Component {
     this.birthday = student.birthdayDateString;
     this.studentId = student.studentId;
     this.gender = student.gender;
+    this.race = student.race || '';
     this.ell = student.ell;
     this.gradeLevel = student.gradeLevel;
     this.exitCategory = student.exitCategory;
@@ -225,6 +235,7 @@ class EditStudentForm extends Component {
       birthday,
       studentId,
       gender,
+      race,
       ell,
       gradeLevel,
       postSchoolOutcome,
@@ -321,10 +332,13 @@ class EditStudentForm extends Component {
 
           <FormRow>
             <FormColumn>
+              <InputLabel>Race</InputLabel>
+              <RaceSelect onChange={this.handleRaceChange} value={race} format={formatRaceLabel}/>
+            </FormColumn>
+            <FormColumn>
               <InputLabel>Grade</InputLabel>
               <GradeSelect onChange={this.handleGradeLevelChange} value={gradeLevel}/>
             </FormColumn>
-            <FormColumn/>
           </FormRow>
 
           {gradeLevel === 'Post-school' &&
@@ -449,6 +463,12 @@ const GradeSelect = styled(EnumSelect).attrs({
   name: 'grades',
   inputName: 'gradeLevel',
   placeholder: 'Select a grade',
+})``;
+
+const RaceSelect = styled(EnumSelect).attrs({
+  name: 'races',
+  inputName: 'race',
+  placeholder: 'Select a race',
 })``;
 
 const DisabilitiesHeader = styled.div`

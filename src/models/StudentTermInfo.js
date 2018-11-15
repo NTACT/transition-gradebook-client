@@ -18,6 +18,7 @@ class StudentTermInfo extends Model {
   @observable studentId = '';
   @observable firstName = '';
   @observable lastName = '';
+  @observable race = '';
   @observable gender = '';
   @observable birthday = '';
   @observable birthdayString = '';
@@ -193,15 +194,16 @@ class StudentTermInfo extends Model {
 
   filterMatches(filter) {
     if(!filter) return true;
-    const { riskData } = this;
-    const { grades, disabilities, riskLevels, supportNeeded } = filter;
+    const { riskData, race } = this;
+    const { grades, disabilities, riskLevels, supportNeeded, races } = filter;
     const { disabilityIds } = this;
 
     return (
       (!riskLevels.length || riskLevels.includes(this.risk)) &&
       (!grades.length || grades.includes(this.gradeLevel)) &&
       (!disabilities.length || disabilities.some(d => disabilityIds.includes(d.id))) &&
-      (!supportNeeded.length || supportNeeded.some(key => riskData.interventions[key]))
+      (!supportNeeded.length || supportNeeded.some(key => riskData.interventions[key])) &&
+      (!races.length || races.includes(race))
     );
   }
 
@@ -220,7 +222,7 @@ class StudentTermInfo extends Model {
     super.patch(fields);
     const { student } = fields;
     if(student) {
-      this.studentTermInfoId = this.id;
+      this.studentTermInfoId = this.studentTermInfoId || this.id;
       Object.assign(this, student);
       this.birthdayString = this.birthday;
       this.modelFields({
