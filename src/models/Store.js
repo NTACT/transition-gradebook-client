@@ -425,11 +425,14 @@ export default class Store {
       offTrackStudents,
       chronicAbsentStudents,
       interventionGroups,
+      raceGroups,
     } = result.data;
+
     const studentMap = students.reduce((map, student) => {
       map.set(student.id, new StudentTermInfo(student));
       return map;
     }, new Map());
+  
     const resolveStudents = studentIds => studentIds.map(id => studentMap.get(id)).sort(StudentTermInfo.sorter);
 
     for(let group of studentGradeGroups) {
@@ -448,12 +451,17 @@ export default class Store {
       group.students = resolveStudents(group.students);
     }
 
+    for(let group of raceGroups) {
+      group.students = resolveStudents(group.students);
+    }
+
     return {
       studentCount: students.length,
       studentGradeGroups,
       activityGroups,
       studentRiskGroups,
       interventionGroups,
+      raceGroups,
       offTrackStudents: resolveStudents(offTrackStudents),
       chronicAbsentStudents: resolveStudents(chronicAbsentStudents),
     };

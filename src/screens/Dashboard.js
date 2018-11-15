@@ -3,6 +3,7 @@ import styled from 'styled-components';
 import { observer, inject } from 'mobx-react';
 import { observable, action } from 'mobx';
 import { Link } from 'react-router-dom';
+import { enums } from 'tgb-shared';
 import Screen from '../components/Screen';
 import Row from '../components/Row';
 import Column from '../components/Column';
@@ -66,6 +67,7 @@ class Dashboard extends Component {
       chronicAbsentStudents,
       activityGroups,
       interventionGroups,
+      raceGroups,
     } = data;
     const now = new Date();
 
@@ -175,6 +177,23 @@ class Dashboard extends Component {
           )}
         </InterventionsRow>
 
+        <RowTitle>Total number of students by race</RowTitle>
+        <RaceRow>
+          {raceGroups.map(({ race, students }, i) =>
+            <RaceColumn key={race}
+              onClick={students.length 
+                ? this.handleOpenStudentList.bind(null, students)
+                : null
+              }
+            >
+              <RaceBox index={i}>
+                <RaceCode>{race}</RaceCode>
+                <RaceCount>{students.length}</RaceCount>
+              </RaceBox>
+              <RaceLabel>{race === 'N/A' ? race : enums.raceLabels[race]}</RaceLabel>
+            </RaceColumn>
+          )}
+        </RaceRow>
       </Content>
     );
   };
@@ -274,7 +293,7 @@ const Title = styled.h1`
 	font-size: 20px;
 	font-weight: bold;
   text-align: center;
-  margin: 17px 0 0 0
+  margin: 17px 0 0 0;
 `;
 
 const Subtitle = styled.h2`
@@ -491,4 +510,42 @@ const InterventionsRow = styled(CenterRow)`
   @media ${breakpoints.small} {
     flex-direction: column;
   }
+`;
+
+const RaceRow = styled(CenterRow)`
+  min-height: 114px;
+`;
+
+const RaceColumn = styled.div`
+  display: flex;
+  flex-direction: column;
+  text-align: center;
+  flex: 1 1 100%;
+  cursor: ${props => props.onClick ? 'pointer' : 'default'};
+`;
+
+const RaceBox = styled.div`
+  background-color: ${props => props.index % 2 ? '#F4F4F4' : '#E7E7E7'};
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 20px 0 20px;
+`;
+
+const RaceCode = styled.div`
+	color: #A20B0E;
+	font-size: 16px;
+	font-weight: bold;
+`;
+
+const RaceCount = styled.div`
+	color: #F5633A;
+  font-size: 32px;
+  margin-top: 20px;
+`;
+
+const RaceLabel = styled.div`
+  font-size: 16px;
+  margin-top: 10px;
 `;
