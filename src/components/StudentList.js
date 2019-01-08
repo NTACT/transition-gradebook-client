@@ -6,7 +6,7 @@ import { withRouter } from 'react-router-dom';
 
 @withRouter
 @observer
-export default class StudentList extends Component {
+class StudentList extends Component {
   constructor(props) {
     super(props);
     this.renderItem = this.renderItem.bind(this);
@@ -31,7 +31,8 @@ export default class StudentList extends Component {
       </Root>
     );
   }
-}
+};
+export default StudentList;
 
 const Root = styled.div`
   flex: 1;

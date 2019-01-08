@@ -12,7 +12,7 @@ import * as breakpoints from '../breakpoints';
 
 @inject('store')
 @observer
-export default class StudentFilterForm extends Component {
+class StudentFilterForm extends Component {
   @observable selectedGrades = (this.props.filter && this.props.filter.grades.slice()) || [];
   @observable selectedDisabilities =  (this.props.filter && this.props.filter.disabilities.slice()) || [];
   @observable selectedRiskLevels = (this.props.filter && this.props.filter.riskLevels.slice()) || [];
@@ -220,6 +220,8 @@ export default class StudentFilterForm extends Component {
     );
   }
 }
+
+export default StudentFilterForm;
 
 const Root = styled.div`
   position: absolute;

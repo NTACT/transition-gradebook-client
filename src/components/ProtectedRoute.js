@@ -5,7 +5,7 @@ import { Route, Redirect, withRouter } from 'react-router-dom';
 @withRouter
 @inject('store')
 @observer
-export default class ProtectedRoute extends Component {
+class ProtectedRoute extends Component {
   _renderer = loggedIn => props => {
     const { component : Component, loginPath='/Login' } = this.props;
 
@@ -28,4 +28,5 @@ export default class ProtectedRoute extends Component {
       <Route {...this.props} component={undefined} render={this._renderer(store.loggedIn)}/>
     );
   }
-}
+};
+export default ProtectedRoute;

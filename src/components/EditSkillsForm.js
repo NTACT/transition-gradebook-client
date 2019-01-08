@@ -10,7 +10,7 @@ import RiskFormWrapper from './RiskFormWrapper';
 
 @inject('store')
 @observer
-export default class SkillsEditForm extends Component {
+class SkillsEditForm extends Component {
   @observable hasSelfDeterminationSkills = null;
   @observable hasIndependentLivingSkills = null;
   @observable hasTravelSkills = null;
@@ -97,4 +97,5 @@ export default class SkillsEditForm extends Component {
       </RiskFormWrapper>
     );
   }
-}
+};
+export default SkillsEditForm;

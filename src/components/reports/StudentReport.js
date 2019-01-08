@@ -11,7 +11,7 @@ import TermSelect from '../TermSelect';
 import getReportFileName from '../../utils/getReportFileName';
 @inject('store')
 @observer
-export default class StudentReport extends Component {
+class StudentReport extends Component {
   @observable startYearId = null;
   @observable startTermId = null;
   @observable studentId = null;
@@ -168,6 +168,8 @@ export default class StudentReport extends Component {
     )
   }
 }
+
+export default StudentReport;
 
 const UnlabeledInput = styled.div`
   & > * {

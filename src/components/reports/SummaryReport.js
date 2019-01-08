@@ -9,7 +9,7 @@ import TermSelect from '../TermSelect';
 import getReportFileName from '../../utils/getReportFileName';
 
 @observer
-export default class SummaryReport extends Component {
+class SummaryReport extends Component {
   @observable startYearId = null;
   @observable startTermId = null;
   @observable submitTask = null;
@@ -96,4 +96,5 @@ export default class SummaryReport extends Component {
       </ReportFormContainer>
     )
   }
-}
+};
+export default SummaryReport;

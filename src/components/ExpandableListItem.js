@@ -10,7 +10,7 @@ import filterChildren from '../utils/filterChildren';
 import * as breakpoints from '../breakpoints';
 
 @observer
-export default class ExpandableListItem extends Component {
+class ExpandableListItem extends Component {
   @observable expanded = false;
 
   @action.bound handleToggleExpanded() {
@@ -40,6 +40,8 @@ export default class ExpandableListItem extends Component {
     );
   }
 }
+
+export default ExpandableListItem;
 
 ExpandableListItem.Item = styled.li`
   padding: 0 40px 0 40px;

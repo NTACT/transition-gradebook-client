@@ -11,7 +11,7 @@ import { Rejected } from '../Task';
 import FormError from '../FormError';
 
 @observer
-export default class ReportFormContainer extends Component {
+class ReportFormContainer extends Component {
   render () {
     const {
       title,
@@ -51,6 +51,8 @@ export default class ReportFormContainer extends Component {
     )
   }
 }
+
+export default ReportFormContainer;
 
 const Root = styled.div`
   padding: 33px 36px 33px 36px;

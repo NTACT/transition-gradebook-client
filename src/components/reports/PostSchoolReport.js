@@ -6,12 +6,13 @@ import ReportFormContainer from './ReportFormContainer';
 import ReportFormDefaultLayout from './ReportFormDefaultLayout';
 import Label from '../Label';
 import Select from '../Select';
+
 import Checkbox from '../Checkbox';
 import getReportFileName from '../../utils/getReportFileName';
 
 @inject('store')
 @observer
-export default class PostSchoolStudentReport extends Component {
+class PostSchoolStudentReport extends Component {
   @observable startYearId = null;
   @observable studentId = null;
   @observable allStudents = false;
@@ -140,10 +141,12 @@ export default class PostSchoolStudentReport extends Component {
   }
 }
 
+export default PostSchoolStudentReport;
+
 const UnlabeledInput = styled.div`
   & > * {
     margin-top: 26px;
-  }
+  };
 `;
 
 const CheckboxInfo = styled.div`

@@ -38,7 +38,7 @@ function criteriaFilenameString(criteria) {
 }
 
 @observer
-export default class NumberOfStudentsReport extends Component {
+class NumberOfStudentsReport extends Component {
   @observable longitudinal = false;
 
   @observable criteria1 = null;
@@ -256,6 +256,8 @@ export default class NumberOfStudentsReport extends Component {
     )
   }
 }
+
+export default NumberOfStudentsReport;
 
 function DataCategorySelect(props) {
   return (

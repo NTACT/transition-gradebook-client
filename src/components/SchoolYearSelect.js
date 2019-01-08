@@ -6,7 +6,7 @@ import getId from '../utils/getId';
 
 @inject('store')
 @observer
-export default class SchoolYearSelect extends Component {
+class SchoolYearSelect extends Component {
   @action.bound handleChange(event) {
     const { onChange } = this.props;
     if(onChange) {
@@ -27,4 +27,5 @@ export default class SchoolYearSelect extends Component {
       </Select>
     );
   }
-}
+};
+export default SchoolYearSelect;

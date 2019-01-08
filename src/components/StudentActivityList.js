@@ -11,7 +11,7 @@ import * as Icons from './Icons';
 @withRouter
 @inject('store')
 @observer
-export default class StudentActivityList extends Component {
+class StudentActivityList extends Component {
   @action.bound async handleActivityEditClick(activity) {
     const { store, student, schoolYear, history } = this.props;
     if(store.currentSchoolYear.id !== schoolYear.id) {
@@ -82,7 +82,8 @@ function groupActivities(activityTypeGroups, activities) {
     typeGroup,
     activities.filter(activity => activity.activityType.activityTypeGroupId === typeGroup.id)
   ]);
-}
+};
+export default StudentActivityList;
 
 const Root = styled.div`
   flex: 1;

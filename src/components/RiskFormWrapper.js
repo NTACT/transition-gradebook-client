@@ -10,7 +10,7 @@ import BlockButton from './BlockButton';
 import XButton from './XButton';
 
 @observer
-export default class RiskFormWrapper extends Component {
+class RiskFormWrapper extends Component {
   render() {
     const { title, student, schoolYear, term, dirty, saveTask, onSubmit, children } = this.props;
 
@@ -37,7 +37,8 @@ export default class RiskFormWrapper extends Component {
       </Root>
     );
   }
-}
+};
+export default RiskFormWrapper;
 
 const Root = styled.div``;
 
