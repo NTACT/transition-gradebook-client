@@ -2,29 +2,25 @@
   "env": {
     "development": {
       "presets": [
-        "react", 
-        ["env", {
-          "browsers": ["last 2 versions", "safari 7", "ie11"]
-        }]
+        "react-app",
+        "@babel/preset-env"
       ],
       "plugins": [
         "babel-plugin-styled-components",
         "transform-object-rest-spread",
-        "transform-decorators-legacy",
+        ["@babel/plugin-proposal-decorators", { "legacy": true }],
         "transform-class-properties"
       ]
     },
     "production": {
       "presets": [
-        "react",
-        ["env", {
-          "browsers": ["last 2 versions", "safari 7", "ie11"]
-        }]
+        "react-app",
+        "@babel/preset-env"
       ],
       "plugins": [
         "babel-plugin-styled-components",
         "transform-object-rest-spread",
-        "transform-decorators-legacy",
+        ["@babel/plugin-proposal-decorators", { "legacy": true }],
         "transform-class-properties"
       ]
     }

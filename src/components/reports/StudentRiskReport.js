@@ -13,7 +13,7 @@ import TermSelect from '../TermSelect';
 import getReportFileName from '../../utils/getReportFileName';
 
 @observer
-export default class StudentRiskReport extends Component {
+class StudentRiskReport extends Component {
   @observable startYearId = null;
   @observable startTermId = null;
   @observable endYearId = null;
@@ -251,6 +251,8 @@ export default class StudentRiskReport extends Component {
     )
   }
 }
+
+export default StudentRiskReport;
 
 const CountType = styled.div`
   margin-bottom: 25px;

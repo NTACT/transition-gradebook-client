@@ -12,7 +12,7 @@ export default function Select(props) {
     canSelectPlaceholder,
     Handle=DefaultHandle,
     name,
-    ...rest,
+    ...rest
   } = props;
 
   return (

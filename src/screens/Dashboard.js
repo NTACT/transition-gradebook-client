@@ -69,6 +69,7 @@ class Dashboard extends Component {
       interventionGroups,
       raceGroups,
     } = data;
+    console.log(activityGroups)
     const now = new Date();
 
     return (

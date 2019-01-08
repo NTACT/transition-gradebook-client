@@ -15,7 +15,7 @@ import RiskFormWrapper from './RiskFormWrapper';
 
 @inject('store')
 @observer
-export default class RiskFactorEditForm extends Component {
+class RiskFactorEditForm extends Component {
   @observable grade = '';
   @observable gradeType = null;
   @observable absentPercent = null;
@@ -222,6 +222,8 @@ export default class RiskFactorEditForm extends Component {
   }
 }
 
+export default RiskFactorEditForm;
+
 function maybeString(string) {
   return string == null ? '' : string;
 }
@@ -239,7 +241,7 @@ const RadioColumn = styled(FormColumn)`
   }
   >div + div {
     margin-top: 10px;
-  }
+  };
 `;
 
 const RadioColumnLabel = styled(Label)`

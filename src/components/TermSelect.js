@@ -4,7 +4,7 @@ import Select from './Select';
 import getId from '../utils/getId';
 
 @observer
-export default class TermSelect extends Component {
+class TermSelect extends Component {
   render() {
     const { schoolYear, value, ...rest } = this.props;
 
@@ -22,4 +22,5 @@ export default class TermSelect extends Component {
       </Select>
     );
   }
-}
+};
+export default TermSelect;

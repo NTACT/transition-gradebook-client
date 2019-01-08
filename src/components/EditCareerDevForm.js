@@ -11,7 +11,7 @@ import EnumSelect from './EnumSelect';
 
 @inject('store')
 @observer
-export default class SkillsCareerDevForm extends Component {
+class SkillsCareerDevForm extends Component {
   @observable attendedIepMeeting = null;
   @observable iepRole = null;
   @observable hasGraduationPlan = null;
@@ -101,4 +101,5 @@ export default class SkillsCareerDevForm extends Component {
       </RiskFormWrapper>
     );
   }
-}
+};
+export default SkillsCareerDevForm;

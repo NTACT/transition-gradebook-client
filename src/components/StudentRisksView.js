@@ -15,7 +15,7 @@ import formatGrade from '../utils/formatGrade';
 @withRouter
 @inject('store')
 @observer
-export default class StudentRisksView extends Component {
+class StudentRisksView extends Component {
   @observable loadTask = null;
 
   @computed get termStudent() {
@@ -131,6 +131,8 @@ export default class StudentRisksView extends Component {
     );
   }
 }
+
+export default StudentRisksView;
 
 const Root = styled.div`
   position: relative;

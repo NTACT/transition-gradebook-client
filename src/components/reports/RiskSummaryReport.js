@@ -9,7 +9,7 @@ import TermSelect from '../TermSelect';
 import getReportFileName from '../../utils/getReportFileName';
 
 @observer
-export default class RiskSummaryReport extends Component {
+class RiskSummaryReport extends Component {
   @observable startYearId = null;
   @observable startTermId = null;
   @observable endYearId = null;
@@ -151,4 +151,5 @@ export default class RiskSummaryReport extends Component {
       </ReportFormContainer>
     )
   }
-}
+};
+export default RiskSummaryReport;

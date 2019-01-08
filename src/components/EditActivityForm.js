@@ -28,7 +28,7 @@ let tempIdCounter = 0;
 @withRouter
 @inject('store')
 @observer
-export default class EditActivityForm extends Component {
+class EditActivityForm extends Component {
   @observable activityToEdit = null;
   @observable activityTypeId = null;
   @observable frequency = null;
@@ -284,6 +284,8 @@ export default class EditActivityForm extends Component {
   }
 }
 
+export default EditActivityForm;
+
 const Root = styled.div`
   position: relative;
   padding: 29px 35px 29px 35px;
@@ -428,7 +430,7 @@ const EventListItem = styled.li`
 
   & + & {
     margin-top: 12px;
-  }
+  };
 `;
 
 const EventDeleteIcon = styled(Icons.X)`

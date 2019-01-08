@@ -125,7 +125,7 @@ class UnauthenticatedApp extends Component {
 
 @inject('store')
 @observer
-export default class AppRouter extends Component {
+class AppRouter extends Component {
   render() {
     const { online } = this.props.store;
 
@@ -143,6 +143,8 @@ export default class AppRouter extends Component {
     );
   }
 }
+
+export default AppRouter;
 
 const FadeInWrapper = styled.div`
   width: 100%;

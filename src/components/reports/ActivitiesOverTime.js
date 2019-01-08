@@ -9,7 +9,7 @@ import TermSelect from '../TermSelect';
 import getReportFileName from '../../utils/getReportFileName';
 
 @observer
-export default class ActivitiesOverTime extends Component {
+class ActivitiesOverTime extends Component {
   @observable startYearId = null;
   @observable startTermId = null;
   @observable endYearId = null;
@@ -201,3 +201,5 @@ export default class ActivitiesOverTime extends Component {
     )
   }
 }
+
+export default ActivitiesOverTime;
