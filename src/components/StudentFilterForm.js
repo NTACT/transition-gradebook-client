@@ -332,6 +332,7 @@ const CheckboxRow = styled.div`
   * + & {
     margin-top: 15px;
   }
+  height: 100%;
 `;
 
 const CheckboxColumnHeader = styled.div`
