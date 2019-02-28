@@ -1,4 +1,4 @@
-import React, { Component } from 'react';
+import React, { Component, useState } from 'react';
 import styled from 'styled-components';
 import { observer } from 'mobx-react';
 import { ScaleLoader } from 'react-spinners';
@@ -9,9 +9,34 @@ import XButton from '../XButton';
 import { Link } from 'react-router-dom';
 import { Rejected } from '../Task';
 import FormError from '../FormError';
+import OpenFiltersButton from '../OpenFiltersButton';
+import StudentFilterForm from '../StudentFilterForm';
+import * as breakpoints from '../../breakpoints';
+
+function FilterFormContainer(props) {
+  const { filtersEnabled, onFiltersSelected } = props;  
+  const [shown, setShown] = useState(false);
+  return (
+    <React.Fragment>
+    <FilterButtonContainer filtersEnabled={filtersEnabled}>
+      <OpenFiltersButton onClick={() => setShown(true)} /><span>filter</span>
+    </FilterButtonContainer>
+    {shown && <StyledStudentFilterForm onClose={() => setShown(false)} onSubmit={onSubmit} />}
+    </React.Fragment>
+  );
+
+  function onSubmit(filters) {
+    onFiltersSelected(filters);
+    setShown(false);
+  }
+}
 
 @observer
 class ReportFormContainer extends Component {
+
+  onFiltersSelected = filters => {
+    console.log(filters);
+  }
   render () {
     const {
       title,
@@ -20,17 +45,21 @@ class ReportFormContainer extends Component {
       closePath,
       canRun,
       submitTask,
+      includeFilters = false,
     } = this.props;
     const running = submitTask && submitTask.state === 'pending';
 
     return (
       <Root>
         <Top>
-          <div>
-            <Title>{title}</Title>
-            <Subtitle>{subtitle}</Subtitle>
-          </div>
+          <FilterFormContainer filtersEnabled={includeFilters} onFiltersSelected={this.onFiltersSelected} />
           <XButton component={Link} to={closePath || '/Reports'}/>
+        </Top>
+        <Top>
+          <div>
+              <Title>{title}</Title>
+              <Subtitle>{subtitle}</Subtitle>
+          </div>
         </Top>
         <Rejected task={submitTask}>
           {error => <SubmitError error={error}/>}
@@ -58,6 +87,8 @@ const Root = styled.div`
   padding: 33px 36px 33px 36px;
   width: 100%;
   max-width: 100vw;
+  position: relative;
+  height: 100%;
 `;
 
 const Top = styled.div`
@@ -106,4 +137,31 @@ const LoadingSpinner = styled(({visible, ...rest}) =>
 
 const SubmitError = styled(FormError)`
   margin-bottom: 20px;
+`;
+
+const FilterButtonContainer = styled.div`
+  display: flex;
+  visibility: ${props => props.filtersEnabled ? 'visible': 'hidden'};
+  color: #D43425;
+  font-size: 10px;
+  align-items: center;
+`
+
+const StyledStudentFilterForm = styled(StudentFilterForm)`
+  /* 
+    The SaveFilters button is fixed position, so it needs to be targeted
+    so its on the right side of the page
+  */
+  >:nth-last-child(2) {
+    @media ${breakpoints.mediumOrSmall} {
+      max-width: 100%;
+      width: 100%;
+    }
+    max-width: 100%;
+    width: calc(100vw - 457px);
+    @media ${breakpoints.large} {
+      /* Width of the left navigator + with of the divider*/
+      left: 457px;
+    }
+  }
 `;

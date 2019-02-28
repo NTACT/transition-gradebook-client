@@ -73,7 +73,7 @@ class SummaryReport extends Component {
     const startTermName = startYear ? startYear.capitalizedTermType : 'Term';
 
     return (
-      <ReportFormContainer title="Risk Roster Report - All Students" subtitle={`one ${startTermName.toLowerCase()}`} onSubmit={this.handleSubmit} closePath={closePath} canRun={canRun} submitTask={submitTask}>
+      <ReportFormContainer title="Risk Roster Report - All Students" subtitle={`one ${startTermName.toLowerCase()}`} onSubmit={this.handleSubmit} closePath={closePath} canRun={canRun} submitTask={submitTask} includeFilters={true}>
         <ReportFormDefaultLayout>
           <div>
             <Label>School Year</Label>
