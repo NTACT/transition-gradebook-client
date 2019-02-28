@@ -1,6 +1,7 @@
 import React, { Component, useState } from 'react';
 import styled from 'styled-components';
 import { observer } from 'mobx-react';
+import { observable, action  } from 'mobx';
 import { ScaleLoader } from 'react-spinners';
 import Title from '../Title';
 import Subtitle from '../Subtitle';
@@ -33,9 +34,14 @@ function FilterFormContainer(props) {
 
 @observer
 class ReportFormContainer extends Component {
-
+  @observable filters = {};
   onFiltersSelected = filters => {
-    console.log(filters);
+    this.filters= filters;
+  }
+
+  @action.bound handleSubmit = e => {
+    const { onSubmit } = this.props;
+    onSubmit(this.filters);
   }
   render () {
     const {
@@ -66,7 +72,7 @@ class ReportFormContainer extends Component {
         </Rejected>
         {this.props.children}
         <ButtonContainer>
-          <RunReportButton onClick={onSubmit} disabled={running || !canRun}>
+          <RunReportButton onClick={this.handleSubmit} disabled={running || !canRun}>
             <LoadingSpinner visible={running}/>
             <RunButtonText running={running}>
               {running

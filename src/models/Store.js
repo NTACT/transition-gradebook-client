@@ -311,8 +311,10 @@ export default class Store {
   @task('Download report PDF')
   async downloadReport(endpoint, filename, filters) {
     if(endpoint[0] !== '/') endpoint = '/' + endpoint;
+    const { disabilities = [], ...others} = filters;
+    const disabilitiesFilter = disabilities.map(disability => disability.name);
     const response = await this.axios.get(`/api/reports${endpoint}`, {
-      params: {...filters},
+      params: {disabilities: disabilitiesFilter, ...others},
       responseType: 'arraybuffer',
       headers: {
         'Accept': 'application/pdf'

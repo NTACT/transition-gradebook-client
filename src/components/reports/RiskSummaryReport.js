@@ -73,7 +73,7 @@ class RiskSummaryReport extends Component {
     this.endTermId = +event.target.value;
   };
 
-  @action.bound async handleSubmit() {
+  @action.bound async handleSubmit(studentFilters) {
     const { store } = this.props;
     const { startYear, startTerm, endYear, endTerm } = this;
 
@@ -92,7 +92,7 @@ class RiskSummaryReport extends Component {
     this.submitTask = store.downloadReport(
       '/riskSummary',
       fileName,
-      {startYearId, startTermId, endYearId, endTermId},
+      {startYearId, startTermId, endYearId, endTermId, ...studentFilters},
     );
   }
 
