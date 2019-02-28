@@ -1,6 +1,6 @@
 import axios from 'axios';
 import { first, compact } from 'lodash';
-import { observable, computed, action, runInAction } from 'mobx';
+import { observable, computed, action, runInAction, toJS } from 'mobx';
 import wait from '../utils/wait';
 import parseArrayBuffer from '../utils/parseArrayBuffer';
 import { task } from './AsyncTask';
@@ -13,6 +13,7 @@ import StudentTermInfo from './StudentTermInfo';
 import SchoolSettings from './SchoolSettings';
 import findById from '../utils/findById';
 import Model from './Model';
+import qs from 'qs';
 
 const authTokenKey = 'com.emberex.transition_gradebook.authToken';
 
@@ -311,14 +312,23 @@ export default class Store {
   @task('Download report PDF')
   async downloadReport(endpoint, filename, filters) {
     if(endpoint[0] !== '/') endpoint = '/' + endpoint;
-    const { disabilities = [], ...others} = filters;
-    const disabilitiesFilter = disabilities.map(disability => disability.name);
+    const { grades, riskLevels, supportNeeded, races, disabilities, ...others} = filters;
+    const disabilitiesFilter = disabilities ? disabilities.map(disability => disability.name) : undefined;
     const response = await this.axios.get(`/api/reports${endpoint}`, {
-      params: {disabilities: disabilitiesFilter, ...others},
+      params: {
+        //toJS so that they are a "real array" that qs can understand
+        grades: toJS(grades),
+        riskLevels: toJS(riskLevels),
+        supportNeeded: toJS(supportNeeded), 
+        races: toJS(races),
+        disabilities: disabilitiesFilter,
+        ...others
+      },
       responseType: 'arraybuffer',
       headers: {
         'Accept': 'application/pdf'
-      }
+      },
+      paramsSerializer: params => qs.stringify(params, { arrayFormat: 'repeat'}),
     }).catch(error => {
       if(error.response && error.response.data instanceof ArrayBuffer) {
         error.response.parsedData = parseArrayBuffer(error.response.data);
