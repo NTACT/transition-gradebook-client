@@ -1,7 +1,7 @@
 import React, { Component, useState } from 'react';
 import styled from 'styled-components';
 import { observer } from 'mobx-react';
-import { observable, action  } from 'mobx';
+import { observable, action, computed  } from 'mobx';
 import { ScaleLoader } from 'react-spinners';
 import Title from '../Title';
 import Subtitle from '../Subtitle';
@@ -13,36 +13,53 @@ import FormError from '../FormError';
 import OpenFiltersButton from '../OpenFiltersButton';
 import StudentFilterForm from '../StudentFilterForm';
 import * as breakpoints from '../../breakpoints';
-
-function FilterFormContainer(props) {
-  const { filtersEnabled, onFiltersSelected } = props;  
-  const [shown, setShown] = useState(false);
-  return (
-    <React.Fragment>
-    <FilterButtonContainer filtersEnabled={filtersEnabled}>
-      <OpenFiltersButton onClick={() => setShown(true)} /><span>filter</span>
-    </FilterButtonContainer>
-    {shown && <StyledStudentFilterForm onClose={() => setShown(false)} onSubmit={onSubmit} />}
-    </React.Fragment>
-  );
-
-  function onSubmit(filters) {
-    onFiltersSelected(filters);
-    setShown(false);
-  }
-}
+import Row from '../Row';
 
 @observer
 class ReportFormContainer extends Component {
-  @observable filters = {};
+  @observable filters = null;
   onFiltersSelected = filters => {
-    this.filters= filters;
+    this.filters = filters ;
   }
 
   @action.bound handleSubmit = e => {
     const { onSubmit } = this.props;
     onSubmit(this.filters);
   }
+
+  @computed get activeFilterList() {
+    return this.props.includeFilters  && this.filters ? Object.keys(this.filters) : [];
+  }
+
+  renderActiveFiltersList() {
+    const { activeFilterList, filters } = this;
+    if (activeFilterList.length <= 0) {
+      return null;
+    }
+    return (
+      <Filters>
+        ( {/* opening paren, keep */}
+        <ActiveFilterLabel>filters:</ActiveFilterLabel>{activeFilterList
+          .filter(filter => filters[filter].length > 0)
+          .map(filter => {
+            //Change labels as needed
+            const filterLowercase = filter.toLowerCase();
+            if (filterLowercase === 'risklevels') {
+              return 'risk level';
+            } else if (filterLowercase === 'supportneeded') {
+              return 'intervention';
+            } else if (filterLowercase === 'disabilities') {
+              return 'category';
+            } else {
+              return filterLowercase
+            }
+          })
+          .join(', ')}
+        ) {/* closing paren, keep */}
+      </Filters>
+    );
+  }
+
   render () {
     const {
       title,
@@ -52,8 +69,10 @@ class ReportFormContainer extends Component {
       canRun,
       submitTask,
       includeFilters = false,
+      titleActiveFilter = title
     } = this.props;
     const running = submitTask && submitTask.state === 'pending';
+    const { activeFilterList } = this;
 
     return (
       <Root>
@@ -63,7 +82,12 @@ class ReportFormContainer extends Component {
         </Top>
         <Top>
           <div>
-              <Title>{title}</Title>
+              <TitleRow>
+                <Title>
+                  {activeFilterList.length > 0 ? titleActiveFilter : title}
+                </Title>
+                {this.renderActiveFiltersList()}
+              </TitleRow>
               <Subtitle>{subtitle}</Subtitle>
           </div>
         </Top>
@@ -171,3 +195,36 @@ const StyledStudentFilterForm = styled(StudentFilterForm)`
     }
   }
 `;
+
+const TitleRow = styled(Row)`
+  align-items: center;
+`;
+
+const Filters = styled(Subtitle)`
+  display: flex;
+  padding-left: 10px;
+`;
+
+const ActiveFilterLabel = styled(Filters)`
+  font-weight: bold;
+  padding-right: 2px;
+  padding-left: 0;
+`;
+
+function FilterFormContainer(props) {
+  const { filtersEnabled, onFiltersSelected } = props;
+  const [shown, setShown] = useState(false);
+  return (
+    <React.Fragment>
+      <FilterButtonContainer filtersEnabled={filtersEnabled}>
+        <OpenFiltersButton onClick={() => setShown(true)} /><span>filter</span>
+      </FilterButtonContainer>
+      {shown && <StyledStudentFilterForm onClose={() => setShown(false)} onSubmit={onSubmit} />}
+    </React.Fragment>
+  );
+
+  function onSubmit(filters) {
+    onFiltersSelected(filters);
+    setShown(false);
+  }
+}
