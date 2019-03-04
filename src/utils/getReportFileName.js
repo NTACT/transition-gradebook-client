@@ -1,5 +1,5 @@
 
-export default function getReportFileName(reportName, {startYear, startTerm, endYear, endTerm, student}) {
+export default function getReportFileName(reportName, {startYear, startTerm, endYear, endTerm, student, filtered}) {
   try {
     const startTermLabel = (!startTerm || startYear.termType === 'annual')
       ? '' 
@@ -16,7 +16,7 @@ export default function getReportFileName(reportName, {startYear, startTerm, end
     let fileName = `${reportName}-report${startYear ? '-'+startYear.yearRange : ''}${startTermLabel}${endYearLabel}`;
 
     if(student) fileName += `-${student.firstName}-${student.lastName}`;
-
+    if(filtered) fileName += '-filtered';
     return fileName;
   } catch(error) {
     console.log(error);

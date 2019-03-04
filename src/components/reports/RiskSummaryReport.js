@@ -81,12 +81,21 @@ class RiskSummaryReport extends Component {
     const startTermId = startTerm && startTerm.id;
     const endYearId = endYear && endYear.id;
     const endTermId = endTerm && endTerm.id;
+    
+    let filtered = false;
+    for(let filter in studentFilters) {
+      filtered = studentFilters[filter].length > 0;
+      if(filtered) {
+        break;
+      }
+    }
 
     const fileName = getReportFileName('risk-summary', {
       startYear,
       startTerm,
       endYear,
       endTerm,
+      filtered
     });
 
     this.submitTask = store.downloadReport(
