@@ -72,12 +72,12 @@ class ReportFormContainer extends Component {
       titleActiveFilter = title
     } = this.props;
     const running = submitTask && submitTask.state === 'pending';
-    const { activeFilterList } = this;
+    const { activeFilterList, filters } = this;
 
     return (
       <Root>
         <Top>
-          <FilterFormContainer filtersEnabled={includeFilters} onFiltersSelected={this.onFiltersSelected} />
+          <FilterFormContainer filtersEnabled={includeFilters} onFiltersSelected={this.onFiltersSelected} filters={filters} />
           <XButton component={Link} to={closePath || '/Reports'}/>
         </Top>
         <Top>
@@ -212,14 +212,14 @@ const ActiveFilterLabel = styled(Filters)`
 `;
 
 function FilterFormContainer(props) {
-  const { filtersEnabled, onFiltersSelected } = props;
+  const { filtersEnabled, onFiltersSelected, filters } = props;
   const [shown, setShown] = useState(false);
   return (
     <React.Fragment>
       <FilterButtonContainer filtersEnabled={filtersEnabled}>
         <OpenFiltersButton onClick={() => setShown(true)} /><span>filter</span>
       </FilterButtonContainer>
-      {shown && <StyledStudentFilterForm onClose={() => setShown(false)} onSubmit={onSubmit} />}
+      {shown && <StyledStudentFilterForm onClose={() => setShown(false)} onSubmit={onSubmit} filter={filters} />}
     </React.Fragment>
   );
 
