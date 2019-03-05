@@ -42,22 +42,31 @@ class SummaryReport extends Component {
     this.startTermId = +event.target.value;
   };
 
-  @action.bound async handleSubmit() {
+  @action.bound async handleSubmit(studentFilters) {
     const { store } = this.props;
     const { startYear, startTerm } = this;
     
     const startYearId = startYear && startYear.id;
     const startTermId = startTerm && startTerm.id;
+    
+    let filtered = false;
+    for(let filter in studentFilters) {
+      filtered = studentFilters[filter].length > 0;
+      if(filtered) {
+        break;
+      }
+    }
 
     const fileName = getReportFileName('risk-roster', {
       startYear,
       startTerm,
+      filtered
     });
 
     this.submitTask = store.downloadReport(
       '/riskRoster',
       fileName,
-      {startYearId, startTermId},
+      {startYearId, startTermId, ...studentFilters},
     );
   }
 
@@ -73,7 +82,7 @@ class SummaryReport extends Component {
     const startTermName = startYear ? startYear.capitalizedTermType : 'Term';
 
     return (
-      <ReportFormContainer title="Risk Roster Report - All Students" subtitle={`one ${startTermName.toLowerCase()}`} onSubmit={this.handleSubmit} closePath={closePath} canRun={canRun} submitTask={submitTask}>
+      <ReportFormContainer title="Risk Roster Report - All Students" titleActiveFilter="Risk Roster Report - Filtered Students" subtitle={`one ${startTermName.toLowerCase()}`} onSubmit={this.handleSubmit} closePath={closePath} canRun={canRun} submitTask={submitTask} includeFilters={true}>
         <ReportFormDefaultLayout>
           <div>
             <Label>School Year</Label>

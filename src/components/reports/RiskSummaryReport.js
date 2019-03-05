@@ -73,7 +73,7 @@ class RiskSummaryReport extends Component {
     this.endTermId = +event.target.value;
   };
 
-  @action.bound async handleSubmit() {
+  @action.bound async handleSubmit(studentFilters) {
     const { store } = this.props;
     const { startYear, startTerm, endYear, endTerm } = this;
 
@@ -81,18 +81,27 @@ class RiskSummaryReport extends Component {
     const startTermId = startTerm && startTerm.id;
     const endYearId = endYear && endYear.id;
     const endTermId = endTerm && endTerm.id;
+    
+    let filtered = false;
+    for(let filter in studentFilters) {
+      filtered = studentFilters[filter].length > 0;
+      if(filtered) {
+        break;
+      }
+    }
 
     const fileName = getReportFileName('risk-summary', {
       startYear,
       startTerm,
       endYear,
       endTerm,
+      filtered
     });
 
     this.submitTask = store.downloadReport(
       '/riskSummary',
       fileName,
-      {startYearId, startTermId, endYearId, endTermId},
+      {startYearId, startTermId, endYearId, endTermId, ...studentFilters},
     );
   }
 
@@ -111,7 +120,7 @@ class RiskSummaryReport extends Component {
     const endTermName = endYear ? endYear.capitalizedTermType : 'Term';
 
     return (
-      <ReportFormContainer title="Risk Summary Report - All Students" subtitle="over time" closePath={closePath} onSubmit={this.handleSubmit} canRun={canRun} submitTask={submitTask}>
+      <ReportFormContainer title="Risk Summary Report - All Students" titleActiveFilter="Risk Summary Report - Filtered Students" subtitle="over time" closePath={closePath} onSubmit={this.handleSubmit} canRun={canRun} submitTask={submitTask} includeFilters={true}>
         <ReportFormDefaultLayout>
           <div>
             <Label>Starting Year</Label>

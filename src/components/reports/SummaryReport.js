@@ -42,22 +42,29 @@ class SummaryReport extends Component {
     this.startTermId = +event.target.value;
   };
 
-  @action.bound async handleSubmit() {
+  @action.bound async handleSubmit(studentFilters) {
     const { store } = this.props;
     const { startYear, startTerm } = this;
 
     const startYearId = startYear && startYear.id;
     const startTermId = startTerm && startTerm.id;
-
+    let filtered = false;
+    for(let filter in studentFilters) {
+      filtered = studentFilters[filter].length > 0;
+      if(filtered) {
+        break;
+      }
+    }
     const fileName = getReportFileName('summary', {
       startYear,
       startTerm,
+      filtered,
     });
 
     this.submitTask = store.downloadReport(
       '/summary',
       fileName,
-      {startYearId, startTermId},
+      {startYearId, startTermId, ...studentFilters},
     );
   }
 
@@ -73,7 +80,7 @@ class SummaryReport extends Component {
     const startTermName = startYear ? startYear.capitalizedTermType : 'Term';
 
     return (
-      <ReportFormContainer title="Summary Report - All Students" subtitle={`one ${startTermName.toLowerCase()}`} onSubmit={this.handleSubmit} closePath={closePath} canRun={canRun} submitTask={submitTask}>
+      <ReportFormContainer title="Summary Report - All Students" titleActiveFilter="Summary Report - Filtered Students" subtitle={`one ${startTermName.toLowerCase()}`} onSubmit={this.handleSubmit} closePath={closePath} canRun={canRun} submitTask={submitTask} includeFilters={true}>
         <ReportFormDefaultLayout>
           <div>
             <Label>School Year</Label>

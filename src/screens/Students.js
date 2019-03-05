@@ -22,6 +22,7 @@ import { Pending } from '../components/Task';
 import responsive from '../utils/responsive';
 import * as Icons from '../components/Icons';
 import * as breakpoints from '../breakpoints';
+import OpenFiltersButton from '../components/OpenFiltersButton';
 
 @responsive
 @withRouter
@@ -190,9 +191,7 @@ class Students extends Component {
                 />
               }
               <SearchForm>
-                <OpenFiltersButton onClick={this.handleFilterPanelToggle}>
-                  <FiltersIcon/>
-                </OpenFiltersButton>
+                <OpenFiltersButton onClick={this.handleFilterPanelToggle} />
                 <SearchInputContainer>
                   <SearchInput onChange={this.handleSearchChange} value={search}/>
                   <SearchIcon/>
@@ -400,11 +399,6 @@ const SearchInput = styled.input`
   border-radius: 5px;
 `;
 
-const OpenFiltersButton = styled(Button)`
-  width: 50px;
-  background: inherit;
-`;
-
 const SearchIcon = styled(Icons.Magnifier)`
   width: 18px;
   height: 18px;
@@ -412,11 +406,6 @@ const SearchIcon = styled(Icons.Magnifier)`
   right: 11px;
   top: 11px;
   pointer-events: none;
-`;
-
-const FiltersIcon = styled(Icons.OrangeSettings)`
-  width: 25px;
-  height: 20px;
 `;
 
 const YearSelectHandle = styled(Icons.WhiteChevron)`

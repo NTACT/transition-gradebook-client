@@ -114,11 +114,11 @@ class StudentFilterForm extends Component {
 
   render() {
     const { disabilities } = this.props.store;
-    const { onClose } = this.props;
+    const { onClose, ...rest } = this.props;
     const { selectedDisabilities, selectedGrades, selectedRiskLevels, selectedSupportNeeded, selectedRaces } = this;
 
     return (
-      <Root>
+      <Root {...rest}>
 
         <Header>
           <ClearButton onClick={this.handleClearClick}>clear filters</ClearButton>
