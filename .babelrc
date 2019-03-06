@@ -23,6 +23,18 @@
         ["@babel/plugin-proposal-decorators", { "legacy": true }],
         "transform-class-properties"
       ]
+    },
+    "test": {
+      "presets": [
+        "react-app",
+        "@babel/preset-env"
+      ],
+      "plugins": [
+        "babel-plugin-styled-components",
+        "transform-object-rest-spread",
+        ["@babel/plugin-proposal-decorators", { "legacy": true }],
+        "transform-class-properties"
+      ]
     }
   }
 }
