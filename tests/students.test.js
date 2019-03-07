@@ -17,6 +17,8 @@ const {
   componentEl,
   enums,
   sample,
+  clickComponent,
+  scrollToBottom,
 } = require('./testUtils');
 
 describe('Students screen', () => {
@@ -30,7 +32,7 @@ describe('Students screen', () => {
     await login(page, user);
     await tapLink(page, '#/Students');
     await waitForComponent(page, 'Students');
-    await tapComponent(page, 'Students__AddStudentButton');
+    await clickComponent(page, 'Students__AddStudentButton');
     await waitForComponent(page, 'EditStudentForm');
   });
 
@@ -38,7 +40,7 @@ describe('Students screen', () => {
     await login(page, user);
     await tapLink(page, '#/Students');
     await waitForComponent(page, 'Students');
-    await tapComponent(page, 'Students__AddStudentButton');
+    await clickComponent(page, 'Students__AddStudentButton');
     await waitForComponent(page, 'EditStudentForm');
 
     const firstName = faker.name.firstName();
@@ -51,10 +53,12 @@ describe('Students screen', () => {
     await page.type('[name="studentId"]', faker.random.uuid());
     await page.type('[type="date"]', birthdayString); 
     await page.select('[name="gradeLevel"]', sample(enums.grades));
+    await page.select('[name="race"]', sample(enums.races));
     await fillCheckbox(page, `[name="gender__${sample(enums.genders)}"]`);
     await fillCheckbox(page, `[name="ell__${sample(['yes', 'no'])}"]`);
+    await scrollToBottom(page);
     await tapComponent(page, 'EditStudentForm__SaveButton');
-    await page.waitForSelector('.swal2-container', {timeout: 5000});
+    await page.waitForSelector('.swal2-popup', {timeout: 5000});
     console.log(`Created ${firstName} ${lastName}`);
   });
 
@@ -62,7 +66,7 @@ describe('Students screen', () => {
     await login(page, user);
     await tapLink(page, '#/Students');
     await waitForComponent(page, 'Students__StudentEditButton');
-    await tapComponent(page, 'Students__StudentEditButton');
+    await clickComponent(page, 'Students__StudentEditButton');
     await waitForComponent(page, 'EditStudentForm');
 
     const originalFirstName = await getInputValue(page, '[name="firstName"]');
@@ -81,6 +85,7 @@ describe('Students screen', () => {
     await lastNameInput.type(lastName);
 
     await page.select('[name="gradeLevel"]', sample(enums.grades));
+    await scrollToBottom(page);
 
     await tapComponent(page, 'EditStudentForm__SaveButton');
     await page.waitForSelector('.swal2-container', {timeout: 5000});
@@ -91,11 +96,12 @@ describe('Students screen', () => {
     await login(page, user);
     await tapLink(page, '#/Students');
     await waitForComponent(page, 'Students__StudentEditButton');
-    await tapComponent(page, 'Students__StudentEditButton');
+    await clickComponent(page, 'Students__StudentEditButton');
     await waitForComponent(page, 'EditStudentForm');
 
     const firstName = await getInputValue(page, '[name="firstName"]');
     const lastName = await getInputValue(page, '[name="lastName"]');
+    await scrollToBottom(page);
 
     await tapComponent(page, 'EditStudentForm__RemoveButton');
     await page.waitForSelector('.swal2-confirm', {timeout: 5000});

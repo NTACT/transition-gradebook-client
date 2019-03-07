@@ -3,7 +3,7 @@ const appURL = 'http://localhost:3000';
 
 module.exports = {
   faker: require('faker'),
-  enums: require('../src/enums'),
+  enums: require('tgb-shared/lib/enums'),
   sample: require('lodash/sample'),
   user: {username: 'user@test.com', password: 'password'},
   admin: {username: 'admin@test.com', password: 'password'},
@@ -26,7 +26,6 @@ module.exports = {
         await page.evaluate(() => {
           window.__HEADLESS_TEST = true;
         });
-        await page.setViewport({width: 1024, height: 768});
         await testFn(page, browser);
       } finally {
         await page.screenshot({path: `tests/screenshots/${screenshotFilename}`});
@@ -72,8 +71,12 @@ module.exports = {
     return `*[class^='${componentName}']`;
   },
 
-  tapComponent(page, componentName) {
+  async tapComponent(page, componentName) {
     return page.tap(this.componentSelector(componentName));
+  },
+
+  clickComponent(page, componentName) {
+    return page.click(this.componentSelector(componentName));
   },
 
   async waitForComponent(page, ...path) {
@@ -115,6 +118,12 @@ module.exports = {
   selectByName(page, name) {
     return page.$(this.nameSelector(name));
   },
+
+  scrollToBottom(page) {
+    return page.evaluate(() => {
+      window.scrollBy(0, document.body.scrollHeight);
+    });
+  }
 };
 
 // Bind all the exported modules so their `this` values don't break
