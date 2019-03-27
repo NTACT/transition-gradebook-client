@@ -192,7 +192,7 @@ class StudentRiskReport extends Component {
     const endTermName = endYear ? endYear.capitalizedTermType : 'Term';
 
     return (
-      <ReportFormContainer title="Risk Report - Per Student" subtitle="over time" onSubmit={this.handleSubmit} closePath={closePath} canRun={canRun} submitTask={submitTask}>
+      <ReportFormContainer title="Risk Report - Per Student" subtitle="for one term or over time" onSubmit={this.handleSubmit} closePath={closePath} canRun={canRun} submitTask={submitTask}>
         <CountType>
           <RadioButton checked={!longitudinal} onChange={longitudinal ? this.handleLongitudinalToggle : noop}>Standard</RadioButton>
           <RadioButton checked={longitudinal} onChange={longitudinal ? noop : this.handleLongitudinalToggle}>Longitudinal</RadioButton>
