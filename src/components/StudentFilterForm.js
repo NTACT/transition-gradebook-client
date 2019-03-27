@@ -142,6 +142,7 @@ class StudentFilterForm extends Component {
               )}
             </CheckboxColumn>
             <CheckboxColumn>
+              <CheckboxColumnHeader/>
               {enums.grades.slice(7).map(grade =>
                 <FilterCheckbox
                   key={grade}
@@ -151,8 +152,6 @@ class StudentFilterForm extends Component {
                 />
               )}
             </CheckboxColumn>
-          </CheckboxRow>
-          <CheckboxRow>
             <CheckboxColumn>
               <CheckboxColumnHeader onClick={this.handleDisabilityHeaderClick}>Category</CheckboxColumnHeader>
               {disabilities.slice(0, 6).map(disability =>
@@ -165,6 +164,7 @@ class StudentFilterForm extends Component {
               )}
             </CheckboxColumn>
             <CheckboxColumn>
+              <CheckboxColumnHeader/>
               {disabilities.slice(6).map(disability =>
                 <FilterCheckbox
                   key={disability.id}
@@ -176,7 +176,8 @@ class StudentFilterForm extends Component {
             </CheckboxColumn>
           </CheckboxRow>
 
-          <CheckboxColumn>
+          <CheckboxRow>
+            <CheckboxColumn>
               <CheckboxColumnHeader onClick={this.handleRiskLevelHeaderClick}>Risk Level</CheckboxColumnHeader>
               {enums.riskLevels.map(riskLevel =>
                 <FilterCheckbox
@@ -186,31 +187,46 @@ class StudentFilterForm extends Component {
                   onChange={this.handleRiskLevelToggle.bind(null, riskLevel)}
                 />  
               )}
-          </CheckboxColumn>
+            </CheckboxColumn>
 
-          <CheckboxColumn>
-            <CheckboxColumnHeader onClick={this.handleSupportNeededHeaderClick}>Intervention</CheckboxColumnHeader>
-            {enums.supportNeeded.map(supportType =>
-              <FilterCheckbox
-                key={supportType}
-                label={capitalize(supportType)}
-                checked={selectedSupportNeeded.includes(supportType)}
-                onChange={this.handleSupportNeededToggle.bind(null, supportType)}
-              />  
-            )}
-          </CheckboxColumn>
+            <CheckboxColumn>
+              <CheckboxColumnHeader onClick={this.handleSupportNeededHeaderClick}>Intervention</CheckboxColumnHeader>
+              {enums.supportNeeded.map(supportType =>
+                <FilterCheckbox
+                  key={supportType}
+                  label={capitalize(supportType)}
+                  checked={selectedSupportNeeded.includes(supportType)}
+                  onChange={this.handleSupportNeededToggle.bind(null, supportType)}
+                />  
+              )}
+            </CheckboxColumn>
+          </CheckboxRow>
 
-          <CheckboxColumn>
-            <CheckboxColumnHeader onClick={this.handleRaceHeaderClick}>Race</CheckboxColumnHeader>
-            {enums.races.map(race =>
-              <FilterCheckbox
-                key={race}
-                label={enums.raceLabels[race]}
-                checked={selectedRaces.includes(race)}
-                onChange={this.handleRaceToggle.bind(null, race)}
-              />  
-            )}
-          </CheckboxColumn>
+          <CheckboxRow>
+            <CheckboxColumn>
+              <CheckboxColumnHeader onClick={this.handleRaceHeaderClick}>Race</CheckboxColumnHeader>
+              {enums.races.slice(0, 4).map(race =>
+                <FilterCheckbox
+                  key={race}
+                  label={enums.raceLabels[race]}
+                  checked={selectedRaces.includes(race)}
+                  onChange={this.handleRaceToggle.bind(null, race)}
+                />  
+              )}
+            </CheckboxColumn>
+
+            <CheckboxColumn>
+              <CheckboxColumnHeader/>
+              {enums.races.slice(4).map(race =>
+                <FilterCheckbox
+                  key={race}
+                  label={enums.raceLabels[race]}
+                  checked={selectedRaces.includes(race)}
+                  onChange={this.handleRaceToggle.bind(null, race)}
+                />  
+              )}
+            </CheckboxColumn>
+          </CheckboxRow>
         </Checkboxes>
 
         <Spacer/>
@@ -320,10 +336,6 @@ const CheckboxColumn = styled.div`
   flex-direction: column;
   overflow: visible;
   flex: 1 1 100%;
-
-  * + & {
-    margin-top: 15px;
-  }
 `;
 
 const CheckboxRow = styled.div`
