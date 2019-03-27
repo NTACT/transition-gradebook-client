@@ -76,7 +76,7 @@ class StudentFilterForm extends Component {
     if(this.selectedRaces.length === enums.races.length) {
       this.selectedRaces = [];
     } else {
-      this.selectedRaces = enums.supportNeeded.slice();
+      this.selectedRaces = enums.races.slice();
     }
   }
 
