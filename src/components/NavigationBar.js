@@ -59,7 +59,7 @@ class NavigationBar extends Component {
                 </PageLink>
               </PageListItem>
               <PageListItem>
-                <PageLink to="/Reports"  className={path === '/Reports' ? 'active' : ''}>
+                <PageLink to="/Reports/Individual" className={path === '/Reports' ? 'active' : ''}>
                   <PageLinkText>Reports</PageLinkText>
                   <ReportsIcon/>
                 </PageLink>

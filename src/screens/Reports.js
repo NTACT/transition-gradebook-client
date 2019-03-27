@@ -93,8 +93,8 @@ class Reports extends Component {
             <ListWrapper>
               <TabContainer>
                 <Tabs>
-                  <Tab active={!reportType || reportType === 'summary'} onClick={() => switchReportType('summary')}>Summary</Tab>
                   <Tab active={reportType === 'individual'} onClick={() => switchReportType('individual')}>Individual</Tab>
+                  <Tab active={!reportType || reportType === 'summary'} onClick={() => switchReportType('summary')}>Summary</Tab>
                 </Tabs>
               </TabContainer>
               <List hidden={reportType !== 'summary'}>
