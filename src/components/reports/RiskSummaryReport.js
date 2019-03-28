@@ -29,6 +29,7 @@ class RiskSummaryReport extends Component {
     } else if(startYear && startYear.termType === 'annual') {
       return startYear.terms[0];
     }
+    return null;
   }
 
   @computed get endYear() {
@@ -44,6 +45,7 @@ class RiskSummaryReport extends Component {
     } else if(endYear && endYear.termType === 'annual') {
       return endYear.terms[0];
     }
+    return null;
   }
 
   @computed get canRun() {

@@ -64,7 +64,6 @@ class ReportFormContainer extends Component {
     const {
       title,
       subtitle,
-      onSubmit,
       closePath,
       canRun,
       submitTask,
