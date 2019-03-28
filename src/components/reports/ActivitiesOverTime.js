@@ -152,7 +152,7 @@ class ActivitiesOverTime extends Component {
     const endTermName = endYear ? endYear.capitalizedTermType : 'Term';
 
     return (
-      <ReportFormContainer title="Student Activities" subtitle="over time" onSubmit={this.handleSubmit} closePath={closePath} canRun={canRun} submitTask={submitTask}>
+      <ReportFormContainer title="Student Report" subtitle="over time" onSubmit={this.handleSubmit} closePath={closePath} canRun={canRun} submitTask={submitTask}>
         <ReportFormDefaultLayout>
           <div>
             <Label>Starting Year</Label>

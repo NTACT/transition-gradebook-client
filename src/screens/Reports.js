@@ -93,8 +93,8 @@ class Reports extends Component {
             <ListWrapper>
               <TabContainer>
                 <Tabs>
-                  <Tab active={!reportType || reportType === 'summary'} onClick={() => switchReportType('summary')}>Summary</Tab>
                   <Tab active={reportType === 'individual'} onClick={() => switchReportType('individual')}>Individual</Tab>
+                  <Tab active={!reportType || reportType === 'summary'} onClick={() => switchReportType('summary')}>Summary</Tab>
                 </Tabs>
               </TabContainer>
               <List hidden={reportType !== 'summary'}>
@@ -140,19 +140,19 @@ class Reports extends Component {
                     </div>
                   </ListItem>
                 </ReportLink>
-                <ReportLink onClick={() => handleReportClick(pathNames.studentRisk)}>
-                  <ListItem active={checkRoute(pathNames.studentRisk)}>
+                <ReportLink onClick={() => handleReportClick(pathNames.activitiesOverTime)}>
+                  <ListItem active={checkRoute(pathNames.activitiesOverTime)}>
                     <div>
-                      Risk Report
+                      Student Report
                       <ListItemInfo>over time</ListItemInfo>
                     </div>
                   </ListItem>
                 </ReportLink>
-                <ReportLink onClick={() => handleReportClick(pathNames.activitiesOverTime)}>
-                  <ListItem active={checkRoute(pathNames.activitiesOverTime)}>
+                <ReportLink onClick={() => handleReportClick(pathNames.studentRisk)}>
+                  <ListItem active={checkRoute(pathNames.studentRisk)}>
                     <div>
-                      Student Activities
-                      <ListItemInfo>over time</ListItemInfo>
+                      Risk Report
+                      <ListItemInfo>for one term or over time</ListItemInfo>
                     </div>
                   </ListItem>
                 </ReportLink>
