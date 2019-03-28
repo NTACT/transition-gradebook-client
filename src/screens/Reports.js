@@ -21,7 +21,6 @@ import NumberOfStudents from '../components/reports/NumberOfStudents';
 import StudentReport from '../components/reports/StudentReport';
 import StudentRiskReport from '../components/reports/StudentRiskReport';
 import PostSchoolReport from '../components/reports/PostSchoolReport';
-import ActivitiesOverTime from '../components/reports/ActivitiesOverTime';
 import Divider from '../components/Divider';
 import * as breakpoints from '../breakpoints';
 
@@ -37,7 +36,6 @@ const pathNames = {
   student: subroute + individual + '/Student',
   studentRisk: subroute + individual + '/StudentRisk',
   postSchool: subroute + individual + '/PostSchool',
-  activitiesOverTime: subroute + individual + '/ActivitiesOverTime',
 };
 
 @inject('store')
@@ -136,15 +134,7 @@ class Reports extends Component {
                   <ListItem active={checkRoute(pathNames.student)}>
                     <div>
                       Student Report
-                      <ListItemInfo>for one term</ListItemInfo>
-                    </div>
-                  </ListItem>
-                </ReportLink>
-                <ReportLink onClick={() => handleReportClick(pathNames.activitiesOverTime)}>
-                  <ListItem active={checkRoute(pathNames.activitiesOverTime)}>
-                    <div>
-                      Student Report
-                      <ListItemInfo>over time</ListItemInfo>
+                      <ListItemInfo>for one term or over time</ListItemInfo>
                     </div>
                   </ListItem>
                 </ReportLink>
@@ -202,11 +192,6 @@ class Reports extends Component {
             <Route path={pathNames.postSchool} render={props =>
               <SubRouteWrapper>
                 <PostSchoolReport store={store} schoolYears={schoolYears} closePath="/Reports/Individual"/>
-              </SubRouteWrapper>
-            }/>
-            <Route path={pathNames.activitiesOverTime} render={props =>
-              <SubRouteWrapper>
-                <ActivitiesOverTime store={store} schoolYears={schoolYears} closePath="/Reports/Individual"/>
               </SubRouteWrapper>
             }/>
           </Content>

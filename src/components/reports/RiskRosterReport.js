@@ -27,6 +27,7 @@ class SummaryReport extends Component {
     } else if(startYear && startYear.termType === 'annual') {
       return startYear.terms[0];
     }
+    return null;
   }
 
   @computed get canRun() {
