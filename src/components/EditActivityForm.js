@@ -395,7 +395,8 @@ const EventAddButton = styled(Button)`
   font-size: 15px;
   font-family: 'Oswald';
   transition: background-color 0.3s;
-
+  
+  min-width: 80px;
   max-width: 150px;
 
   &:hover {
