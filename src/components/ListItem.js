@@ -11,5 +11,4 @@ export default styled.li`
   text-decoration: none;
   ${prop => prop.active ? 'background: #F2F2F2;' : null}
   border-bottom: 1px solid #D43425;
-  border-top: 1px solid white;
 `;

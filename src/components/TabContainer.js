@@ -1,5 +1,5 @@
 import styled from 'styled-components';
 
 export default styled.div`
-  background: #F2F2F2;
+  background: #000;
 `;
