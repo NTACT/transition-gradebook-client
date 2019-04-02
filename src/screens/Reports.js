@@ -95,7 +95,7 @@ class Reports extends Component {
                   <Tab active={!reportType || reportType === 'summary'} onClick={() => switchReportType('summary')}>Summary</Tab>
                 </Tabs>
               </TabContainer>
-              <List hidden={reportType !== 'summary'}>
+              <ReportLinkList hidden={reportType !== 'summary'}>
                 <ReportLink onClick={() => handleReportClick(pathNames.summary)}>
                   <ListItem active={checkRoute(pathNames.summary)}>
                     <div>
@@ -128,8 +128,8 @@ class Reports extends Component {
                     </div>
                   </ListItem>
                 </ReportLink>
-              </List>
-              <List hidden={reportType !== 'individual'}>
+              </ReportLinkList>
+              <ReportLinkList hidden={reportType !== 'individual'}>
                 <ReportLink onClick={() => handleReportClick(pathNames.student)}>
                   <ListItem active={checkRoute(pathNames.student)}>
                     <div>
@@ -154,7 +154,7 @@ class Reports extends Component {
                     </div>
                   </ListItem>
                 </ReportLink>
-              </List>
+              </ReportLinkList>
             </ListWrapper>
 
             <StyledDivider/>
@@ -200,6 +200,10 @@ class Reports extends Component {
     );
   }
 }
+
+const ReportLinkList = styled.div`
+  margin-top: 5px;  
+`;
 
 const ReportLink = styled.div``;
 
