@@ -28,7 +28,7 @@ class StudentReport extends Component {
   @computed get startYear() {
     const { schoolYears } = this.props;
     const { startYearId } = this;
-     return startYearId && schoolYears.find(y => y.id === startYearId);
+    return startYearId && schoolYears.find(y => y.id === startYearId);
   }
 
   @computed get startTerm() {
@@ -39,7 +39,7 @@ class StudentReport extends Component {
   @computed get endYear() {
     const { schoolYears } = this.props;
     const { endYearId } = this;
-     return endYearId && schoolYears.find(y => y.id === endYearId);
+    return endYearId && schoolYears.find(y => y.id === endYearId);
   }
 
   @computed get endTerm() {
@@ -49,35 +49,40 @@ class StudentReport extends Component {
 
   @computed get selectableStudents() {
     const { startTerm } = this;
-    return startTerm && startTerm.students.filter(student => student.gradeLevel !== 'Post-school');
+    return (
+      startTerm &&
+      startTerm.students.filter(student => student.gradeLevel !== 'Post-school')
+    );
   }
 
   @computed get selectedStudent() {
     const { studentId, selectableStudents } = this;
-    return studentId && selectableStudents && selectableStudents.find(s => s.id === studentId)
+    return (
+      studentId &&
+      selectableStudents &&
+      selectableStudents.find(s => s.id === studentId)
+    );
   }
 
   @computed get canRun() {
-    const { longitudinal, startYear, startTerm, endYear, endTerm, selectedStudent, allStudents } = this;
-    if(longitudinal) {
-      return (
-        startYear &&
-        startTerm &&
-        endYear &&
-        endTerm &&
-        selectedStudent
-      );
+    const {
+      longitudinal,
+      startYear,
+      startTerm,
+      endYear,
+      endTerm,
+      selectedStudent,
+      allStudents
+    } = this;
+    if (longitudinal) {
+      return startYear && startTerm && endYear && endTerm && selectedStudent;
     }
-    return (
-      startYear &&
-      startTerm &&
-      (selectedStudent || allStudents)
-    );
+    return startYear && startTerm && (selectedStudent || allStudents);
   }
 
   @action.bound handleLongitudinalToggle() {
     this.longitudinal = !this.longitudinal;
-    if(this.longitudinal) {
+    if (this.longitudinal) {
       this.allStudents = false;
     } else {
       this.endYearId = null;
@@ -90,7 +95,7 @@ class StudentReport extends Component {
     this.studentId = null;
     this.startYearId = +event.target.value;
     const { startYear } = this;
-    if(startYear && startYear.termType === 'annual') {
+    if (startYear && startYear.termType === 'annual') {
       this.setStartTermId(startYear.terms[0].id);
     }
   }
@@ -100,17 +105,17 @@ class StudentReport extends Component {
     this.studentId = null;
     this.endYearId = +event.target.value;
     const { endYear } = this;
-    if(endYear && endYear.termType === 'annual') {
+    if (endYear && endYear.termType === 'annual') {
       this.setEndTermId(endYear.terms[0].id);
     }
   }
-  
+
   @action.bound async setStartTermId(startTermId) {
     const { store } = this.props;
     this.startTermId = startTermId;
     this.studentId = null;
     const { startTerm } = this;
-    if(startTerm) await store.fetchTermStudents(startTerm);
+    if (startTerm) await store.fetchTermStudents(startTerm);
   }
 
   @action.bound async setEndTermId(endTermId) {
@@ -131,14 +136,22 @@ class StudentReport extends Component {
 
   @action.bound handleAllStudentsToggle() {
     this.allStudents = !this.allStudents;
-    if(this.allStudents) {
+    if (this.allStudents) {
       this.studentId = null;
     }
   }
 
   @action.bound handleSubmit() {
     const { store } = this.props;
-    const { longitudinal, allStudents, startYear, startTerm, endYear, endTerm, selectedStudent } = this;
+    const {
+      longitudinal,
+      allStudents,
+      startYear,
+      startTerm,
+      endYear,
+      endTerm,
+      selectedStudent
+    } = this;
 
     const startYearId = startYear && startYear.id;
     const startTermId = startTerm && startTerm.id;
@@ -146,54 +159,46 @@ class StudentReport extends Component {
     const endTermId = endTerm && endTerm.id;
     const studentId = selectedStudent && selectedStudent.id;
 
-    if(longitudinal) {  
+    if (longitudinal) {
       let fileName = getReportFileName('student-over-time', {
         startYear,
         startTerm,
-        student: selectedStudent,
+        student: selectedStudent
       });
-  
-      this.submitTask = store.downloadReport(
-        'studentActivities',
-        fileName,
-        {
-          startYearId,
-          startTermId,
-          endYearId,
-          endTermId,
-          studentId: selectedStudent.id,
-        },
-      );
+
+      this.submitTask = store.downloadReport('studentActivities', fileName, {
+        startYearId,
+        startTermId,
+        endYearId,
+        endTermId,
+        studentId: selectedStudent.id
+      });
     } else {
       const fileName = getReportFileName('student', {
         startYear,
         startTerm,
-        student: selectedStudent,
+        student: selectedStudent
       });
-  
-      if(allStudents) {
+
+      if (allStudents) {
         // All students
-        this.submitTask = store.downloadReport(
-          '/student',
-          fileName,
-          {startYearId, startTermId},
-        );
-      } else if(studentId) {
+        this.submitTask = store.downloadReport('/student', fileName, {
+          startYearId,
+          startTermId
+        });
+      } else if (studentId) {
         // Individual student
-        this.submitTask = store.downloadReport(
-          '/student',
-          fileName,
-          {startYearId, startTermId, studentId},
-        );
+        this.submitTask = store.downloadReport('/student', fileName, {
+          startYearId,
+          startTermId,
+          studentId
+        });
       }
     }
   }
 
-  render () {
-    const {
-      schoolYears,
-      closePath,
-    } = this.props;
+  render() {
+    const { schoolYears, closePath } = this.props;
     const {
       allStudents,
       startYear,
@@ -204,7 +209,7 @@ class StudentReport extends Component {
       selectableStudents,
       canRun,
       submitTask,
-      longitudinal,
+      longitudinal
     } = this;
 
     const startTermName = startYear ? startYear.capitalizedTermType : 'Term';
@@ -213,30 +218,58 @@ class StudentReport extends Component {
       ? 'over time'
       : `one ${startTermName.toLowerCase()}`;
 
-    const startYearLabel = longitudinal
-      ? 'Starting Year'
-      : 'School Year';
+    const startYearLabel = longitudinal ? 'Starting Year' : 'School Year';
 
     const startTermLabel = longitudinal
       ? `Starting ${startTermName}`
       : startTermName;
 
     return (
-      <ReportFormContainer title="Student Report - Per Student" subtitle={subtitle} onSubmit={this.handleSubmit} closePath={closePath} canRun={canRun} submitTask={submitTask}>
+      <ReportFormContainer
+        title="Student Report - Per Student"
+        subtitle={subtitle}
+        onSubmit={this.handleSubmit}
+        closePath={closePath}
+        canRun={canRun}
+        submitTask={submitTask}
+      >
         <CountType>
-          <RadioButton checked={!longitudinal} onChange={longitudinal ? this.handleLongitudinalToggle : noop}>Standard</RadioButton>
-          <RadioButton checked={longitudinal} onChange={longitudinal ? noop : this.handleLongitudinalToggle}>Longitudinal</RadioButton>
+          <RadioButton
+            checked={!longitudinal}
+            onChange={longitudinal ? this.handleLongitudinalToggle : noop}
+          >
+            Standard
+          </RadioButton>
+          <RadioButton
+            checked={longitudinal}
+            onChange={longitudinal ? noop : this.handleLongitudinalToggle}
+          >
+            Longitudinal
+          </RadioButton>
         </CountType>
         <ReportFormDefaultLayout>
           <div>
             <Label>{startYearLabel}</Label>
-            <Select value={startYear && startYear.id} onChange={this.handleStartYearIdChange} placeholder="Year">
-              {schoolYears.map(schoolYear =>
-                <option key={schoolYear.id} value={schoolYear.id}>{schoolYear.yearRange}</option>
-              )}
+            <Select
+              value={startYear && startYear.id}
+              onChange={this.handleStartYearIdChange}
+              placeholder="Year"
+            >
+              {schoolYears.map(schoolYear => (
+                <option key={schoolYear.id} value={schoolYear.id}>
+                  {schoolYear.yearRange}
+                </option>
+              ))}
             </Select>
           </div>
-          <div style={{visibility: startYear && startYear.termType === 'annual' ? 'hidden' : 'visible'}}>
+          <div
+            style={{
+              visibility:
+                startYear && startYear.termType === 'annual'
+                  ? 'hidden'
+                  : 'visible'
+            }}
+          >
             <Label>{startTermLabel}</Label>
             <TermSelect
               schoolYear={startYear}
@@ -246,18 +279,31 @@ class StudentReport extends Component {
             />
           </div>
 
-          {longitudinal &&
+          {longitudinal && (
             <div>
               <Label>Ending Year</Label>
-              <Select value={endYear && endYear.id} onChange={this.handleEndYearIdChange} placeholder="Year">
-                {schoolYears.map(schoolYear =>
-                  <option key={schoolYear.id} value={schoolYear.id}>{schoolYear.yearRange}</option>
-                )}
+              <Select
+                value={endYear && endYear.id}
+                onChange={this.handleEndYearIdChange}
+                placeholder="Year"
+              >
+                {schoolYears.map(schoolYear => (
+                  <option key={schoolYear.id} value={schoolYear.id}>
+                    {schoolYear.yearRange}
+                  </option>
+                ))}
               </Select>
             </div>
-          }
-          {longitudinal &&          
-            <div style={{visibility: endYear && endYear.termType === 'annual' ? 'hidden' : 'visible'}}>
+          )}
+          {longitudinal && (
+            <div
+              style={{
+                visibility:
+                  endYear && endYear.termType === 'annual'
+                    ? 'hidden'
+                    : 'visible'
+              }}
+            >
               <Label>Ending {endTermName}</Label>
               <TermSelect
                 schoolYear={endYear}
@@ -266,28 +312,43 @@ class StudentReport extends Component {
                 placeholder={endTermName}
               />
             </div>
-          }
+          )}
 
           <div>
             <Label>Student</Label>
-            <Select placeholder="Choose a student or select 'All'" value={selectedStudent && selectedStudent.id} disabled={allStudents} onChange={this.handleStudentIdChange}>
-              {selectableStudents && selectableStudents.map(student => 
-                <option key={student.id} value={student.id}>{student.fullName} ({student.studentId})</option>
-              )}
+            <Select
+              placeholder="Choose a student"
+              value={selectedStudent && selectedStudent.id}
+              disabled={allStudents}
+              onChange={this.handleStudentIdChange}
+            >
+              {selectableStudents &&
+                selectableStudents.map(student => (
+                  <option key={student.id} value={student.id}>
+                    {student.fullName} ({student.studentId})
+                  </option>
+                ))}
             </Select>
           </div>
-          
-          {!longitudinal && 
+
+          {!longitudinal && (
             <UnlabeledInput>
               <div>
-                <Checkbox checked={allStudents} onChange={this.handleAllStudentsToggle}>All Students</Checkbox>
-                <CheckboxInfo>Select to run one report for each student.</CheckboxInfo>
+                <Checkbox
+                  checked={allStudents}
+                  onChange={this.handleAllStudentsToggle}
+                >
+                  All Students
+                </Checkbox>
+                <CheckboxInfo>
+                  Select to run one report for each student.
+                </CheckboxInfo>
               </div>
             </UnlabeledInput>
-          }
+          )}
         </ReportFormDefaultLayout>
       </ReportFormContainer>
-    )
+    );
   }
 }
 
@@ -303,7 +364,7 @@ const CheckboxInfo = styled.div`
   margin-left: 24px;
   font-size: 14px;
   font-style: italic;
-  color: #4A4A4A;
+  color: #4a4a4a;
 `;
 
 const CountType = styled.div`
@@ -314,4 +375,3 @@ const CountType = styled.div`
     margin-top: 5px;
   }
 `;
-
