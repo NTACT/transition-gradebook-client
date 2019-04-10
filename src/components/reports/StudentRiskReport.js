@@ -31,7 +31,7 @@ class StudentRiskReport extends Component {
 
   @computed get startTerm() {
     const { startTermId, startYear } = this;
-    if(startTermId && startYear) {
+    if (startTermId && startYear) {
       return startYear.terms.find(term => term.id === startTermId);
     }
     return null;
@@ -45,36 +45,51 @@ class StudentRiskReport extends Component {
 
   @computed get endTerm() {
     const { endYear, endTermId } = this;
-    return endYear && endTermId && endYear.terms.find(term => term.id === endTermId);
+    return (
+      endYear && endTermId && endYear.terms.find(term => term.id === endTermId)
+    );
   }
 
   @computed get selectableStudents() {
     const { startTerm } = this;
-    return startTerm && startTerm.students
-      .filter(termInfo => termInfo.gradeLevel !== 'Post-school');
+    return (
+      startTerm &&
+      startTerm.students.filter(
+        termInfo => termInfo.gradeLevel !== 'Post-school'
+      )
+    );
   }
 
   @computed get selectedStudent() {
     const { studentId, selectableStudents } = this;
-    return studentId && selectableStudents && selectableStudents.find(student => student.id === studentId);
+    return (
+      studentId &&
+      selectableStudents &&
+      selectableStudents.find(student => student.id === studentId)
+    );
   }
 
   @computed get canRun() {
-    const { startYear, startTerm, endYear, endTerm, longitudinal, selectedStudent, allStudents } = this;
+    const {
+      startYear,
+      startTerm,
+      endYear,
+      endTerm,
+      longitudinal,
+      selectedStudent,
+      allStudents
+    } = this;
     return (
       startYear &&
       startTerm &&
-      ( !longitudinal || (
-        endYear && 
-        endTerm
-      )) &&
+      (!longitudinal || (endYear && endTerm)) &&
       (allStudents || selectedStudent)
     );
   }
 
   @action.bound handleLongitudinalToggle() {
     this.longitudinal = !this.longitudinal;
-    if(!this.longitudinal) {
+    if (!this.longitudinal) {
       this.endYearId = null;
       this.endTermId = null;
     }
@@ -82,7 +97,7 @@ class StudentRiskReport extends Component {
 
   @action.bound handleAllStudentsToggle() {
     this.allStudents = !this.allStudents;
-    if(this.allStudents) {
+    if (this.allStudents) {
       this.studentId = null;
     }
   }
@@ -91,7 +106,8 @@ class StudentRiskReport extends Component {
     this.startYearId = +event.target.value;
     this.startTermId = null;
     const { startYear } = this;
-    if(startYear && startYear.termType === 'annual') this.setStartTermId(startYear.terms[0].id);
+    if (startYear && startYear.termType === 'annual')
+      this.setStartTermId(startYear.terms[0].id);
   }
 
   @action.bound async setStartTermId(startTermId) {
@@ -99,7 +115,7 @@ class StudentRiskReport extends Component {
     this.startTermId = startTermId;
     this.studentId = null;
     const { startTerm } = this;
-    if(startTerm) await store.fetchTermStudents(startTerm);
+    if (startTerm) await store.fetchTermStudents(startTerm);
   }
 
   @action.bound handleStartTermIdChange(event) {
@@ -110,7 +126,7 @@ class StudentRiskReport extends Component {
     this.endYearId = +event.target.value;
     this.endTermId = null;
     const { endYear } = this;
-    if(endYear && endYear.termType === 'annual') {
+    if (endYear && endYear.termType === 'annual') {
       this.endTermId = endYear.terms[0].id;
     }
   }
@@ -132,7 +148,7 @@ class StudentRiskReport extends Component {
       endYear,
       endTerm,
       selectedStudent,
-      allStudents,
+      allStudents
     } = this;
 
     const startYearId = startYear && startYear.id;
@@ -143,11 +159,11 @@ class StudentRiskReport extends Component {
     let fileName = getReportFileName('student-risk', {
       startYear,
       startTerm,
-      student: selectedStudent,
+      student: selectedStudent
     });
-    if(longitudinal) fileName += '-longitudinal';
+    if (longitudinal) fileName += '-longitudinal';
 
-    if(longitudinal) {
+    if (longitudinal) {
       this.submitTask = store.downloadReport(
         'studentRisk/longitudinal',
         fileName,
@@ -156,23 +172,19 @@ class StudentRiskReport extends Component {
           startTermId,
           endYearId,
           endTermId,
-          studentId: (allStudents || !selectedStudent) ? null : selectedStudent.id,
-        },
+          studentId: allStudents || !selectedStudent ? null : selectedStudent.id
+        }
       );
     } else {
-      this.submitTask = store.downloadReport(
-        'studentRisk/standard',
-        fileName,
-        {
-          startYearId,
-          startTermId,
-          studentId: (allStudents || !selectedStudent) ? null : selectedStudent.id,
-        },
-      );
+      this.submitTask = store.downloadReport('studentRisk/standard', fileName, {
+        startYearId,
+        startTermId,
+        studentId: allStudents || !selectedStudent ? null : selectedStudent.id
+      });
     }
   }
 
-  render () {
+  render() {
     const { schoolYears, closePath } = this.props;
 
     const {
@@ -185,45 +197,92 @@ class StudentRiskReport extends Component {
       selectableStudents,
       selectedStudent,
       canRun,
-      submitTask,
+      submitTask
     } = this;
 
     const startTermName = startYear ? startYear.capitalizedTermType : 'Term';
     const endTermName = endYear ? endYear.capitalizedTermType : 'Term';
+    const subtitle = longitudinal ? 'over time' : 'one term';
 
     return (
-      <ReportFormContainer title="Risk Report - Per Student" subtitle="for one term or over time" onSubmit={this.handleSubmit} closePath={closePath} canRun={canRun} submitTask={submitTask}>
+      <ReportFormContainer
+        title="Risk Report - Per Student"
+        subtitle={subtitle}
+        onSubmit={this.handleSubmit}
+        closePath={closePath}
+        canRun={canRun}
+        submitTask={submitTask}
+      >
         <CountType>
-          <RadioButton checked={!longitudinal} onChange={longitudinal ? this.handleLongitudinalToggle : noop}>Standard</RadioButton>
-          <RadioButton checked={longitudinal} onChange={longitudinal ? noop : this.handleLongitudinalToggle}>Longitudinal</RadioButton>
+          <RadioButton
+            checked={!longitudinal}
+            onChange={longitudinal ? this.handleLongitudinalToggle : noop}
+          >
+            Standard
+          </RadioButton>
+          <RadioButton
+            checked={longitudinal}
+            onChange={longitudinal ? noop : this.handleLongitudinalToggle}
+          >
+            Longitudinal
+          </RadioButton>
         </CountType>
         <ReportFormDefaultLayout>
           <div>
             <Label>{longitudinal ? 'Starting Year' : 'School Year'}</Label>
-            <Select value={startYear && startYear.id} onChange={this.handleStartYearIdChange} placeholder={longitudinal ? 'Start Year' : 'Year'}>
-              {schoolYears.map(schoolYear =>
-                <option key={schoolYear.id} value={schoolYear.id}>{schoolYear.yearRange}</option>
-              )}
+            <Select
+              value={startYear && startYear.id}
+              onChange={this.handleStartYearIdChange}
+              placeholder={longitudinal ? 'Start Year' : 'Year'}
+            >
+              {schoolYears.map(schoolYear => (
+                <option key={schoolYear.id} value={schoolYear.id}>
+                  {schoolYear.yearRange}
+                </option>
+              ))}
             </Select>
           </div>
-          <div style={{visibility: startYear && startYear.termType === 'annual' ? 'hidden' : 'visible'}}>
-            <Label>{longitudinal ? `Starting ${startTermName}` : startTermName}</Label>
+          <div
+            style={{
+              visibility:
+                startYear && startYear.termType === 'annual'
+                  ? 'hidden'
+                  : 'visible'
+            }}
+          >
+            <Label>
+              {longitudinal ? `Starting ${startTermName}` : startTermName}
+            </Label>
             <TermSelect
               schoolYear={startYear}
               value={startTerm}
               onChange={this.handleStartTermIdChange}
-              placeholder={longitudinal ? `Start ${startTermName}` : startTermName}
+              placeholder={
+                longitudinal ? `Start ${startTermName}` : startTermName
+              }
             />
           </div>
           <div hidden={!longitudinal}>
             <Label>Ending Year</Label>
-            <Select value={endYear && endYear.id} onChange={this.handleEndYearIdChange} placeholder="End Year">
-              {schoolYears.map(schoolYear =>
-                <option key={schoolYear.id} value={schoolYear.id}>{schoolYear.yearRange}</option>
-              )}
+            <Select
+              value={endYear && endYear.id}
+              onChange={this.handleEndYearIdChange}
+              placeholder="End Year"
+            >
+              {schoolYears.map(schoolYear => (
+                <option key={schoolYear.id} value={schoolYear.id}>
+                  {schoolYear.yearRange}
+                </option>
+              ))}
             </Select>
           </div>
-          <div hidden={!longitudinal} style={{visibility: endYear && endYear.termType === 'annual' ? 'hidden' : 'visible'}}>
+          <div
+            hidden={!longitudinal}
+            style={{
+              visibility:
+                endYear && endYear.termType === 'annual' ? 'hidden' : 'visible'
+            }}
+          >
             <Label>Ending {endTermName}</Label>
             <TermSelect
               schoolYear={endYear}
@@ -234,21 +293,36 @@ class StudentRiskReport extends Component {
           </div>
           <div>
             <Label>Student</Label>
-            <Select value={selectedStudent && selectedStudent.id} onChange={this.handleSelectedStudentIdChange} disabled={allStudents} placeholder="Choose a student or select 'All'">
-              {selectableStudents && selectableStudents.map(student =>
-                <option key={student.id} value={student.id}>{student.firstName} {student.lastName}</option>
-              )}
+            <Select
+              value={selectedStudent && selectedStudent.id}
+              onChange={this.handleSelectedStudentIdChange}
+              disabled={allStudents}
+              placeholder="Choose a student or select 'All'"
+            >
+              {selectableStudents &&
+                selectableStudents.map(student => (
+                  <option key={student.id} value={student.id}>
+                    {student.firstName} {student.lastName}
+                  </option>
+                ))}
             </Select>
           </div>
           <UnlabeledInput>
             <div>
-              <Checkbox checked={allStudents} onChange={this.handleAllStudentsToggle}>All Students</Checkbox>
-              <CheckboxInfo>Select to run one report for each student.</CheckboxInfo>
+              <Checkbox
+                checked={allStudents}
+                onChange={this.handleAllStudentsToggle}
+              >
+                All Students
+              </Checkbox>
+              <CheckboxInfo>
+                Select to run one report for each student.
+              </CheckboxInfo>
             </div>
           </UnlabeledInput>
         </ReportFormDefaultLayout>
       </ReportFormContainer>
-    )
+    );
   }
 }
 
@@ -273,5 +347,5 @@ const CheckboxInfo = styled.div`
   margin-left: 24px;
   font-size: 14px;
   font-style: italic;
-  color: #4A4A4A;
+  color: #4a4a4a;
 `;
