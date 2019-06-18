@@ -93,6 +93,7 @@ class StudentRisksView extends Component {
             <ValueRow name="IEP Meeting Role" value={student.iepRole}/>
           }
           <ValueRow name="Career development/Graduation plan" value={student.hasGraduationPlan}/>
+          <ValueRow name="Post-school Goals" value={student.postSchoolGoals}/>
         </GroupList>
 
         <Switch>

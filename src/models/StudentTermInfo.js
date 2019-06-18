@@ -52,6 +52,7 @@ class StudentTermInfo extends Model {
   // Career dev + IEP
   @observable attendedIepMeeting = null;
   @observable iepRole = null;
+  @observable postSchoolGoals = null; 
   @observable hasGraduationPlan = null;
 
   @computed get sortName() {
@@ -104,6 +105,7 @@ class StudentTermInfo extends Model {
         ? null
         : this.iepRole,
       this.hasGraduationPlan,
+      this.postSchoolGoals,
     ];
   }
 
