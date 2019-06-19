@@ -27,7 +27,6 @@ class SkillsCareerDevForm extends Component {
 
   handleBoolChange = key => value => this.setKey(key, value);
   handleStringChange = key => event => this.setKey(key, event.target.value);
-  handleSchoolGoals = key => event => this.setKey(key, event.target.value); 
   handleAttendedIepMeetingChange = attended => {
     this.setKey('attendedIepMeeting', attended);
     if(!attended) this.setKey('iepRole', null);
@@ -35,7 +34,7 @@ class SkillsCareerDevForm extends Component {
 
   handleIepRoleChange = this.handleStringChange('iepRole')
   handleHasGraduationPlanChange = this.handleBoolChange('hasGraduationPlan');
-  handlePostSchoolGoals = this.handleSchoolGoals('postSchoolGoals'); 
+  handlePostSchoolGoals = this.handleStringChange('postSchoolGoals'); 
 
   @action.bound async handleSubmit(event) {
     const { store, student } = this.props;
@@ -107,7 +106,7 @@ class SkillsCareerDevForm extends Component {
         </FormRow>
         <FormRow>
           <FormColumn>
-            <Label>Post-school Goals</Label>
+            <Label>Post-school goals</Label>
             <Textarea value={postSchoolGoals} onChange={this.handlePostSchoolGoals}/>
           </FormColumn>
           <FormColumn/>
