@@ -8,6 +8,7 @@ import FormRow from './FormRow';
 import FormColumn from './FormColumn';
 import RiskFormWrapper from './RiskFormWrapper';
 import EnumSelect from './EnumSelect';
+import Textarea from './Textarea'; 
 
 @inject('store')
 @observer
@@ -16,6 +17,7 @@ class SkillsCareerDevForm extends Component {
   @observable iepRole = null;
   @observable hasGraduationPlan = null;
   @observable dirty = false;
+  @observable postSchoolGoals = null; 
   @observable saveTask = null;
 
   @action setKey(key, value) {
@@ -25,13 +27,14 @@ class SkillsCareerDevForm extends Component {
 
   handleBoolChange = key => value => this.setKey(key, value);
   handleStringChange = key => event => this.setKey(key, event.target.value);
-
   handleAttendedIepMeetingChange = attended => {
     this.setKey('attendedIepMeeting', attended);
     if(!attended) this.setKey('iepRole', null);
   };
+
   handleIepRoleChange = this.handleStringChange('iepRole')
   handleHasGraduationPlanChange = this.handleBoolChange('hasGraduationPlan');
+  handlePostSchoolGoals = this.handleStringChange('postSchoolGoals'); 
 
   @action.bound async handleSubmit(event) {
     const { store, student } = this.props;
@@ -39,6 +42,7 @@ class SkillsCareerDevForm extends Component {
     this.saveTask = store.editStudentTermInfo(student, {
       attendedIepMeeting: this.attendedIepMeeting,
       iepRole: this.iepRole,
+      postSchoolGoals: this.postSchoolGoals,
       hasGraduationPlan: this.hasGraduationPlan,
     });
     
@@ -50,6 +54,7 @@ class SkillsCareerDevForm extends Component {
   edit(student) {
     this.attendedIepMeeting = student.attendedIepMeeting;
     this.iepRole = student.iepRole;
+    this.postSchoolGoals = student.postSchoolGoals; 
     this.hasGraduationPlan = student.hasGraduationPlan;
   }
 
@@ -69,6 +74,7 @@ class SkillsCareerDevForm extends Component {
       iepRole,
       hasGraduationPlan,
       dirty,
+      postSchoolGoals,
       saveTask,
     } = this;
 
@@ -95,6 +101,13 @@ class SkillsCareerDevForm extends Component {
           <FormColumn>
             <Label>Career development or graduation plan</Label>
             <YesNoNullSelect value={hasGraduationPlan} onChange={this.handleHasGraduationPlanChange}/>
+          </FormColumn>
+          <FormColumn/>
+        </FormRow>
+        <FormRow>
+          <FormColumn>
+            <Label>Post-school goals</Label>
+            <Textarea value={postSchoolGoals} onChange={this.handlePostSchoolGoals}/>
           </FormColumn>
           <FormColumn/>
         </FormRow>
