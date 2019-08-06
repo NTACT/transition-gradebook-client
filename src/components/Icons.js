@@ -70,4 +70,8 @@ export const WhiteChevron = styled.img.attrs({
 
 export const Calendar = styled.img.attrs({
   src: require('../assets/calendar_icon.svg')
-})``
+})``;
+
+export const SelectIconLight = styled.img.attrs({
+  src: require('../assets/select_icon_light.png')
+})``;

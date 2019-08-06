@@ -71,6 +71,7 @@
     "react-day-picker": "^7.3.2",
     "react-dev-utils": "^7.0.1",
     "react-dom": "^16.8.3",
+    "react-file-drop": "^0.2.8",
     "react-list": "^0.8.10",
     "react-router": "^4.2.0",
     "react-router-dom": "^4.2.2",
