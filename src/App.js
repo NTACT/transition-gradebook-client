@@ -26,6 +26,7 @@ import SchoolSettings from './screens/SchoolSettings';
 import AddUser from './screens/AddUser';
 import AddYear from './screens/AddYear';
 import ManageUsers from './screens/ManageUsers';
+import ImportData from './screens/ImportData';
 
 // For debugging
 import BreakpointLabel from './components/BreakpointLabel';
@@ -87,6 +88,7 @@ class AuthenticatedApp extends Component {
           <Route path="/:schoolYearId/students" component={Students}/>
           <Route path="/Reports" component={Reports}/>
           <Route path="/EditProfile" component={EditProfile}/>
+          <Route path="/ImportData" component={ImportData} />
           <Route path="/About" component={About}/>
           {admin && <Route path="/AddUser" component={AddUser}/>}
           {admin && <Route path="/AddYear" component={AddYear}/>}

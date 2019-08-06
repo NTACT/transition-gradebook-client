@@ -37,6 +37,7 @@ class NavigationBar extends Component {
           {admin && <Link to="/SchoolSettings">School Settings</Link>}
           {admin && <Link to="/AddYear">Add a Year</Link>}
           {admin && <Link to="/Users">Manage Users</Link>}
+          <Link to="/ImportData">Import Data</Link>
           <Link to="/EditProfile">Edit Profile</Link>
           <Link to="/About">About</Link>
           <Button onClick={this.handleLogoutClick}>Logout</Button>
@@ -74,6 +75,7 @@ class NavigationBar extends Component {
               {admin && <MenuLinkItem to="/SchoolSettings">School Settings</MenuLinkItem>}
               {admin && <MenuLinkItem to="/AddYear">Add a Year</MenuLinkItem>}
               {admin && <MenuLinkItem to="/Users">Manage Users</MenuLinkItem>}
+              <MenuLinkItem to="/ImportData">Import Data</MenuLinkItem>
               <MenuLinkItem to="/EditProfile">Edit Profile</MenuLinkItem>
               <MenuLinkItem to="/About">About</MenuLinkItem>
               <LogoutMenuItem onClick={this.handleLogoutClick}>Logout</LogoutMenuItem>
