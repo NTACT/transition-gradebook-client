@@ -14,6 +14,7 @@ import Screen from '../components/Screen';
 import Section from '../components/Section';
 import Select from '../components/Select';
 import TermSelect from '../components/TermSelect';
+import CSVStudentUploadPreview from '../components/CSVStudentUploadPreview';
 
 
 @withRouter
@@ -149,6 +150,19 @@ class ImportData extends Component {
                               selectedWarnings={[...selectedWarnings, hoveringWarning]}
                             />}
                         </ImportFormContainer>
+                        {file  || true && ( 
+                            <DataPreview>
+                                <DataPreviewHeader>DATA PREVIEW</DataPreviewHeader>
+                                <StyledCSVStudentUploadPreview />
+                                <Import>
+                                    <div>Do you want to import this data?</div>
+                                    <ButtonContainer>
+                                        <BlockButton>IMPORT</BlockButton>
+                                        <BlockButton>CANCEL</BlockButton>
+                                    </ButtonContainer>
+                                </Import>
+                            </DataPreview>
+                        )}
                     </Content>
                 </Main>
             </Screen>
@@ -299,6 +313,53 @@ const ResetFileButton = styled(BlockButton)`
     }
 `;
 
+ const DataPreview = styled(Column)`
+    padding: 58px 65px 0 55px; 
+    flex: 1;
+ `;
+
+const DataPreviewHeader = styled(Row)`
+	color: #D43425;	
+    font-family: Oswald;	
+    font-size: 16px;	
+    line-height: 24px;
+`;
+
+const Import = styled(Column)`
+    justify-content: center;
+    align-items: center;
+    div {
+        color: #4A4A4A;	
+        font-family: "Open Sans";	
+        font-size: 14px;	
+        font-style: italic;	line-height: 19px;
+    }
+`;
+
+
+const ButtonContainer = styled(Row)`
+    justify-content: center;
+    ${BlockButton} + ${BlockButton} {
+        margin-left: 15px;
+    }
+
+    ${BlockButton} {
+        height: 40px;	
+        width: 120px;	
+        background-color: #D8D8D8;
+    }
+    margin-top: 10px;
+`;
+
+
+const StyledCSVStudentUploadPreview = styled(CSVStudentUploadPreview)`
+    height: 100%;
+    max-height: 500px;
+    width: 100%;
+    min-width: 330px;
+    margin-top: 6px;
+    margin-bottom: 15px;
+`;
 
 
 const ImportDataForm = ({years, selectedYearId, selectedYear, onYearChange, selectedTerm, onSelectedTermChange, file, onFileChange}) => (
