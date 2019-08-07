@@ -1,13 +1,10 @@
 import React, { useRef } from 'react';
 import FileDrop from 'react-file-drop';
 import styled from 'styled-components';
-import first from '../utils/first';
 import BlockButton from './BlockButton';
 import Column from './Column';
 
-
-
-const FileInput = ({value, onChange, withDragAndDrop = false, ...rest}) => {
+const FileInput = ({value, onChange, withDragAndDrop = false, accept, ...rest}) => {
 
     const fileInputRef = useRef(null);
 
@@ -22,18 +19,18 @@ const FileInput = ({value, onChange, withDragAndDrop = false, ...rest}) => {
             return;
         }
         e.preventDefault();
-        const firstFile = first(files);
-        if(firstFile) {
-            if(firstFile.type === "text/csv") {
-                // Note: not in the same format as the one from the <input type="file" />
-                onChange({target: { value: {...firstFile, dropped: true}}});
-            }
+        // Need to trigger a similar event that the file input would trigger
+        if(typeof onChange === 'function') {
+            onChange({target: {
+                value: `C:/fakepath/dontusethis.txt`,
+                files
+            }});
         }
     }
 
     return (
         <Column {...rest}>
-            <input type="file" ref={fileInputRef} value={value || ''} onChange={onChange} accept="text/csv" />
+            <input type="file" ref={fileInputRef} value={value || ''} onChange={onChange} accept={accept} />
             <FileSelectButton onClick={handleClick}>BROWSE</FileSelectButton>
             {withDragAndDrop && 
                 <FileDropZone onDrop={handleDrop} onDragOver={e => e.preventDefault()}>

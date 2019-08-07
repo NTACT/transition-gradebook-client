@@ -1,0 +1,7 @@
+Id Number,First Name,Last Name,Gender,Is Student ELL?,Race,age,Date Of Birth
+1,Test,User1,Male,No,WH7,12,01/01/90
+2,Test,User2,Male,FALSE,Asian,Age 18,01/01/99
+3,Test,User3,F,yes,Two or more races,Post-school,01/01/01
+4,Test,User4,Female,TRUE,AM7,20,01/01/91
+23,Test,User5,trans,no,PI7,9,01/01/00
+523,Test,User5,t,yes,HI7,Age 21,01/01/19

@@ -2,7 +2,7 @@ import { action, computed, observable } from 'mobx';
 import { inject, observer } from 'mobx-react';
 import React, { Component } from 'react';
 import { withRouter } from 'react-router-dom';
-import styled from 'styled-components';
+import styled, {css} from 'styled-components';
 import * as breakpoints from '../breakpoints';
 import BlockButton from '../components/BlockButton';
 import Column from '../components/Column';
@@ -15,6 +15,10 @@ import Section from '../components/Section';
 import Select from '../components/Select';
 import TermSelect from '../components/TermSelect';
 import CSVStudentUploadPreview from '../components/CSVStudentUploadPreview';
+import Spinner from '../components/Spinner';
+import parseCSV from '../utils/parseCSV';
+import translateImportStudentCSV from '../utils/translateImportStudentCSV';
+import first from '../utils/first';
 
 
 @withRouter
@@ -30,6 +34,9 @@ class ImportData extends Component {
     @observable selectedWarnings = [];
     @observable hoveringError = null;
     @observable hoveringWarning = null;
+    @observable loading = false;
+    @observable importedStudents = null;
+    @observable warningPartialParse = false;
 
     @action.bound
     handleSchoolYearChange(e) {
@@ -42,8 +49,27 @@ class ImportData extends Component {
     }
 
     @action.bound
-    handleFileChange(e) {
-        this.file = e.target.value;
+    async handleFileChange(e) {
+        const files = e.target.files;
+        this.file = first(files);
+        this.loading = true;
+        try {
+            const { data, meta, errors } = await parseCSV(this.file);
+            if(errors.length) {
+                console.error(errors);
+            }
+            this.warningPartialParse = meta.aborted || meta.truncated;
+            this.importedStudents = await translateImportStudentCSV({data, meta});
+        } finally {
+            this.loading = false;
+        }
+    }
+
+    @action.bound
+    handleCancel() {
+        this.file = null;
+        this.fileReport = null;
+        this.loading = false;
     }
 
     @computed
@@ -109,7 +135,7 @@ class ImportData extends Component {
     }
 
     render() {
-        const { schoolYearId, schoolYear, term, file, warnings, errors, selectedErrors, selectedWarnings, hoveringError, hoveringWarning} = this;
+        const { schoolYearId, schoolYear, term, file, warnings, errors, selectedErrors, selectedWarnings, hoveringError, hoveringWarning, loading} = this;
         const { schoolYears } = this.props.store;
 
         return (
@@ -136,6 +162,7 @@ class ImportData extends Component {
                                 onSelectedTermChange={this.handleTermChange}
                                 file={file}
                                 onFileChange={this.handleFileChange}
+                                onCancel={this.handleCancel}
                             />
                             {file && <CSVFileReport 
                               warnings={warnings}
@@ -150,17 +177,21 @@ class ImportData extends Component {
                               selectedWarnings={[...selectedWarnings, hoveringWarning]}
                             />}
                         </ImportFormContainer>
-                        {file  || true && ( 
-                            <DataPreview>
-                                <DataPreviewHeader>DATA PREVIEW</DataPreviewHeader>
-                                <StyledCSVStudentUploadPreview />
-                                <Import>
-                                    <div>Do you want to import this data?</div>
-                                    <ButtonContainer>
-                                        <BlockButton>IMPORT</BlockButton>
-                                        <BlockButton>CANCEL</BlockButton>
-                                    </ButtonContainer>
-                                </Import>
+                        {file && ( 
+                            <DataPreview loading={loading}>
+                                {loading ? (<Spinner />) : (
+                                    <>
+                                        <DataPreviewHeader>DATA PREVIEW</DataPreviewHeader>
+                                        <StyledCSVStudentUploadPreview />
+                                        <Import>
+                                            <div>Do you want to import this data?</div>
+                                            <ButtonContainer>
+                                                <ImportButton>IMPORT</ImportButton>
+                                                <CancelButton onClick={this.handleCancel}>CANCEL</CancelButton>
+                                            </ButtonContainer>
+                                        </Import>
+                                    </>
+                                )}
                             </DataPreview>
                         )}
                     </Content>
@@ -316,6 +347,10 @@ const ResetFileButton = styled(BlockButton)`
  const DataPreview = styled(Column)`
     padding: 58px 65px 0 55px; 
     flex: 1;
+    ${props => props.loading && css`
+        justify-content: center;
+        align-items: center;
+    `}
  `;
 
 const DataPreviewHeader = styled(Row)`
@@ -351,6 +386,17 @@ const ButtonContainer = styled(Row)`
     margin-top: 10px;
 `;
 
+const CancelButton = styled(BlockButton)`
+    &:hover {
+        background-color: #D43425;
+    }
+`;
+
+
+const ImportButton = styled(BlockButton)`
+
+`;
+
 
 const StyledCSVStudentUploadPreview = styled(CSVStudentUploadPreview)`
     height: 100%;
@@ -362,7 +408,7 @@ const StyledCSVStudentUploadPreview = styled(CSVStudentUploadPreview)`
 `;
 
 
-const ImportDataForm = ({years, selectedYearId, selectedYear, onYearChange, selectedTerm, onSelectedTermChange, file, onFileChange}) => (
+const ImportDataForm = ({years, selectedYearId, selectedYear, onYearChange, selectedTerm, onSelectedTermChange, file, onFileChange, onCancel}) => (
     <Form>
         <ImportDataTitle>IMPORT DATA</ImportDataTitle>
         <InputWithLabel>
@@ -384,7 +430,7 @@ const ImportDataForm = ({years, selectedYearId, selectedYear, onYearChange, sele
         </InputWithLabel>
         <InputWithLabel>
             {file ? (
-                <ResetFileButton onClick={() => onFileChange({target: {value: null}})}>
+                <ResetFileButton onClick={onCancel}>
                     <div>Select a New File </div>
                     <Icons.SelectIconLight />
                 </ResetFileButton>
@@ -392,7 +438,7 @@ const ImportDataForm = ({years, selectedYearId, selectedYear, onYearChange, sele
             (
                 <>
                     <FieldLabel>Select a File</FieldLabel>
-                    <FileInput value={file} onChange={onFileChange} withDragAndDrop />
+                    <FileInput value={file} onChange={onFileChange} withDragAndDrop accept='text/csv' />
                 </>
             )}
         </InputWithLabel>

@@ -16,7 +16,9 @@ function CSVStudentUploadPreview(props) {
             <ScrollableContainer>
                 <CSVContainer>
                     <CSVHead>
-                        {csvDataHelper.columns.map(column => <HeaderCell key={column.headerText}>{column.headerText}</HeaderCell>)}
+                        <tr>
+                            {csvDataHelper.columns.map(column => <HeaderCell key={column.headerText}>{column.headerText}</HeaderCell>)}
+                        </tr>
                     </CSVHead>
                     <CSVBody>
                         {csvData.map(entry => (
