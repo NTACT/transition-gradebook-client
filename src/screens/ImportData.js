@@ -53,13 +53,18 @@ class ImportData extends Component {
         const files = e.target.files;
         this.file = first(files);
         this.loading = true;
+        this.selectedErrors = [];
+        this.selectedWarnings = [];
         try {
             const { data, meta, errors } = await parseCSV(this.file);
             if(errors.length) {
                 console.error(errors);
             }
             this.warningPartialParse = meta.aborted || meta.truncated;
-            this.importedStudents = await translateImportStudentCSV({data, meta});
+
+            const { students, ...fileReport} = await translateImportStudentCSV({data});
+            this.importedStudents = students;
+            this.fileReport = fileReport;
         } finally {
             this.loading = false;
         }
@@ -107,20 +112,20 @@ class ImportData extends Component {
     }
 
     @action.bound
-    handleWarningClick(warning) {
-        if(this.selectedWarnings.find(warn => warn.id === warning.id)) {
-            this.selectedWarnings = this.selectedWarnings.filter(warn => warn.id !== warning.id);
+    handleWarningClick(warningId) {
+        if(this.selectedWarnings.find(warn => warn === warningId)) {
+            this.selectedWarnings = this.selectedWarnings.filter(warn => warn !== warningId);
         } else {
-            this.selectedWarnings.push(warning);
+            this.selectedWarnings.push(warningId);
         }
     }
 
     @action.bound
-    handleErrorClick(error) {
-        if(this.selectedErrors.find(err => err.id === error.id)) {
-            this.selectedErrors = this.selectedErrors.filter(err => err.id !== error.id);
+    handleErrorClick(errorId) {
+        if(this.selectedErrors.find(err => err === errorId)) {
+            this.selectedErrors = this.selectedErrors.filter(err => err !== errorId);
         } else {
-            this.selectedErrors.push(error);
+            this.selectedErrors.push(errorId);
         }
     }
 
@@ -135,7 +140,20 @@ class ImportData extends Component {
     }
 
     render() {
-        const { schoolYearId, schoolYear, term, file, warnings, errors, selectedErrors, selectedWarnings, hoveringError, hoveringWarning, loading} = this;
+        const { 
+            schoolYearId, 
+            schoolYear, 
+            term, 
+            file, 
+            warnings, 
+            errors, 
+            selectedErrors, 
+            selectedWarnings, 
+            hoveringError, 
+            hoveringWarning, 
+            loading,
+            importedStudents,
+        } = this;
         const { schoolYears } = this.props.store;
 
         return (
@@ -182,7 +200,10 @@ class ImportData extends Component {
                                 {loading ? (<Spinner />) : (
                                     <>
                                         <DataPreviewHeader>DATA PREVIEW</DataPreviewHeader>
-                                        <StyledCSVStudentUploadPreview />
+                                        <StyledCSVStudentUploadPreview 
+                                            csvData={importedStudents} 
+                                            selected={[...selectedErrors, ...selectedWarnings, hoveringError, hoveringWarning]} 
+                                        />
                                         <Import>
                                             <div>Do you want to import this data?</div>
                                             <ButtonContainer>

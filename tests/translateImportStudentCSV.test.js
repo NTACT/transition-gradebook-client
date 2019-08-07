@@ -45,31 +45,31 @@ function countWarnings(results) {
 describe('translateImportStudentCSV tests', () => {
     test('All required, standard format', async () => {
         const { data, meta } = await parseCSV(allRequiredStandard);
-        const result = await translateImportStudentCSV({data, meta});
-        expect(result).toBeDefined();
-        expect(result.length).toEqual(6);
-        expect(countErrors(result)).toEqual(0);
+        const { students, errors, warnings} = await translateImportStudentCSV({data, meta});
+        expect(students).toBeDefined();
+        expect(students.length).toEqual(6);
+        expect(errors.length).toEqual(0);
     });
 
     test('Gracefully handles empty files', async () => {
         const { data, meta } = await parseCSV(empty);
-        const result = await translateImportStudentCSV({data, meta});
-        expect(result).toBeDefined();
-        expect(result.length).toEqual(0);
+        const { students, errors, warnings}  = await translateImportStudentCSV({data, meta});
+        expect(students).toBeDefined();
+        expect(students.length).toEqual(0);
     });
 
     test('Gracefully handles large files', async () => {
         const { data, meta } = await parseCSV(large);
-        const result = await translateImportStudentCSV({data, meta});
-        expect(result).toBeDefined();
-        expect(result.length).toEqual(1998);
+        const { students, errors, warnings} = await translateImportStudentCSV({data, meta});
+        expect(students).toBeDefined();
+        expect(students.length).toEqual(1998);
     });
 
     test('Handles aliased columns', async () => {
         const { data, meta } = await parseCSV(allRequiredWithAliases);
-        const result = await translateImportStudentCSV({data, meta});
-        expect(result).toBeDefined();
-        expect(result.length).toEqual(6);
-        expect(countErrors(result)).toEqual(0);
+        const { students, errors, warnings} = await translateImportStudentCSV({data, meta});
+        expect(students).toBeDefined();
+        expect(students.length).toEqual(6);
+        expect(errors.length).toEqual(0);
     });
 });

@@ -54,16 +54,24 @@ function normalizeFieldNames(entry) {
  */
 async function parseRequiredStudentData(studentData) {
     const parsed = {};
-
+    const errors = [];
     for(const required of requiredFields) {
         const parsedField = findFieldByAlias(studentData, required.validAlias);
+        const id = nanoid();
+        const error = isError(required, parsedField);
         parsed[required.field] = {
             value: parsedField,
-            error: isError(required, parsedField),
-            id: nanoid(),
+            error,
+            id,
+        }
+        if(error) {
+            errors.push(id);
         }
     }
-    return parsed;
+    return {
+        ...parsed,
+        errors,
+    };
 }
 
 /**
@@ -82,15 +90,24 @@ function isWarning(optionalField, value) {
  */
 async function parseExtraStudentData(studentData) {
     const parsed = {};
+    const warnings = [];
     for(const optional of optionalFields) {
         const parsedField = findFieldByAlias(studentData, optional.validAlias);
+        const id = nanoid();
+        const warning = isWarning(optional, parsedField);
         parsed[optional.field] = {
             value: parsedField,
-            warning: isWarning(optional, parsedField),
-            id: nanoid(),
+            warning,
+            id,
+        }
+        if(warning) {
+            warnings.push(id);
         }
     }
-    return parsed;
+    return {
+        ...parsed,
+        warnings,
+    };
 }
 
 // Object.fromEntries doesn't have good support
@@ -108,15 +125,27 @@ async function parseStudentCSVRow(studentData) {
         parseRequiredStudentData(normalizedStudentData),
         parseExtraStudentData(normalizedStudentData)
     ]);
+    const { errors, ...restOfRequired} = required;
+    const { warnings, ...restOfOptional} = optional;
     return {
-        ...required,
-        ...optional,
+        ...restOfRequired,
+        ...restOfOptional,
+        id: nanoid(),
+        errors,
+        warnings,
     }
 }
 
 async function translateImportStudentCSV(importedCSV) {
     const { data } = importedCSV;
-    return await Promise.all(data.map(studentData => parseStudentCSVRow(studentData)));
+    const students =  await Promise.all(data.map(studentData => parseStudentCSVRow(studentData)));
+    const warnings = students.reduce((warningList, row) => [...warningList, ...row.warnings], []);
+    const errors = students.reduce((errorList, row) => [...errorList, ...row.errors], []);
+    return {
+        students,
+        warnings,
+        errors,
+    };
 }
 
 // Ugly hack to allow this to be tested

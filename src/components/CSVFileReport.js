@@ -42,13 +42,13 @@ const FileErrorReport = ({ errors = [], selectedErrors = [], onErrorEnter, onErr
         </ReportInfo>
         <ReportCount>{errors.length} Errors</ReportCount>
         <ReportList>
-            {errors.map((error, idx) => (
+            {errors.map((errorId, idx) => (
                 <ListItem
-                    key={error.id}
-                    onClick={() => onErrorClick(error)}
+                    key={errorId}
+                    onClick={() => onErrorClick(errorId)}
                     onMouseEnter={onErrorEnter}
                     onMouseLeave={onErrorLeave}
-                    selected={selectedErrors.find(selected => selected && selected.id === error.id)}
+                    selected={selectedErrors.find(selected => selected && selected === errorId)}
                 >
                     Error number {idx + 1}
                 </ListItem>
@@ -64,13 +64,13 @@ const FileWarningReport = ({ warnings = [], selectedWarnings = [], onWarningEnte
         </ReportInfo>
         <ReportCount>{warnings.length} Errors</ReportCount>
         <ReportList>
-            {warnings.map((warning, idx) => (
+            {warnings.map((warningId, idx) => (
                 <ListItem
-                    key={warning.id}
-                    onClick={() => onWarningClick(warning)}
+                    key={warningId}
+                    onClick={() => onWarningClick(warningId)}
                     onMouseEnter={onWarningEnter}
                     onMouseLeave={onWarningLeave}
-                    selected={selectedWarnings.find(selected => selected && selected.id === warning.id)}
+                    selected={selectedWarnings.find(selected => selected && selected === warningId)}
                 >
                     Warning number {idx + 1}
                 </ListItem>

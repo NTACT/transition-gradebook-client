@@ -7,8 +7,19 @@ import Column from './Column';
 function CSVStudentUploadPreview(props) {
     const { csvData = [], selected = [], ...rest} = props;
     
-    function isSelected(data) {
-        return !!selected.find(selectedItem => selectedItem.id === data.id);
+    function isSelected(cell) {
+        return !!selected.find(selectedItem => selectedItem === cell.id);
+    }
+
+    function renderCells(entry) {
+        return (
+            <>
+            {csvDataHelper.columns.map(column => {
+                const data = entry[column.field];
+                return <Cell key={data.id} isError={data.error} isWarning={data.warning} selected={isSelected(data)}>{data.value}</Cell>
+            })}
+            </>
+        );
     }
 
     return (
@@ -23,7 +34,7 @@ function CSVStudentUploadPreview(props) {
                     <CSVBody>
                         {csvData.map(entry => (
                             <CSVEntry key={entry.id}>
-                                {entry.values.map(data => (<Cell key={data.id} isError={data.isError} isWarning={data.isWarning} selected={isSelected(data)}>{data.value}</Cell>))}
+                                {renderCells(entry)}
                             </CSVEntry>
                         ))}
                     </CSVBody>
