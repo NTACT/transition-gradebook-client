@@ -1,52 +1,5 @@
 const nanoid = require('nanoid');
-const partition = require('lodash/partition');
 const { csvDataHelper } = require('tgb-shared');
-
-const [requiredFields, optionalFields] = partition(csvDataHelper.columns.map(col => {
-    const { validAlias, ...rest} = col;
-    return {
-        ...rest,
-        validAlias: validAlias.map(alias => alias.toLowerCase().replace(/\s/g, ''))
-    }
-}), col => col.required);
-
-/**
- * Attempt to get the value using the valid aliases for the fields
- * @param {object} studentData the parsed student object
- * @param {Array<string>} aliases a list of valid aliases
- */
-function findFieldByAlias(studentData, aliases) {
-    for(const alias of aliases) {
-        const data = studentData[alias];
-        if(data) {
-            return data;
-        }
-    }
-    return undefined;
-}
-
-/**
- * Check a required field for invalid or missing values
- * @param {object} requiredField the metadata for the required field
- * @param {any} value the value that was parsed 
- */
-function isError(requiredField, value) {
-    return !value || (requiredFields.validValues && requiredField.validValues.includes(value));
-}
-
-/**
- * Convert cute, human friendly field names to a common form that computers can understand
- * @param {Array} entry a single value returned by Object.entries 
- */
-function normalizeFieldNames(entry) {
-    const [key, value] = entry;
-    return [
-        key
-            .toLowerCase() // remove the cute uppercase letters
-            .replace(/\s/g, ''), //remove the cute spaces in the fields
-        value
-    ];
-}
 
 /**
  * Get the value for required student data
@@ -55,10 +8,10 @@ function normalizeFieldNames(entry) {
 async function parseRequiredStudentData(studentData) {
     const parsed = {};
     const errors = [];
-    for(const required of requiredFields) {
-        const parsedField = findFieldByAlias(studentData, required.validAlias);
+    for(const required of csvDataHelper.requiredFields) {
+        const parsedField = csvDataHelper.findFieldByAlias(studentData, required.validAlias);
         const id = nanoid();
-        const error = isError(required, parsedField);
+        const error = csvDataHelper.isError(required, parsedField);
         parsed[required.field] = {
             value: parsedField,
             error,
@@ -74,14 +27,26 @@ async function parseRequiredStudentData(studentData) {
     };
 }
 
-/**
- * Check the field against valid values.
- * A warning indicates that the value will be accepted for submission, but might be ignored by the server when importing
- * @param {object} optionalField an optional field metadata to test
- * @param {any} value the parsed value 
- */
-function isWarning(optionalField, value) {
-    return !value || (optionalField.validValues && optionalField.validValues.includes(value));
+async function recheckRequiredStudentData(studentData) {
+    const parsed = {};
+    const newErrors = [];
+    for(const required of csvDataHelper.requiredFields) {
+        const fieldData = studentData[required.field];
+        const { id, value, } = fieldData; 
+        const newError = csvDataHelper.isError(required, value || null);
+        parsed[required.field] = {
+            value: value || null,
+            error: newError,
+            id,
+        }
+        if(newError) {
+            newErrors.push(id);
+        }
+    }
+    return {
+        ...parsed,
+        errors: newErrors,
+    };
 }
 
 /**
@@ -91,10 +56,10 @@ function isWarning(optionalField, value) {
 async function parseExtraStudentData(studentData) {
     const parsed = {};
     const warnings = [];
-    for(const optional of optionalFields) {
-        const parsedField = findFieldByAlias(studentData, optional.validAlias);
+    for(const optional of csvDataHelper.optionalFields) {
+        const parsedField = csvDataHelper.findFieldByAlias(studentData, optional.validAlias);
         const id = nanoid();
-        const warning = isWarning(optional, parsedField);
+        const warning = csvDataHelper.isWarning(optional, parsedField);
         parsed[optional.field] = {
             value: parsedField,
             warning,
@@ -110,6 +75,29 @@ async function parseExtraStudentData(studentData) {
     };
 }
 
+async function recheckExtraStudentData(studentData) {
+    const parsed = {};
+    const newWarnings = [];
+    const { warnings, ...restOfData} = studentData;
+    for(const optional of csvDataHelper.optionalFields) {
+        const fieldData = restOfData[optional.field];
+        const { id, value, } = fieldData; 
+        const newWarning = csvDataHelper.isWarning(optional, value || null);
+        parsed[optional.field] = {
+            value: value || null,
+            warning: newWarning,
+            id,
+        }
+        if(newWarning) {
+            newWarnings.push(id);
+        }
+    }
+    return {
+        ...parsed,
+        warnings: newWarnings,
+    };
+}
+
 // Object.fromEntries doesn't have good support
 function fromEntries(entries) {
     const object = {};
@@ -120,7 +108,7 @@ function fromEntries(entries) {
 }
 
 async function parseStudentCSVRow(studentData) {
-    const normalizedStudentData = fromEntries(Object.entries(studentData).map(normalizeFieldNames));
+    const normalizedStudentData = fromEntries(Object.entries(studentData).map(csvDataHelper.normalizeFieldNames));
     const [required, optional] = await Promise.all([
         parseRequiredStudentData(normalizedStudentData),
         parseExtraStudentData(normalizedStudentData)
@@ -135,10 +123,53 @@ async function parseStudentCSVRow(studentData) {
         warnings,
     }
 }
+function filterOldWarningsAndErrors(studentData) {
+    const { errors, warnings, ...rest} = studentData;
+    return {
+        ...rest
+    }
+}
+async function checkStudentRow(studentData) {
+    // Object spread causes name clashes, so this is done out of scope of this function
+    const { id, ...restOfData} = filterOldWarningsAndErrors(studentData);
+    const data = fromEntries(Object.entries(restOfData));
+    const [required, optional] = await Promise.all([
+        recheckRequiredStudentData(data),
+        recheckExtraStudentData(data)
+    ]);
+    const { errors, ...restOfRequired} = required;
+    const { warnings, ...restOfOptional} = optional;
+    return {
+        ...restOfRequired,
+        ...restOfOptional,
+        id,
+        errors,
+        warnings,
+    }
+}
 
-async function translateImportStudentCSV(importedCSV) {
-    const { data } = importedCSV;
+/**
+ * Take data returned from a parsed CSV file and return a list of student data
+ * @param {Array<Object>} data the data from a parsed CSV file 
+ */
+async function translateImportStudentCSV(data) {
     const students =  await Promise.all(data.map(studentData => parseStudentCSVRow(studentData)));
+    const warnings = students.reduce((warningList, row) => [...warningList, ...row.warnings], []);
+    const errors = students.reduce((errorList, row) => [...errorList, ...row.errors], []);
+    return {
+        students,
+        warnings,
+        errors,
+    };
+}
+
+
+/**
+ * Recheck the import that has already been processed by translateImportStudentCSV
+ * @param {Array<Object>} data the data that has already been processed translateImportStudentCSV 
+ */
+async function recheckImport(data) {
+    const students =  await Promise.all(data.map(studentData => checkStudentRow(studentData)));
     const warnings = students.reduce((warningList, row) => [...warningList, ...row.warnings], []);
     const errors = students.reduce((errorList, row) => [...errorList, ...row.errors], []);
     return {
@@ -150,6 +181,12 @@ async function translateImportStudentCSV(importedCSV) {
 
 // Ugly hack to allow this to be tested
 if(process.env.NODE_ENV === 'test') {
-    module.exports = translateImportStudentCSV;
+    module.exports = {
+        translateImportStudentCSV,
+        recheckImport
+    };
 }
-export default translateImportStudentCSV;
+export {
+    translateImportStudentCSV, 
+    recheckImport
+};

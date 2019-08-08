@@ -1,6 +1,7 @@
 import { action, computed, observable } from 'mobx';
 import { inject, observer } from 'mobx-react';
-import React, { Component } from 'react';
+import React, { Component, useState, useEffect, useRef } from 'react';
+import { csvDataHelper } from 'tgb-shared'
 import { withRouter } from 'react-router-dom';
 import styled, {css} from 'styled-components';
 import * as breakpoints from '../breakpoints';
@@ -17,9 +18,8 @@ import TermSelect from '../components/TermSelect';
 import CSVStudentUploadPreview from '../components/CSVStudentUploadPreview';
 import Spinner from '../components/Spinner';
 import parseCSV from '../utils/parseCSV';
-import translateImportStudentCSV from '../utils/translateImportStudentCSV';
+import {translateImportStudentCSV, recheckImport} from '../utils/translateImportStudentCSV';
 import first from '../utils/first';
-
 
 @withRouter
 @inject('store')
@@ -62,7 +62,7 @@ class ImportData extends Component {
             }
             this.warningPartialParse = meta.aborted || meta.truncated;
 
-            const { students, ...fileReport} = await translateImportStudentCSV({data});
+            const { students, ...fileReport} = await translateImportStudentCSV(data);
             this.importedStudents = students;
             this.fileReport = fileReport;
         } finally {
@@ -139,6 +139,23 @@ class ImportData extends Component {
         this.hoveringError = error;
     }
 
+
+    @action.bound
+    async handleCSVDataChange(updatedCSV) {
+        this.selectedErrors = [];
+        this.selectedWarnings = [];
+        this.hoveringError = null;
+        this.hoveringWarning = null;
+        const { students, ...fileReport} = await recheckImport(updatedCSV);
+        this.importedStudents = students;
+        this.fileReport = fileReport;
+    }
+
+    @computed
+    get selectedCells() {
+        return [...this.selectedErrors, ...this.selectedWarnings, this.hoveringError, this.hoveringWarning]
+    }
+
     render() {
         const { 
             schoolYearId, 
@@ -153,6 +170,7 @@ class ImportData extends Component {
             hoveringWarning, 
             loading,
             importedStudents,
+            selectedCells,
         } = this;
         const { schoolYears } = this.props.store;
 
@@ -196,24 +214,14 @@ class ImportData extends Component {
                             />}
                         </ImportFormContainer>
                         {file && ( 
-                            <DataPreview loading={loading}>
-                                {loading ? (<Spinner />) : (
-                                    <>
-                                        <DataPreviewHeader>DATA PREVIEW</DataPreviewHeader>
-                                        <StyledCSVStudentUploadPreview 
-                                            csvData={importedStudents} 
-                                            selected={[...selectedErrors, ...selectedWarnings, hoveringError, hoveringWarning]} 
-                                        />
-                                        <Import>
-                                            <div>Do you want to import this data?</div>
-                                            <ButtonContainer>
-                                                <ImportButton>IMPORT</ImportButton>
-                                                <CancelButton onClick={this.handleCancel}>CANCEL</CancelButton>
-                                            </ButtonContainer>
-                                        </Import>
-                                    </>
-                                )}
-                            </DataPreview>
+                            loading ? (<DataPreview loading><Spinner /></DataPreview>)
+                            : (
+                                <CSVDataImportPreview 
+                                    studentData={importedStudents} 
+                                    selected={selectedCells}
+                                    onDataChanged={this.handleCSVDataChange} 
+                                />
+                            )
                         )}
                     </Content>
                 </Main>
@@ -334,6 +342,10 @@ const Form = styled(Column)`
     ${InputWithLabel} + ${InputWithLabel} {
         margin-top: 20px;
     }
+
+    @media ${breakpoints.mediumOrSmall} {
+        align-items: center;
+    }
 `;
 
 const StyledTermSelect = styled(TermSelect).attrs({Handle: () => () => (<FormSelectHandle />)})`
@@ -368,6 +380,12 @@ const ResetFileButton = styled(BlockButton)`
  const DataPreview = styled(Column)`
     padding: 58px 65px 0 55px; 
     flex: 1;
+    @media ${breakpoints.large} {
+        max-width: 75vw;
+    }
+    @media ${breakpoints.mediumOrSmall} {
+        max-width: none;
+    }
     ${props => props.loading && css`
         justify-content: center;
         align-items: center;
@@ -465,3 +483,57 @@ const ImportDataForm = ({years, selectedYearId, selectedYear, onYearChange, sele
         </InputWithLabel>
     </Form>
 );
+
+
+const CSVDataImportPreview = ({studentData, onDataChanged, onImportClicked, onCancelClicked, selected}) => {
+    const [data, setData] = useState([]);
+
+    function onCellChanged(rowId, cellId, inputValue) {
+        const row = data.find(row => row.id === rowId);
+        if(row) {
+            const rowEntries = Object.entries(row);
+            const cell = rowEntries.find(([_, value]) => value.id === cellId);
+            if(cell) {
+                const [key, cellValues] = cell;
+                // Replace the cell's value
+                const newValue = { 
+                    ...cellValues,
+                    value: inputValue,
+                }
+                const updatedRow = {
+                    ...row,
+                    [key]: newValue,
+                }
+                // replace the row with the updated values
+                setData(data.map(studentData => studentData.id === rowId ? updatedRow : studentData));
+            }
+        }
+    }
+
+    function onCSVCellFocusChange() {
+        onDataChanged(data);
+    }
+
+    useEffect(() => {
+        setData(studentData);
+    }, [studentData]);
+
+    return (
+        <DataPreview>
+            <DataPreviewHeader>DATA PREVIEW</DataPreviewHeader>
+            <StyledCSVStudentUploadPreview 
+                csvData={data} 
+                selected={selected} 
+                onCSVCellChange={onCellChanged}
+                onCSVCellFocusChange={onCSVCellFocusChange}
+            />
+            <Import>
+                <div>Do you want to import this data?</div>
+                <ButtonContainer>
+                    <ImportButton onClick={onImportClicked}>IMPORT</ImportButton>
+                    <CancelButton onClick={onCancelClicked}>CANCEL</CancelButton>
+                </ButtonContainer>
+            </Import>
+        </DataPreview>
+    );
+}

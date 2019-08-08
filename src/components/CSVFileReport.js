@@ -62,7 +62,7 @@ const FileWarningReport = ({ warnings = [], selectedWarnings = [], onWarningEnte
         <ReportInfo>
             We found some issues with your data. We can continue with the import, but take a look at the highlighted areas and correct if needed.
         </ReportInfo>
-        <ReportCount>{warnings.length} Errors</ReportCount>
+        <ReportCount>{warnings.length} Warnings</ReportCount>
         <ReportList>
             {warnings.map((warningId, idx) => (
                 <ListItem
