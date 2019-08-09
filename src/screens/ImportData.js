@@ -176,10 +176,9 @@ class ImportData extends Component {
     async submit() {
         this.loading = true;
     }
-
     @action.bound
     async handleImportClicked() {
-        if(this.errors.length === 0) {
+        if(this.errors.length !== 0) {
             await sweetalert({
                 title: 'Invalid Data',
                 text: `There are ${this.errors.length} error(s) in the import that must be resolved before importing.`,
@@ -190,19 +189,17 @@ class ImportData extends Component {
             return;
         }
         if(this.warnings.length !== 0) {
-            await sweetalert({
+            const confirm = await sweetalert({
                 title: 'Warning',
                 text: `There are ${this.warnings.length} unresolved warning(s) that will be ignored during import. Continue?`,
                 type: 'warning',
                 showCancelButton: true,
                 confirmButtonText: 'Yes',
                 cancelButtonText: 'No',
-            }, async (choice) => {
-                if(choice) {
-                    await this.submit();
-                }
             });
-            return;
+            if(!confirm) {
+                return;
+            }
         }
         await this.submit();
     }
