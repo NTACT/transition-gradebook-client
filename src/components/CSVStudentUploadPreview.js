@@ -3,6 +3,7 @@ import styled, { css } from 'styled-components';
 import { csvDataHelper } from 'tgb-shared';
 import onClickOutside from 'react-onclickoutside';
 import Column from './Column';
+import Spinner from './Spinner';
 
 
 const CSVStudentUploadPreview = (props) => {
@@ -10,6 +11,7 @@ const CSVStudentUploadPreview = (props) => {
     
     const [editableField, setEditableField] = useState({rowId: null, cellId: null});
     const [focused, setFocused] = useState(false);
+    const [loading, setLoading] = useState(true);
 
     function isSelected(cell) {
         return !!selected.find(selectedItem => selectedItem === cell.id);
@@ -98,6 +100,21 @@ const CSVStudentUploadPreview = (props) => {
     }
 
     CSVStudentUploadPreview.handleClickOutside = focusChangeListener;
+
+    useEffect(() => {
+        setLoading(false);
+    }, []);
+
+    // Present a message while loading. Mostly for large files
+    if(loading) {
+        return (
+            <Root {...rest}>
+                <LoadingContainer>
+                    <Loading />
+                </LoadingContainer>
+            </Root>
+        );
+    }
 
     return (
         <Root {...rest}>
@@ -264,3 +281,22 @@ const EditableYesNoSelect = styled(({value, onChange}) => (
 ))`
   ${editableCellStyle}
 `;
+
+
+const LoadingContainer = styled(Column)`
+    width: 100%;
+    height: 100%;
+    justify-content: center;
+    align-items: center;
+`;
+const LoadingMessage = styled(Column)`
+    justify-content: center;
+    align-items: center;
+`;
+
+const Loading = () => (
+    <LoadingMessage>
+        <Spinner />
+        <div>Loading preview. Please wait...</div>
+    </LoadingMessage>
+);
