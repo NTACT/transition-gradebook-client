@@ -98,12 +98,18 @@ const ReportLabel = styled(Row)`
     line-height: 19px;
     font-style: normal;
 `;
-const ErrorReport = styled(Column)`
+
+const Report = styled(Column)`
+    padding: 10px;
+    height: 250px;
+    overflow-y: auto;
+`;
+const ErrorReport = styled(Report)`
     background-color: #A20B0E;
     padding: 10px;
 `;
 
-const WarningReport = styled(Column)`
+const WarningReport = styled(Report)`
     background-color: #D43425;
     padding: 10px;
 `;

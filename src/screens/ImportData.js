@@ -1,9 +1,9 @@
 import { action, computed, observable } from 'mobx';
 import { inject, observer } from 'mobx-react';
-import React, { Component, useState, useEffect, useRef } from 'react';
-import { csvDataHelper } from 'tgb-shared'
+import React, { Component, useState, useEffect } from 'react';
 import { withRouter } from 'react-router-dom';
 import styled, {css} from 'styled-components';
+import sweetalert from 'sweetalert2';
 import * as breakpoints from '../breakpoints';
 import BlockButton from '../components/BlockButton';
 import Column from '../components/Column';
@@ -20,6 +20,8 @@ import Spinner from '../components/Spinner';
 import parseCSV from '../utils/parseCSV';
 import {translateImportStudentCSV, recheckImport} from '../utils/translateImportStudentCSV';
 import first from '../utils/first';
+
+const isDev = process.env.NODE_ENV === 'development';
 
 @withRouter
 @inject('store')
@@ -146,7 +148,7 @@ class ImportData extends Component {
         this.selectedWarnings = [];
         this.hoveringError = null;
         this.hoveringWarning = null;
-        const { students, ...fileReport} = await recheckImport(updatedCSV);
+        const { students, ...fileReport } = await recheckImport(updatedCSV);
         this.importedStudents = students;
         this.fileReport = fileReport;
     }
@@ -154,6 +156,55 @@ class ImportData extends Component {
     @computed
     get selectedCells() {
         return [...this.selectedErrors, ...this.selectedWarnings, this.hoveringError, this.hoveringWarning]
+    }
+
+    @computed
+    get fileSelectEnabled() {
+        return isDev || (this.schoolYear !== null && this.term !== null);
+    }
+
+    @computed
+    get formEnabled() {
+        return true;
+    }
+
+    @computed
+    get canSubmit() {
+        return this.errors.length === 0;
+    }
+
+    async submit() {
+        this.loading = true;
+    }
+
+    @action.bound
+    async handleImportClicked() {
+        if(this.errors.length === 0) {
+            await sweetalert({
+                title: 'Invalid Data',
+                text: `There are ${this.errors.length} error(s) in the import that must be resolved before importing.`,
+                type: 'error',
+                showCancelButton: false,
+                confirmButtonText: 'OK'
+            });
+            return;
+        }
+        if(this.warnings.length !== 0) {
+            await sweetalert({
+                title: 'Warning',
+                text: `There are ${this.warnings.length} unresolved warning(s) that will be ignored during import. Continue?`,
+                type: 'warning',
+                showCancelButton: true,
+                confirmButtonText: 'Yes',
+                cancelButtonText: 'No',
+            }, async (choice) => {
+                if(choice) {
+                    await this.submit();
+                }
+            });
+            return;
+        }
+        await this.submit();
     }
 
     render() {
@@ -199,19 +250,23 @@ class ImportData extends Component {
                                 file={file}
                                 onFileChange={this.handleFileChange}
                                 onCancel={this.handleCancel}
+                                fileSelectEnabled={this.fileSelectEnabled}
+                                formEnabled={this.formEnabled}
                             />
-                            {file && <CSVFileReport 
-                              warnings={warnings}
-                              errors={errors}
-                              onErrorClick={this.handleErrorClick}
-                              onWarningClick={this.handleWarningClick}
-                              onErrorEnter={error => this.handleErrorHover(error)}  
-                              onErrorLeave={() => this.handleErrorHover(null)}
-                              onWarningEnter={warning => this.handleWarningHover(warning)}
-                              onWarningLeave={() => this.handleErrorHover(null)}
-                              selectedErrors={[...selectedErrors, hoveringError]}
-                              selectedWarnings={[...selectedWarnings, hoveringWarning]}
-                            />}
+                            {file && (
+                                <CSVFileReport 
+                                    warnings={warnings}
+                                    errors={errors}
+                                    onErrorClick={this.handleErrorClick}
+                                    onWarningClick={this.handleWarningClick}
+                                    onErrorEnter={error => this.handleErrorHover(error)}  
+                                    onErrorLeave={() => this.handleErrorHover(null)}
+                                    onWarningEnter={warning => this.handleWarningHover(warning)}
+                                    onWarningLeave={() => this.handleErrorHover(null)}
+                                    selectedErrors={[...selectedErrors, hoveringError]}
+                                    selectedWarnings={[...selectedWarnings, hoveringWarning]}
+                                />
+                            )}
                         </ImportFormContainer>
                         {file && ( 
                             loading ? (<DataPreview loading><Spinner /></DataPreview>)
@@ -220,6 +275,8 @@ class ImportData extends Component {
                                     studentData={importedStudents} 
                                     selected={selectedCells}
                                     onDataChanged={this.handleCSVDataChange} 
+                                    onImportClicked={this.handleImportClicked}
+                                    onCancelClicked={this.handleCancel}
                                 />
                             )
                         )}

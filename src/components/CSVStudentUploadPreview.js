@@ -26,7 +26,7 @@ const CSVStudentUploadPreview = (props) => {
         }
     }
 
-    function handleValueChange(e) {
+    function handleValueChange(type, e) {
         if(!editableField) {
             return;
         }
@@ -38,11 +38,29 @@ const CSVStudentUploadPreview = (props) => {
     }
 
     function renderReadonly(value) {
-        return <ReadonlyCell title={value}>{value}</ReadonlyCell>;
+        // Could be booleans
+        const displayValue = value !== undefined && value !== null ? value.toString() : ''; 
+        return <ReadonlyCell title={displayValue}>{displayValue}</ReadonlyCell>;
     }
 
-    function renderEditable(value) {
-        return <EditableCell value={value} onChange={handleValueChange} autoFocus />
+    function renderEditable(field, value) {
+        let type;
+        const fieldType = field.type;
+        switch(fieldType) {
+            case csvDataHelper.types.boolean:
+                type = 'checkbox';
+                return <EditableYesNoSelect value={value} onChange={e => handleValueChange(type, e)} autoFocus/>
+            case csvDataHelper.types.enum:
+                return <EditableSelect options={field.enumValues || field.validValues} value={value} onChange={e => handleValueChange(type, e)} />
+            case csvDataHelper.types.date:
+                type = 'date';
+                break;
+            default:
+                type = 'text';
+        }
+        return (
+            <EditableCell type={type} value={value} onChange={(e) => handleValueChange(type, e)} autoFocus />
+        );
     }
 
     function renderCells(entry) {
@@ -51,9 +69,15 @@ const CSVStudentUploadPreview = (props) => {
             {csvDataHelper.columns.map(column => {
                 const cell = entry[column.field];
                 return (
-                <Cell key={cell.id} isError={cell.error} isWarning={cell.warning} selected={isSelected(cell)} onClick={() => onClick(entry.id, cell.id)}>
-                    {editableField && editableField.cellId === cell.id ? renderEditable(cell.value) : renderReadonly(cell.value)}
-                </Cell>
+                    <Cell 
+                        key={cell.id} 
+                        isError={!!cell.error} 
+                        isWarning={!!cell.warning} 
+                        selected={isSelected(cell)} 
+                        onClick={() => onClick(entry.id, cell.id)}
+                    >
+                        {editableField && editableField.cellId === cell.id ? renderEditable(column, cell.value) : renderReadonly(cell.value)}
+                    </Cell>
                 )
             })}
             </>
@@ -204,8 +228,7 @@ const HeaderCell = styled('th')`
     ${CellWidth}
 `;
 
-
-const EditableCell = styled.input.attrs({type: 'text'})`
+const editableCellStyle = css`
     width: inherit;
     height: 16px;
     outline: none;
@@ -216,4 +239,28 @@ const EditableCell = styled.input.attrs({type: 'text'})`
         border: none;
         padding: 0;
     }
+`;
+
+
+const EditableCell = styled.input.attrs({type: 'text'})`
+    ${editableCellStyle}
+`;
+
+const EditableSelect = styled(({value, options, onChange}) => (
+    <select value={value} onChange={onChange}>
+        <option value="" />
+        {options.map(selectOption => <option key={selectOption} value={selectOption}>{selectOption}</option>)}
+    </select>
+))`
+    ${editableCellStyle}
+`;
+
+const EditableYesNoSelect = styled(({value, onChange}) => (
+    <select value={value} onChange={onChange}>
+        {(value === undefined || value === null) && (<option value="" />)}
+        <option value="true">Yes</option>
+        <option value="false">No</option>
+    </select>
+))`
+  ${editableCellStyle}
 `;

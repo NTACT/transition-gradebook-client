@@ -1,5 +1,30 @@
 const nanoid = require('nanoid');
+const moment = require('moment');
 const { csvDataHelper } = require('tgb-shared');
+
+const notProvided = value => value === undefined || value === null;
+
+function normalizeValue(field, value) {
+    if(notProvided(value)|| value === '') { 
+        return '';
+    }
+    const { types } = csvDataHelper;
+    const fieldType = field.type || types.string;
+    switch(fieldType) {
+        case types.string:
+        case types.enum:
+            return value;
+        case types.boolean:
+            return csvDataHelper.toYesNoBooleanValue(value);
+        case types.date:
+            return moment(value).format('MM/DD/YYYY');
+        case types.integer:
+        case types.float:
+            return +value;
+        default:
+            return value;
+    }
+}
 
 /**
  * Get the value for required student data
@@ -7,45 +32,33 @@ const { csvDataHelper } = require('tgb-shared');
  */
 async function parseRequiredStudentData(studentData) {
     const parsed = {};
-    const errors = [];
     for(const required of csvDataHelper.requiredFields) {
         const parsedField = csvDataHelper.findFieldByAlias(studentData, required.validAlias);
-        const id = nanoid();
         const error = csvDataHelper.isError(required, parsedField);
         parsed[required.field] = {
-            value: parsedField,
+            value: error ? parsedField : normalizeValue(required, parsedField),
             error,
-            id,
-        }
-        if(error) {
-            errors.push(id);
         }
     }
     return {
         ...parsed,
-        errors,
     };
 }
 
 async function recheckRequiredStudentData(studentData) {
     const parsed = {};
-    const newErrors = [];
     for(const required of csvDataHelper.requiredFields) {
         const fieldData = studentData[required.field];
         const { id, value, } = fieldData; 
-        const newError = csvDataHelper.isError(required, value || null);
+        const newError = csvDataHelper.isError(required, value);
         parsed[required.field] = {
-            value: value || null,
+            value: newError || null ? value : normalizeValue(required, value),
             error: newError,
             id,
-        }
-        if(newError) {
-            newErrors.push(id);
         }
     }
     return {
         ...parsed,
-        errors: newErrors,
     };
 }
 
@@ -55,46 +68,37 @@ async function recheckRequiredStudentData(studentData) {
  */
 async function parseExtraStudentData(studentData) {
     const parsed = {};
-    const warnings = [];
     for(const optional of csvDataHelper.optionalFields) {
         const parsedField = csvDataHelper.findFieldByAlias(studentData, optional.validAlias);
-        const id = nanoid();
         const warning = csvDataHelper.isWarning(optional, parsedField);
+        const isTypeWarning = warning && csvDataHelper.isOptionalAndUnacceptedValue(optional, parsedField);
         parsed[optional.field] = {
-            value: parsedField,
+            value: isTypeWarning ? parsedField : normalizeValue(optional, parsedField),
             warning,
-            id,
-        }
-        if(warning) {
-            warnings.push(id);
         }
     }
     return {
         ...parsed,
-        warnings,
     };
 }
 
 async function recheckExtraStudentData(studentData) {
     const parsed = {};
-    const newWarnings = [];
     const { warnings, ...restOfData} = studentData;
     for(const optional of csvDataHelper.optionalFields) {
         const fieldData = restOfData[optional.field];
         const { id, value, } = fieldData; 
-        const newWarning = csvDataHelper.isWarning(optional, value || null);
+        const checkedValue = value === '' ? null : value.toString(); 
+        const newWarning = csvDataHelper.isWarning(optional, checkedValue);
+        const isTypeWarning = newWarning && csvDataHelper.isOptionalAndUnacceptedValue(optional, checkedValue);
         parsed[optional.field] = {
-            value: value || null,
+            value: isTypeWarning ? checkedValue : normalizeValue(optional, checkedValue),
             warning: newWarning,
             id,
-        }
-        if(newWarning) {
-            newWarnings.push(id);
         }
     }
     return {
         ...parsed,
-        warnings: newWarnings,
     };
 }
 
@@ -107,42 +111,60 @@ function fromEntries(entries) {
     return object;
 }
 
+function findErrorsAndWarningsForRow(studentData) {
+    const errors = [];
+    const warnings = [];
+    for(const key in studentData) {
+        const value = studentData[key];
+        if(value.error) {
+            errors.push(value.id);
+        }
+        if(value.warning) {
+            warnings.push(value.id);
+        }
+    }
+    return {errors, warnings};
+}
+
+function assignUniqueIdsForCells(row) {
+    const assigned = {};
+    for(const key in row) {
+        const value = row[key];
+        assigned[key] = {
+            ...value,
+            id: nanoid(),
+        }
+    }
+    return assigned;
+}
+
 async function parseStudentCSVRow(studentData) {
     const normalizedStudentData = fromEntries(Object.entries(studentData).map(csvDataHelper.normalizeFieldNames));
     const [required, optional] = await Promise.all([
         parseRequiredStudentData(normalizedStudentData),
         parseExtraStudentData(normalizedStudentData)
     ]);
-    const { errors, ...restOfRequired} = required;
-    const { warnings, ...restOfOptional} = optional;
+    const studentDataRow = assignUniqueIdsForCells({...required, ...optional});
+    const {errors, warnings} = findErrorsAndWarningsForRow(studentDataRow);
     return {
-        ...restOfRequired,
-        ...restOfOptional,
+        ...studentDataRow,
         id: nanoid(),
         errors,
         warnings,
     }
 }
-function filterOldWarningsAndErrors(studentData) {
-    const { errors, warnings, ...rest} = studentData;
-    return {
-        ...rest
-    }
-}
+
 async function checkStudentRow(studentData) {
-    // Object spread causes name clashes, so this is done out of scope of this function
-    const { id, ...restOfData} = filterOldWarningsAndErrors(studentData);
-    const data = fromEntries(Object.entries(restOfData));
+    const data = fromEntries(Object.entries(studentData));
     const [required, optional] = await Promise.all([
         recheckRequiredStudentData(data),
         recheckExtraStudentData(data)
     ]);
-    const { errors, ...restOfRequired} = required;
-    const { warnings, ...restOfOptional} = optional;
+    const { errors, warnings } = findErrorsAndWarningsForRow({...required, ...optional})
     return {
-        ...restOfRequired,
-        ...restOfOptional,
-        id,
+        ...required,
+        ...optional,
+        id: studentData.id,
         errors,
         warnings,
     }
