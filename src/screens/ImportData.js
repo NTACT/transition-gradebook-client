@@ -160,12 +160,12 @@ class ImportData extends Component {
 
     @computed
     get fileSelectEnabled() {
-        return isDev || (this.schoolYear !== null && this.term !== null);
+        return (this.schoolYear !== null && this.term !== null);
     }
 
     @computed
     get formEnabled() {
-        return true;
+        return !this.loading;
     }
 
     @computed
@@ -176,6 +176,7 @@ class ImportData extends Component {
     async submit() {
         this.loading = true;
     }
+
     @action.bound
     async handleImportClicked() {
         if(this.errors.length !== 0) {
@@ -227,7 +228,7 @@ class ImportData extends Component {
                 <Main fullWidth>
                     <YearBar>
                         <YearLabel>School Year</YearLabel>
-                        <YearSelect value={schoolYearId} onChange={this.handleSchoolYearChange}>
+                        <YearSelect value={schoolYearId} onChange={this.handleSchoolYearChange} disabled={!this.formEnabled}>
                             { /* Only allow the blank selection to show up when nothing has been changed yet */ }
                             {schoolYearId === null && <option value=""></option>}
                             {schoolYears.map(schoolYear =>
@@ -501,12 +502,24 @@ const StyledCSVStudentUploadPreview = styled(CSVStudentUploadPreview)`
 `;
 
 
-const ImportDataForm = ({years, selectedYearId, selectedYear, onYearChange, selectedTerm, onSelectedTermChange, file, onFileChange, onCancel}) => (
+const ImportDataForm = ({
+    years, 
+    selectedYearId, 
+    selectedYear, 
+    onYearChange, 
+    selectedTerm, 
+    onSelectedTermChange, 
+    file, 
+    onFileChange, 
+    onCancel, 
+    fileSelectEnabled, 
+    formEnabled
+}) => (
     <Form>
         <ImportDataTitle>IMPORT DATA</ImportDataTitle>
         <InputWithLabel>
             <FieldLabel>Select a Year</FieldLabel>
-            <FormYearSelect value={selectedYearId} onChange={onYearChange} placeholder="Year">
+            <FormYearSelect value={selectedYearId} onChange={onYearChange} placeholder="Year" disabled={!formEnabled}>
                 {years.map(schoolYear =>
                     <option key={schoolYear.id} value={schoolYear.id}>{schoolYear.year} - {schoolYear.year + 1}</option>
                 )}
@@ -519,11 +532,12 @@ const ImportDataForm = ({years, selectedYearId, selectedYear, onYearChange, sele
                 value={selectedTerm} 
                 onChange={onSelectedTermChange} 
                 placeholder={selectedYear ? selectedYear.capitalizedTermType : 'Term'} 
+                disabled={!formEnabled}
             />
         </InputWithLabel>
         <InputWithLabel>
             {file ? (
-                <ResetFileButton onClick={onCancel}>
+                <ResetFileButton onClick={fileSelectEnabled ? onCancel : null}>
                     <div>Select a New File </div>
                     <Icons.SelectIconLight />
                 </ResetFileButton>
@@ -531,7 +545,7 @@ const ImportDataForm = ({years, selectedYearId, selectedYear, onYearChange, sele
             (
                 <>
                     <FieldLabel>Select a File</FieldLabel>
-                    <FileInput value={file} onChange={onFileChange} withDragAndDrop accept='text/csv' />
+                    <FileInput value={file} onChange={onFileChange} withDragAndDrop accept='text/csv' enabled={fileSelectEnabled} />
                 </>
             )}
         </InputWithLabel>

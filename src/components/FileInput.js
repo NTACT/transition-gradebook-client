@@ -1,21 +1,22 @@
 import React, { useRef } from 'react';
 import FileDrop from 'react-file-drop';
-import styled from 'styled-components';
+import styled, {css, keyframes} from 'styled-components';
 import BlockButton from './BlockButton';
 import Column from './Column';
 
-const FileInput = ({value, onChange, withDragAndDrop = false, accept, ...rest}) => {
+const FileInput = ({value, onChange, withDragAndDrop = false, accept, enabled, ...rest}) => {
 
     const fileInputRef = useRef(null);
 
     function handleClick() {
+        if(!enabled) return;
         if(fileInputRef.current) {
             fileInputRef.current.click();
         }
     }
 
     function handleDrop(files, e) {
-        if(!withDragAndDrop) {
+        if(!withDragAndDrop || !enabled) {
             return;
         }
         e.preventDefault();
@@ -31,7 +32,7 @@ const FileInput = ({value, onChange, withDragAndDrop = false, accept, ...rest}) 
     return (
         <Column {...rest}>
             <input type="file" ref={fileInputRef} value={value || ''} onChange={onChange} accept={accept} />
-            <FileSelectButton onClick={handleClick}>BROWSE</FileSelectButton>
+            <FileSelectButton onClick={handleClick} enabled={enabled}>BROWSE</FileSelectButton>
             {withDragAndDrop && 
                 <FileDropZone onDrop={handleDrop} onDragOver={e => e.preventDefault()}>
                     <div>Drag and Drop</div> 
@@ -51,14 +52,28 @@ export default styled(FileInput)`
 
 `;
 
+const drawAttention = keyframes`
+    0% {
+        background-color: #D8D8D8;
+    }
+    50% {
+        background-color: #F5633A
+    }
+    100% {
+        background-color: #D8D8D8;
+    }
+`;
+
 const FileSelectButton = styled(BlockButton)`
     height: 40px;	
     width: 120px;	
     background-color: #D8D8D8;
     margin-top: 7px;
+
+    ${props => props.enabled && css`animation: ${drawAttention} 1s forwards;`}
     
     &:hover {
-        background-color: #F5633A;
+        ${props => props.enabled ? css`background-color: #F5633A` : css`background-color: #D8D8D8;`}
     }
 `;
 
