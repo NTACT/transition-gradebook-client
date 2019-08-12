@@ -41,16 +41,36 @@ function findExistingStudentWithId(parsedStudentData, currentStudents) {
     return null;
 }
 
-function getMismatchedFields(parsedStudent, existingStudent) {
+function getMismatchedFieldWarnings(parsedStudent, existingStudent) {
     const mismatchedCells = [];
     const importEntries = Object.entries(parsedStudent);
-    for(const [key, values] of importEntries) {
+    for(const [key, studentData] of importEntries) {
         const existingValue = existingStudent[key];
-        if(!notProvided(values.value) && !notProvided(existingValue) && existingValue !== values.value) {
-            mismatchedCells.push(values.id);
+        if(!notProvided(studentData.value) && !notProvided(existingValue) && existingValue !== studentData.value) {
+            mismatchedCells.push({
+                cellId: studentData.id, 
+                warning: 'Student already exists and value will overwrite current records'
+            });
         }
     }
     return mismatchedCells;
+}
+
+function getErrorsForCell(field, data) {
+    if(csvDataHelper.isRequiredAndMissing(field, data)) {
+        return 'Required data is missing';
+    }
+    if(csvDataHelper.isRequiredAndUnacceptedValue(field, data)) {
+        return 'Required data is an unexpected value';
+    }
+    return null;
+}
+
+function getWarningsForCell(field, data) {
+    if(csvDataHelper.isOptionalAndUnacceptedValue(field, data)) {
+        return 'Data is an unexpected value';
+    }
+    return null;
 }
 
 /**
@@ -61,7 +81,7 @@ async function parseRequiredStudentData(studentData, currentStudents) {
     const parsed = {};
     for(const required of csvDataHelper.requiredFields) {
         const parsedField = csvDataHelper.findFieldByAlias(studentData, required.validAlias);
-        const error = csvDataHelper.isError(required, parsedField);
+        const error = getErrorsForCell(required, parsedField);
         parsed[required.field] = {
             value: error ? parsedField : normalizeValue(required, parsedField),
             error,
@@ -80,7 +100,7 @@ async function recheckRequiredStudentData(studentData, currentStudents) {
     for(const required of csvDataHelper.requiredFields) {
         const fieldData = studentData[required.field];
         const { id, value } = fieldData; 
-        const newError = csvDataHelper.isError(required, value);
+        const newError = getErrorsForCell(required, value);
         parsed[required.field] = {
             value: newError || null ? value : normalizeValue(required, value),
             error: newError,
@@ -104,10 +124,9 @@ async function parseExtraStudentData(studentData) {
     const parsed = {};
     for(const optional of csvDataHelper.optionalFields) {
         const parsedField = csvDataHelper.findFieldByAlias(studentData, optional.validAlias);
-        const warning = csvDataHelper.isWarning(optional, parsedField);
-        const isTypeWarning = warning && csvDataHelper.isOptionalAndUnacceptedValue(optional, parsedField);
+        const warning = getWarningsForCell(optional, parsedField);
         parsed[optional.field] = {
-            value: isTypeWarning ? parsedField : normalizeValue(optional, parsedField),
+            value: warning ? parsedField : normalizeValue(optional, parsedField),
             warning,
         }
     }
@@ -123,10 +142,9 @@ async function recheckExtraStudentData(studentData) {
         const fieldData = restOfData[optional.field];
         const { id, value, } = fieldData; 
         const checkedValue = value === '' ? null : value.toString(); 
-        const newWarning = csvDataHelper.isWarning(optional, checkedValue);
-        const isTypeWarning = newWarning && csvDataHelper.isOptionalAndUnacceptedValue(optional, checkedValue);
+        const newWarning = getWarningsForCell(optional, checkedValue);
         parsed[optional.field] = {
-            value: isTypeWarning ? checkedValue : normalizeValue(optional, checkedValue),
+            value: newWarning ? checkedValue : normalizeValue(optional, checkedValue),
             warning: newWarning,
             id,
         }
@@ -151,10 +169,16 @@ function findErrorsAndWarningsForRow(studentData) {
     for(const key in studentData) {
         const value = studentData[key];
         if(value.error) {
-            errors.push(value.id);
+            errors.push({
+                cellId: value.id,
+                error: value.error,
+            });
         }
         if(value.warning) {
-            warnings.push(value.id);
+            warnings.push({
+                cellId: value.id,
+                warning: value.warning,
+            });
         }
     }
     return {errors, warnings};
@@ -180,20 +204,19 @@ async function parseStudentCSVRow(studentData, currentStudents) {
     ]);
     const studentDataRow = assignUniqueIdsForCells({...required, ...optional});
     const {errors, warnings} = findErrorsAndWarningsForRow(studentDataRow);
-    let mismatchedCells = [];
+    let mismatchedCellWarnings = [];
     if(studentDataRow.currentStudent) {
-        mismatchedCells = getMismatchedFields(studentDataRow, findExistingStudentWithId(studentDataRow, currentStudents));
+        mismatchedCellWarnings = getMismatchedFieldWarnings(studentDataRow, findExistingStudentWithId(studentDataRow, currentStudents));
     }
     return {
         ...studentDataRow,
         id: nanoid(),
         errors,
-        warnings: warnings.concat(mismatchedCells),
+        warnings: [...warnings, ...mismatchedCellWarnings],
     }
 }
 
 async function checkStudentRow(studentData, currentStudents) {
-    console.log(currentStudents);
     const data = fromEntries(Object.entries(studentData));
     const [required, optional] = await Promise.all([
         recheckRequiredStudentData(data, currentStudents),
@@ -201,16 +224,16 @@ async function checkStudentRow(studentData, currentStudents) {
     ]);
     const studentDataRow = {...required, ...optional};
     const { errors, warnings } = findErrorsAndWarningsForRow(studentDataRow);
-    let mismatchedCells = [];
+    let mismatchedCellWarnings = [];
     if(studentDataRow.currentStudent) {
-        mismatchedCells = getMismatchedFields(studentDataRow, findExistingStudentWithId(studentDataRow, currentStudents));
+        mismatchedCellWarnings = getMismatchedFieldWarnings(studentDataRow, findExistingStudentWithId(studentDataRow, currentStudents));
     }
     return {
         ...required,
         ...optional,
         id: studentData.id,
         errors,
-        warnings: warnings.concat(mismatchedCells),
+        warnings: [...warnings, ...mismatchedCellWarnings],
     }
 }
 

@@ -75,7 +75,7 @@ const CSVStudentUploadPreview = (props) => {
                     <Cell 
                         key={cell.id} 
                         isError={!!cell.error} 
-                        isWarning={!!cell.warning} 
+                        isWarning={!!cell.warning || entry.currentStudent} 
                         selected={isSelected(cell)} 
                         onClick={() => onClick(entry.id, cell.id)}
                     >
@@ -85,6 +85,8 @@ const CSVStudentUploadPreview = (props) => {
                             )}
                             {editableField && editableField.cellId === cell.id ? renderEditable(column, cell.value) : renderReadonly(cell.value)}
                         </CellContent>
+                        {cell.error && <WarningErrorHover>{cell.error}</WarningErrorHover>}
+                        {cell.warning && <WarningErrorHover>{cell.warning}</WarningErrorHover>}
                     </Cell>
                 )
             })}
@@ -125,22 +127,21 @@ const CSVStudentUploadPreview = (props) => {
     return (
         <Root {...rest}>
             <ScrollableContainer>
-            <CSVContainer>
-                <CSVHead>
-                    <HeaderRow>
-                        {csvDataHelper.columns.map(column => <HeaderCell key={column.headerText}>{column.headerText}</HeaderCell>)}
-                    </HeaderRow>
-                </CSVHead>
-                <CSVBody>
-                    {csvData.map(row => (
-                        <CSVEntry key={row.id}>
-                            {renderCells(row)}
-                        </CSVEntry>
-                    ))}
-                </CSVBody>
-            </CSVContainer>
+                <CSVContainer>
+                    <CSVHead>
+                        <HeaderRow>
+                            {csvDataHelper.columns.map(column => <HeaderCell key={column.headerText}>{column.headerText}</HeaderCell>)}
+                        </HeaderRow>
+                    </CSVHead>
+                    <CSVBody>
+                        {csvData.map(row => (
+                            <CSVEntry key={row.id}>
+                                {renderCells(row)}
+                            </CSVEntry>
+                        ))}
+                    </CSVBody>
+                </CSVContainer>
             </ScrollableContainer>
-
         </Root>
     );
 }
@@ -150,6 +151,38 @@ const clickOutsideConfig = {
 }
 
 export default styled(onClickOutside(CSVStudentUploadPreview, clickOutsideConfig))``;
+
+const CellHover = styled(Column)`
+    height: 40px;	
+    width: 145px;	
+    background-color: #F5633A;
+    position: absolute;
+    color: #FFFFFF;	
+    font-family: "Open Sans";	
+    font-size: 12px;	
+    font-style: italic;	
+    line-height: 17px;
+    justify-content: center;
+    padding: 3px 16px;
+    z-index: 2;
+    display: none;
+
+    &:after {
+        content: "";
+        position: absolute;
+        bottom: -10px;
+        left: 58px;
+        border-width: 10px 10px 0;
+        border-style: solid;
+        border-color: #F5633A transparent;
+        display: block;
+        width: 0;
+    }
+`;
+
+const WarningErrorHover = styled(CellHover)`
+    bottom: 62px;
+`;
 
 const CellWidth = css`width: 150px;`;
 
@@ -233,6 +266,12 @@ const Cell = styled('td')`
     text-align: left;
     ${getColors}
     ${CellWidth}
+
+    &:hover {
+        ${WarningErrorHover} {
+            display: flex;
+        }
+    }
 `;
 
 const ReadonlyCell = styled('div')`
@@ -318,35 +357,10 @@ const Loading = () => (
 
 
 const NewStudentHover = styled((props) => (
-    <Column {...props}><div>New Student with no existing information</div></Column>
+    <CellHover {...props}><div>New Student with no existing information</div></CellHover>
 ))`
-	height: 40px;	
-    width: 145px;	
-    background-color: #F5633A;
-    position: absolute;
-    color: #FFFFFF;	
-    font-family: "Open Sans";	
-    font-size: 12px;	
-    font-style: italic;	
-    line-height: 17px;
-    justify-content: center;
-    padding: 3px 16px;
-    z-index: 2;
     top: -45px;
     left: -65px;
-    display: none;
-
-    &:after {
-        content: "";
-        position: absolute;
-        bottom: -10px;
-        left: 58px;
-        border-width: 10px 10px 0;
-        border-style: solid;
-        border-color: #F5633A transparent;
-        display: block;
-        width: 0;
-    }
 `;
 
 

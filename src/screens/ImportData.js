@@ -128,13 +128,13 @@ class ImportData extends Component {
     }
 
     @action.bound
-    handleWarningHover(warning) {
-        this.hoveringWarning = warning;
+    handleWarningHover(warningId) {
+        this.hoveringWarning = warningId;
     }
 
     @action.bound
-    handleErrorHover(error) {
-        this.hoveringError = error;
+    handleErrorHover(errorId) {
+        this.hoveringWarning  = errorId;;
     }
 
 
@@ -256,9 +256,9 @@ class ImportData extends Component {
                                     errors={errors}
                                     onErrorClick={this.handleErrorClick}
                                     onWarningClick={this.handleWarningClick}
-                                    onErrorEnter={error => this.handleErrorHover(error)}  
+                                    onErrorEnter={errorId => this.handleErrorHover(errorId)}  
                                     onErrorLeave={() => this.handleErrorHover(null)}
-                                    onWarningEnter={warning => this.handleWarningHover(warning)}
+                                    onWarningEnter={warningId => this.handleWarningHover(warningId)}
                                     onWarningLeave={() => this.handleErrorHover(null)}
                                     selectedErrors={[...selectedErrors, hoveringError]}
                                     selectedWarnings={[...selectedWarnings, hoveringWarning]}

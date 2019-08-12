@@ -42,13 +42,14 @@ const FileErrorReport = ({ errors = [], selectedErrors = [], onErrorEnter, onErr
         </ReportInfo>
         <ReportCount>{errors.length} Errors</ReportCount>
         <ReportList>
-            {errors.map((errorId, idx) => (
+            {errors.map(({cellId, error}, idx) => (
                 <ListItem
-                    key={errorId}
-                    onClick={() => onErrorClick(errorId)}
-                    onMouseEnter={onErrorEnter}
+                    key={cellId}
+                    onClick={() => onErrorClick(cellId)}
+                    onMouseEnter={() => onErrorEnter(cellId)}
                     onMouseLeave={onErrorLeave}
-                    selected={selectedErrors.find(selected => selected && selected === errorId)}
+                    selected={selectedErrors.find(selected => selected && selected === cellId)}
+                    title={error}
                 >
                     Error number {idx + 1}
                 </ListItem>
@@ -64,13 +65,14 @@ const FileWarningReport = ({ warnings = [], selectedWarnings = [], onWarningEnte
         </ReportInfo>
         <ReportCount>{warnings.length} Warnings</ReportCount>
         <ReportList>
-            {warnings.map((warningId, idx) => (
+            {warnings.map(({cellId, warning}, idx) => (
                 <ListItem
-                    key={warningId}
-                    onClick={() => onWarningClick(warningId)}
-                    onMouseEnter={onWarningEnter}
+                    key={cellId}
+                    onClick={() => onWarningClick(cellId)}
+                    onMouseEnter={() => onWarningEnter(cellId)}
                     onMouseLeave={onWarningLeave}
-                    selected={selectedWarnings.find(selected => selected && selected === warningId)}
+                    selected={selectedWarnings.find(selected => selected && selected === cellId)}
+                    title={warning}
                 >
                     Warning number {idx + 1}
                 </ListItem>
