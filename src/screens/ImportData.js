@@ -21,7 +21,6 @@ import parseCSV from '../utils/parseCSV';
 import {translateImportStudentCSV, recheckImport} from '../utils/translateImportStudentCSV';
 import first from '../utils/first';
 
-const isDev = process.env.NODE_ENV === 'development';
 
 @withRouter
 @inject('store')
@@ -29,6 +28,7 @@ const isDev = process.env.NODE_ENV === 'development';
 class ImportData extends Component {
 
     @observable schoolYearId = null;
+    @observable schoolYear = null;
     @observable term = null;
     @observable file = null;
     @observable fileReport = null;
@@ -39,10 +39,12 @@ class ImportData extends Component {
     @observable loading = false;
     @observable importedStudents = null;
     @observable warningPartialParse = false;
+    @observable students = null;
 
     @action.bound
-    handleSchoolYearChange(e) {
+    async handleSchoolYearChange(e) {
         this.schoolYearId = +e.target.value;
+        this.schoolYear = await this.props.store.fetchSchoolYear(this.schoolYearId);
     }
 
     @action.bound
@@ -52,6 +54,9 @@ class ImportData extends Component {
 
     @action.bound
     async handleFileChange(e) {
+        if(!this.schoolYear || !this.term) {
+            return;
+        }
         const files = e.target.files;
         this.file = first(files);
         this.loading = true;
@@ -64,7 +69,7 @@ class ImportData extends Component {
             }
             this.warningPartialParse = meta.aborted || meta.truncated;
 
-            const { students, ...fileReport} = await translateImportStudentCSV(data);
+            const { students, ...fileReport} = await translateImportStudentCSV(data, this.schoolYear.students);
             this.importedStudents = students;
             this.fileReport = fileReport;
         } finally {
@@ -77,15 +82,6 @@ class ImportData extends Component {
         this.file = null;
         this.fileReport = null;
         this.loading = false;
-    }
-
-    @computed
-    get schoolYear() {
-        if(this.schoolYearId === null) {
-            return null;
-        } 
-        const { schoolYears } = this.props.store;
-        return schoolYears.find(year => year.id === this.schoolYearId);
     }
 
     @computed 
@@ -144,11 +140,14 @@ class ImportData extends Component {
 
     @action.bound
     async handleCSVDataChange(updatedCSV) {
+        if(!this.schoolYear || !this.term) {
+            return;
+        }
         this.selectedErrors = [];
         this.selectedWarnings = [];
         this.hoveringError = null;
         this.hoveringWarning = null;
-        const { students, ...fileReport } = await recheckImport(updatedCSV);
+        const { students, ...fileReport } = await recheckImport(updatedCSV, this.schoolYear.students);
         this.importedStudents = students;
         this.fileReport = fileReport;
     }
@@ -330,7 +329,6 @@ const ImportFormContainer = styled(Column)`
   flex: 1;
   max-width: 450px;
   height: 100%;
-  box-shadow: 0 2px 8px 0 rgba(0,0,0,0.3);
   background-color: #4F4F4F;
   align-items: center;
 
@@ -433,7 +431,7 @@ const ResetFileButton = styled(BlockButton)`
 `;
 
  const DataPreview = styled(Column)`
-    padding: 58px 65px 0 55px; 
+    padding: 58px 65px 0 0; 
     flex: 1;
     @media ${breakpoints.large} {
         max-width: 75vw;
@@ -452,6 +450,7 @@ const DataPreviewHeader = styled(Row)`
     font-family: Oswald;	
     font-size: 16px;	
     line-height: 24px;
+    margin-left: 55px;
 `;
 
 const Import = styled(Column)`

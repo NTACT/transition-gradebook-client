@@ -26,11 +26,38 @@ function normalizeValue(field, value) {
     }
 }
 
+function findExistingStudentWithId(parsedStudentData, currentStudents) {
+    if(!currentStudents || !currentStudents.length) {
+        return;
+    }
+    const studentId = parsedStudentData.studentId;
+    if(studentId && studentId.value) {
+        const existingStudent = currentStudents.find(student => student.studentId === studentId.value);
+        if(existingStudent) {
+            return existingStudent;
+        }
+        return null;
+    }
+    return null;
+}
+
+function getMismatchedFields(parsedStudent, existingStudent) {
+    const mismatchedCells = [];
+    const importEntries = Object.entries(parsedStudent);
+    for(const [key, values] of importEntries) {
+        const existingValue = existingStudent[key];
+        if(!notProvided(values.value) && !notProvided(existingValue) && existingValue !== values.value) {
+            mismatchedCells.push(values.id);
+        }
+    }
+    return mismatchedCells;
+}
+
 /**
  * Get the value for required student data
  * @param {object} studentData 
  */
-async function parseRequiredStudentData(studentData) {
+async function parseRequiredStudentData(studentData, currentStudents) {
     const parsed = {};
     for(const required of csvDataHelper.requiredFields) {
         const parsedField = csvDataHelper.findFieldByAlias(studentData, required.validAlias);
@@ -40,22 +67,29 @@ async function parseRequiredStudentData(studentData) {
             error,
         }
     }
+    if(findExistingStudentWithId(parsed, currentStudents) !== null) {
+        parsed.currentStudent = true;
+    }
     return {
         ...parsed,
     };
 }
 
-async function recheckRequiredStudentData(studentData) {
+async function recheckRequiredStudentData(studentData, currentStudents) {
     const parsed = {};
     for(const required of csvDataHelper.requiredFields) {
         const fieldData = studentData[required.field];
-        const { id, value, } = fieldData; 
+        const { id, value } = fieldData; 
         const newError = csvDataHelper.isError(required, value);
         parsed[required.field] = {
             value: newError || null ? value : normalizeValue(required, value),
             error: newError,
             id,
         }
+    }
+
+    if(findExistingStudentWithId(parsed, currentStudents) !== null) {
+        parsed.currentStudent = true;
     }
     return {
         ...parsed,
@@ -138,44 +172,55 @@ function assignUniqueIdsForCells(row) {
     return assigned;
 }
 
-async function parseStudentCSVRow(studentData) {
+async function parseStudentCSVRow(studentData, currentStudents) {
     const normalizedStudentData = fromEntries(Object.entries(studentData).map(csvDataHelper.normalizeFieldNames));
     const [required, optional] = await Promise.all([
-        parseRequiredStudentData(normalizedStudentData),
-        parseExtraStudentData(normalizedStudentData)
+        parseRequiredStudentData(normalizedStudentData, currentStudents),
+        parseExtraStudentData(normalizedStudentData, currentStudents)
     ]);
     const studentDataRow = assignUniqueIdsForCells({...required, ...optional});
     const {errors, warnings} = findErrorsAndWarningsForRow(studentDataRow);
+    let mismatchedCells = [];
+    if(studentDataRow.currentStudent) {
+        mismatchedCells = getMismatchedFields(studentDataRow, findExistingStudentWithId(studentDataRow, currentStudents));
+    }
     return {
         ...studentDataRow,
         id: nanoid(),
         errors,
-        warnings,
+        warnings: warnings.concat(mismatchedCells),
     }
 }
 
-async function checkStudentRow(studentData) {
+async function checkStudentRow(studentData, currentStudents) {
+    console.log(currentStudents);
     const data = fromEntries(Object.entries(studentData));
     const [required, optional] = await Promise.all([
-        recheckRequiredStudentData(data),
-        recheckExtraStudentData(data)
+        recheckRequiredStudentData(data, currentStudents),
+        recheckExtraStudentData(data, currentStudents)
     ]);
-    const { errors, warnings } = findErrorsAndWarningsForRow({...required, ...optional})
+    const studentDataRow = {...required, ...optional};
+    const { errors, warnings } = findErrorsAndWarningsForRow(studentDataRow);
+    let mismatchedCells = [];
+    if(studentDataRow.currentStudent) {
+        mismatchedCells = getMismatchedFields(studentDataRow, findExistingStudentWithId(studentDataRow, currentStudents));
+    }
     return {
         ...required,
         ...optional,
         id: studentData.id,
         errors,
-        warnings,
+        warnings: warnings.concat(mismatchedCells),
     }
 }
 
 /**
  * Take data returned from a parsed CSV file and return a list of student data
  * @param {Array<Object>} data the data from a parsed CSV file 
+ * @param {Array<Student>} currentStudents the current students to check changes against
  */
-async function translateImportStudentCSV(data) {
-    const students =  await Promise.all(data.map(studentData => parseStudentCSVRow(studentData)));
+async function translateImportStudentCSV(data, currentStudents) {
+    const students =  await Promise.all(data.map(studentData => parseStudentCSVRow(studentData, currentStudents)));
     const warnings = students.reduce((warningList, row) => [...warningList, ...row.warnings], []);
     const errors = students.reduce((errorList, row) => [...errorList, ...row.errors], []);
     return {
@@ -189,9 +234,10 @@ async function translateImportStudentCSV(data) {
 /**
  * Recheck the import that has already been processed by translateImportStudentCSV
  * @param {Array<Object>} data the data that has already been processed translateImportStudentCSV 
+ * @param {Array<Student>} currentStudents the current students to check changes against
  */
-async function recheckImport(data) {
-    const students =  await Promise.all(data.map(studentData => checkStudentRow(studentData)));
+async function recheckImport(data, currentStudents = []) {
+    const students =  await Promise.all(data.map(studentData => checkStudentRow(studentData, currentStudents)));
     const warnings = students.reduce((warningList, row) => [...warningList, ...row.warnings], []);
     const errors = students.reduce((errorList, row) => [...errorList, ...row.errors], []);
     return {

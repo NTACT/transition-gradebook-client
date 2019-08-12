@@ -4,6 +4,7 @@ import { csvDataHelper } from 'tgb-shared';
 import onClickOutside from 'react-onclickoutside';
 import Column from './Column';
 import Spinner from './Spinner';
+import Row from './Row';
 
 
 const CSVStudentUploadPreview = (props) => {
@@ -78,7 +79,12 @@ const CSVStudentUploadPreview = (props) => {
                         selected={isSelected(cell)} 
                         onClick={() => onClick(entry.id, cell.id)}
                     >
-                        {editableField && editableField.cellId === cell.id ? renderEditable(column, cell.value) : renderReadonly(cell.value)}
+                        <CellContent>
+                            {column.field === 'studentId' && !entry.currentStudent && (
+                                <NewStudentDotAndHover />
+                            )}
+                            {editableField && editableField.cellId === cell.id ? renderEditable(column, cell.value) : renderReadonly(cell.value)}
+                        </CellContent>
                     </Cell>
                 )
             })}
@@ -119,21 +125,22 @@ const CSVStudentUploadPreview = (props) => {
     return (
         <Root {...rest}>
             <ScrollableContainer>
-                <CSVContainer>
-                    <CSVHead>
-                        <HeaderRow>
-                            {csvDataHelper.columns.map(column => <HeaderCell key={column.headerText}>{column.headerText}</HeaderCell>)}
-                        </HeaderRow>
-                    </CSVHead>
-                    <CSVBody>
-                        {csvData.map(row => (
-                            <CSVEntry key={row.id}>
-                                {renderCells(row)}
-                            </CSVEntry>
-                        ))}
-                    </CSVBody>
-                </CSVContainer>
+            <CSVContainer>
+                <CSVHead>
+                    <HeaderRow>
+                        {csvDataHelper.columns.map(column => <HeaderCell key={column.headerText}>{column.headerText}</HeaderCell>)}
+                    </HeaderRow>
+                </CSVHead>
+                <CSVBody>
+                    {csvData.map(row => (
+                        <CSVEntry key={row.id}>
+                            {renderCells(row)}
+                        </CSVEntry>
+                    ))}
+                </CSVBody>
+            </CSVContainer>
             </ScrollableContainer>
+
         </Root>
     );
 }
@@ -149,19 +156,22 @@ const CellWidth = css`width: 150px;`;
 const Root = styled(Column)`
     background-color: #FFFFFF;
     width: 100%;
-    padding: 17px 11px;
     font-family: "Open Sans";
+    background-color: #F2F2F2;
 `;
 
 const ScrollableContainer = styled(Column)`
     overflow: auto;
     height: 100%;
+    position: relative;
 `;
 
 
 const CSVContainer = styled('table')`
     border-spacing: 0;
     table-layout: fixed;
+    position: relative;
+    left: 55px;
 `;
 
 const CSVHead = styled('thead')`
@@ -233,7 +243,12 @@ const ReadonlyCell = styled('div')`
 `;
 
 const HeaderRow = styled('tr')`
-
+    >:first-child {
+        border-left: none;
+    }
+    >:last-child {
+        border-right: none;
+    }
 `
 
 const HeaderCell = styled('th')`
@@ -300,3 +315,71 @@ const Loading = () => (
         <div>Loading preview. Please wait...</div>
     </LoadingMessage>
 );
+
+
+const NewStudentHover = styled((props) => (
+    <Column {...props}><div>New Student with no existing information</div></Column>
+))`
+	height: 40px;	
+    width: 145px;	
+    background-color: #F5633A;
+    position: absolute;
+    color: #FFFFFF;	
+    font-family: "Open Sans";	
+    font-size: 12px;	
+    font-style: italic;	
+    line-height: 17px;
+    justify-content: center;
+    padding: 3px 16px;
+    z-index: 2;
+    top: -45px;
+    left: -65px;
+    display: none;
+
+    &:after {
+        content: "";
+        position: absolute;
+        bottom: -10px;
+        left: 58px;
+        border-width: 10px 10px 0;
+        border-style: solid;
+        border-color: #F5633A transparent;
+        display: block;
+        width: 0;
+    }
+`;
+
+
+
+
+const NewStudent = styled(({children, ...rest}) => (
+    <div {...rest}>
+        {children}
+    </div>
+))`
+    height: 6px;	
+    width: 6px;	
+    background-color: #F5633A;
+    border-radius: 50%;
+`;
+
+const CellContent = styled(Row)`
+    justify-content: center;
+    align-items: center;
+    position: relative;
+    ${NewStudent} {
+        margin-right: 6px;
+    }
+`;
+
+const NewStudentDotAndHover = styled((props) => (
+    <Column {...props}>
+        <NewStudent/>
+        <NewStudentHover />
+    </Column>
+))`
+    ${NewStudent}:hover ~ ${NewStudentHover} {
+        display: flex;
+    }
+`;
+
