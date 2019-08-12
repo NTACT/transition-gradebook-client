@@ -419,6 +419,13 @@ export default class Store {
     return result.data;
   }
 
+  @task('Import students from CSV')
+  async importStudentsFromCSV(schoolYear, csvData) {
+    await this.axios.post(`/api/schoolYears/${schoolYear.id}/import`, csvData);
+    // Create and edit paths are very different, so instead of handling those paths, just re-fetch the school year
+    return this.fetchSchoolYear(schoolYear.id)
+  }
+
   @task('Fetch term student list')
   async fetchTermStudents(term) {
     const result = await this.axios.get(`/api/term/${term.id}/students`);

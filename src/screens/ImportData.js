@@ -38,9 +38,6 @@ class ImportData extends Component {
     @observable hoveringWarning = null;
     @observable loading = false;
     @observable importedStudents = null;
-    @observable warningPartialParse = false;
-    @observable students = null;
-    @observable lastSelectedFileReport = null;
 
     @action.bound
     async handleSchoolYearChange(e) {
@@ -69,8 +66,6 @@ class ImportData extends Component {
             if(errors.length) {
                 console.error(errors);
             }
-            this.warningPartialParse = meta.aborted || meta.truncated;
-
             const { students, ...fileReport} = await translateImportStudentCSV(data, this.schoolYear.students);
             this.importedStudents = students;
             this.fileReport = fileReport;
@@ -117,7 +112,6 @@ class ImportData extends Component {
             this.selectedWarnings = this.selectedWarnings.filter(warn => warn !== warningId);
         } else {
             this.selectedWarnings.push(warningId);
-            this.lastSelectedFileReport = warningId;
         }
     }
 
@@ -127,7 +121,6 @@ class ImportData extends Component {
             this.selectedErrors = this.selectedErrors.filter(err => err !== errorId);
         } else {
             this.selectedErrors.push(errorId);
-            this.lastSelectedFileReport = errorId;
         }
     }
 
@@ -151,7 +144,6 @@ class ImportData extends Component {
         this.selectedWarnings = [];
         this.hoveringError = null;
         this.hoveringWarning = null;
-        this.lastSelectedFileReport = null;
         const { students, ...fileReport } = await recheckImport(updatedCSV, this.schoolYear.students);
         this.importedStudents = students;
         this.fileReport = fileReport;
@@ -177,8 +169,42 @@ class ImportData extends Component {
         return this.errors.length === 0;
     }
 
+    async handleUploadComplete() {
+        this.selectedErrors = [];
+        this.selectedWarnings = [];
+        this.hoveringError = null;
+        this.hoveringWarning = null;
+        const { students, ...fileReport } = await recheckImport(this.importedStudents, this.schoolYear.students);
+        this.importedStudents = students;
+        this.fileReport = fileReport;
+    }
+
     async submit() {
         this.loading = true;
+        try {
+            this.schoolYear = await this.props.store.importStudentsFromCSV(this.schoolYear, this.importedStudents);
+            await sweetalert({
+                title: 'Success',
+                text: 'Students uploaded successfully.',
+                type: 'success',
+                showCancelButton: false,
+                confirmButtonText: 'Done'
+            });
+            await this.handleUploadComplete();
+        } catch(e) {
+            await sweetalert({
+                title: 'Error',
+                text: 'Failed to upload some or all of the students.',
+                type: 'error',
+                showCancelButton: false,
+                confirmButtonText: 'Close'
+            });
+            console.error(e);
+            // Refresh the student list and recheck the import, in case some of the students were successfully uploaded
+            await this.handleUploadComplete();
+        } finally {
+            this.loading = false;
+        }
     }
 
     @action.bound
@@ -196,13 +222,13 @@ class ImportData extends Component {
         if(this.warnings.length !== 0) {
             const confirm = await sweetalert({
                 title: 'Warning',
-                text: `There are ${this.warnings.length} unresolved warning(s) that will be ignored during import. Continue?`,
+                text: `There are ${this.warnings.length} unresolved warning(s) that will be ignored during import or overwrite existing student data. Continue?`,
                 type: 'warning',
                 showCancelButton: true,
                 confirmButtonText: 'Yes',
                 cancelButtonText: 'No',
             });
-            if(!confirm) {
+            if(confirm.dismiss === 'cancel') {
                 return;
             }
         }

@@ -30,7 +30,7 @@ function normalizeValue(field, value) {
 
 function findExistingStudentWithId(parsedStudentData, currentStudents) {
     if(!currentStudents || !currentStudents.length) {
-        return;
+        return null;
     }
     const studentId = parsedStudentData.studentId;
     if(studentId && studentId.value) {
