@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import styled, { css } from 'styled-components';
 import { csvDataHelper } from 'tgb-shared';
 import onClickOutside from 'react-onclickoutside';
@@ -8,7 +8,7 @@ import Row from './Row';
 
 
 const CSVStudentUploadPreview = (props) => {
-    const { csvData = [], selected = [], onCSVCellChange, onCSVCellFocusChange, ...rest} = props;
+    const { csvData = [], selected = [], lastSelected, onCSVCellChange, onCSVCellFocusChange, ...rest} = props;
     
     const [editableField, setEditableField] = useState({rowId: null, cellId: null});
     const [focused, setFocused] = useState(false);
@@ -66,6 +66,7 @@ const CSVStudentUploadPreview = (props) => {
         );
     }
 
+
     function renderCells(entry) {
         return (
             <>
@@ -86,7 +87,7 @@ const CSVStudentUploadPreview = (props) => {
                             {editableField && editableField.cellId === cell.id ? renderEditable(column, cell.value) : renderReadonly(cell.value)}
                         </CellContent>
                         {cell.error && <WarningErrorHover>{cell.error}</WarningErrorHover>}
-                        {cell.warning && <WarningErrorHover>{cell.warning}</WarningErrorHover>}
+                        {(cell.warning || entry.currentStudent) && <WarningErrorHover>{cell.warning}</WarningErrorHover>}
                     </Cell>
                 )
             })}

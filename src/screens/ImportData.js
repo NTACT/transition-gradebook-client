@@ -40,6 +40,7 @@ class ImportData extends Component {
     @observable importedStudents = null;
     @observable warningPartialParse = false;
     @observable students = null;
+    @observable lastSelectedFileReport = null;
 
     @action.bound
     async handleSchoolYearChange(e) {
@@ -62,6 +63,7 @@ class ImportData extends Component {
         this.loading = true;
         this.selectedErrors = [];
         this.selectedWarnings = [];
+        this.lastSelectedFileReport = null;
         try {
             const { data, meta, errors } = await parseCSV(this.file);
             if(errors.length) {
@@ -115,6 +117,7 @@ class ImportData extends Component {
             this.selectedWarnings = this.selectedWarnings.filter(warn => warn !== warningId);
         } else {
             this.selectedWarnings.push(warningId);
+            this.lastSelectedFileReport = warningId;
         }
     }
 
@@ -124,6 +127,7 @@ class ImportData extends Component {
             this.selectedErrors = this.selectedErrors.filter(err => err !== errorId);
         } else {
             this.selectedErrors.push(errorId);
+            this.lastSelectedFileReport = errorId;
         }
     }
 
@@ -147,6 +151,7 @@ class ImportData extends Component {
         this.selectedWarnings = [];
         this.hoveringError = null;
         this.hoveringWarning = null;
+        this.lastSelectedFileReport = null;
         const { students, ...fileReport } = await recheckImport(updatedCSV, this.schoolYear.students);
         this.importedStudents = students;
         this.fileReport = fileReport;

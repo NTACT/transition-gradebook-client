@@ -1,3 +1,5 @@
+import { Settings } from '../components/Icons';
+
 const nanoid = require('nanoid');
 const moment = require('moment');
 const { csvDataHelper } = require('tgb-shared');
@@ -41,15 +43,31 @@ function findExistingStudentWithId(parsedStudentData, currentStudents) {
     return null;
 }
 
+function findImportingStudentWithId(parsedStudentData, runningList) {
+    const studentId = parsedStudentData.studentId;
+    if(studentId && studentId.value) {
+        const existingStudent = runningList.find(student => student.studentId && student.studentId.value === studentId.value);
+        if(existingStudent) {
+            return existingStudent;
+        }
+        return null;
+    }
+    return null;
+}
+
 function getMismatchedFieldWarnings(parsedStudent, existingStudent) {
     const mismatchedCells = [];
     const importEntries = Object.entries(parsedStudent);
     for(const [key, studentData] of importEntries) {
         const existingValue = existingStudent[key];
-        if(!notProvided(studentData.value) && !notProvided(existingValue) && existingValue !== studentData.value) {
+        // If the new data isn't provided, it will (or should) be ignored on the server.
+        if(notProvided(studentData.value) || studentData.value === '') {
+            continue;
+        }
+        if(!notProvided(existingValue) && existingValue.toString().toLowerCase() !== studentData.value) {
             mismatchedCells.push({
                 cellId: studentData.id, 
-                warning: 'Student already exists and value will overwrite current records'
+                warning: `Student already exists and value will overwrite current records. Current: ${existingValue.toString()}`
             });
         }
     }
@@ -77,7 +95,7 @@ function getWarningsForCell(field, data) {
  * Get the value for required student data
  * @param {object} studentData 
  */
-async function parseRequiredStudentData(studentData, currentStudents) {
+function parseRequiredStudentData(studentData, currentStudents, runningList) {
     const parsed = {};
     for(const required of csvDataHelper.requiredFields) {
         const parsedField = csvDataHelper.findFieldByAlias(studentData, required.validAlias);
@@ -90,12 +108,20 @@ async function parseRequiredStudentData(studentData, currentStudents) {
     if(findExistingStudentWithId(parsed, currentStudents) !== null) {
         parsed.currentStudent = true;
     }
+    if(findImportingStudentWithId(parsed, runningList) !== null) {
+        const { studentId, } = parsed;
+        // Replace any existing error with this one
+        parsed['studentId'] = {
+            ...studentId,
+            error: `Duplicate student ID (${studentId.value})`
+        }
+    }
     return {
         ...parsed,
     };
 }
 
-async function recheckRequiredStudentData(studentData, currentStudents) {
+function recheckRequiredStudentData(studentData, currentStudents, runningList) {
     const parsed = {};
     for(const required of csvDataHelper.requiredFields) {
         const fieldData = studentData[required.field];
@@ -111,6 +137,14 @@ async function recheckRequiredStudentData(studentData, currentStudents) {
     if(findExistingStudentWithId(parsed, currentStudents) !== null) {
         parsed.currentStudent = true;
     }
+    if(findImportingStudentWithId(parsed, runningList) !== null) {
+        const { studentId, } = parsed;
+        // Replace any existing error with this one
+        parsed['studentId'] = {
+            ...studentId,
+            error: `Duplicate student ID (${studentId.value})`
+        }
+    }
     return {
         ...parsed,
     };
@@ -120,7 +154,7 @@ async function recheckRequiredStudentData(studentData, currentStudents) {
  * Parse the non-required fields of the imported student
  * @param {object} studentData 
  */
-async function parseExtraStudentData(studentData) {
+function parseExtraStudentData(studentData) {
     const parsed = {};
     for(const optional of csvDataHelper.optionalFields) {
         const parsedField = csvDataHelper.findFieldByAlias(studentData, optional.validAlias);
@@ -134,8 +168,7 @@ async function parseExtraStudentData(studentData) {
         ...parsed,
     };
 }
-
-async function recheckExtraStudentData(studentData) {
+function recheckExtraStudentData(studentData) {
     const parsed = {};
     const { warnings, ...restOfData} = studentData;
     for(const optional of csvDataHelper.optionalFields) {
@@ -196,12 +229,12 @@ function assignUniqueIdsForCells(row) {
     return assigned;
 }
 
-async function parseStudentCSVRow(studentData, currentStudents) {
+function parseStudentCSVRow(studentData, currentStudents, runningList) {
     const normalizedStudentData = fromEntries(Object.entries(studentData).map(csvDataHelper.normalizeFieldNames));
-    const [required, optional] = await Promise.all([
-        parseRequiredStudentData(normalizedStudentData, currentStudents),
+    const [required, optional] = [
+        parseRequiredStudentData(normalizedStudentData, currentStudents, runningList),
         parseExtraStudentData(normalizedStudentData, currentStudents)
-    ]);
+    ];
     const studentDataRow = assignUniqueIdsForCells({...required, ...optional});
     const {errors, warnings} = findErrorsAndWarningsForRow(studentDataRow);
     let mismatchedCellWarnings = [];
@@ -216,12 +249,12 @@ async function parseStudentCSVRow(studentData, currentStudents) {
     }
 }
 
-async function checkStudentRow(studentData, currentStudents) {
+function checkStudentRow(studentData, currentStudents, runningList) {
     const data = fromEntries(Object.entries(studentData));
-    const [required, optional] = await Promise.all([
-        recheckRequiredStudentData(data, currentStudents),
+    const [required, optional] = [
+        recheckRequiredStudentData(data, currentStudents, runningList),
         recheckExtraStudentData(data, currentStudents)
-    ]);
+    ];
     const studentDataRow = {...required, ...optional};
     const { errors, warnings } = findErrorsAndWarningsForRow(studentDataRow);
     let mismatchedCellWarnings = [];
@@ -242,8 +275,11 @@ async function checkStudentRow(studentData, currentStudents) {
  * @param {Array<Object>} data the data from a parsed CSV file 
  * @param {Array<Student>} currentStudents the current students to check changes against
  */
-async function translateImportStudentCSV(data, currentStudents) {
-    const students =  await Promise.all(data.map(studentData => parseStudentCSVRow(studentData, currentStudents)));
+async function translateImportStudentCSV(data, currentStudents = []) {
+    let students = [];
+    for(const studentData of data) {
+        students.push(parseStudentCSVRow(studentData, currentStudents, students));
+    }
     const warnings = students.reduce((warningList, row) => [...warningList, ...row.warnings], []);
     const errors = students.reduce((errorList, row) => [...errorList, ...row.errors], []);
     return {
@@ -260,7 +296,10 @@ async function translateImportStudentCSV(data, currentStudents) {
  * @param {Array<Student>} currentStudents the current students to check changes against
  */
 async function recheckImport(data, currentStudents = []) {
-    const students =  await Promise.all(data.map(studentData => checkStudentRow(studentData, currentStudents)));
+    let students = [];
+    for(const studentData of data) {
+        students.push(checkStudentRow(studentData, currentStudents, students));
+    }
     const warnings = students.reduce((warningList, row) => [...warningList, ...row.warnings], []);
     const errors = students.reduce((errorList, row) => [...errorList, ...row.errors], []);
     return {
