@@ -58,6 +58,8 @@ const CSVStudentUploadPreview = (props) => {
             case csvDataHelper.types.date:
                 type = 'date';
                 break;
+            case csvDataHelper.types.array:
+                return <EditableArrayField value={value} onChange={(e) => handleValueChange(type, e)} autoFocus />
             default:
                 type = 'text';
         }
@@ -407,3 +409,11 @@ const NewStudentDotAndHover = styled((props) => (
     }
 `;
 
+
+const EditableArrayField = ({value, onChange}) => {
+    let displayValue = value;
+    if(Array.isArray(value)) {
+        displayValue = value.join(' ');
+    }
+    return <EditableCell type="text" value={displayValue} onChange={onChange} />
+};
