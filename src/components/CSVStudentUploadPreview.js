@@ -70,13 +70,7 @@ const CSVStudentUploadPreview = (props) => {
         if(!entry.currentStudent && !cell.warning) {
             return null;
         }
-        let warningMessage;
-        if(entry.currentStudent) {
-            warningMessage = 'Student already exists and value will overwrite current records.';
-        } else {
-            warningMessage = cell.warning;
-        }
-        return <WarningErrorHover mismatch={entry.currentStudent}>{warningMessage}</WarningErrorHover>
+        return <WarningErrorHover mismatch={entry.currentStudent}>{cell.warning}</WarningErrorHover>
     }
 
 

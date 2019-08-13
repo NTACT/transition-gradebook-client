@@ -1,7 +1,6 @@
 import nanoid from 'nanoid';
 import moment from 'moment';
 import { csvDataHelper } from 'tgb-shared';
-import { Settings } from '../components/Icons';
 
 const notProvided = value => value === undefined || value === null;
 
@@ -54,15 +53,6 @@ function findImportingStudentWithId(parsedStudentData, runningList) {
     return null;
 }
 
-function diffArray(existing, provided) {
-    const existingAsSet = new Set(existing);
-    const providedAsSet = new Set(provided.split(' '));
-    for(const element of existingAsSet) {
-        providedAsSet.delete(element);
-    }
-    return providedAsSet.length;
-}
-
 function compareFields(existingStudentField, csvField, fieldName) {
     const column = csvDataHelper.columns.find(col => col.field === fieldName);
     if(column.type === csvDataHelper.types.boolean) {
@@ -80,8 +70,25 @@ function compareFields(existingStudentField, csvField, fieldName) {
             && existingAsDate.date() === providedAsDate.date();
     }
 
-    if(column.type === csvDataHelper.types.array) {
-        return diffArray(existingStudentField, csvDataHelper) === 0;
+    if(column.field === 'disabilities') {
+        if(existingStudentField.length && notProvided(csvField)) {
+            return false;
+        }
+        const existingArray = existingStudentField.map(({name, fullName}) => {
+            return {
+                name, 
+                fullName
+            }
+        });
+        const providedArray = csvField.split(' ');
+        for(const provided of providedArray) {
+            const found = existingArray.find(dis => dis.fullName === provided || dis.name === provided.toUpperCase());
+            if(!found) {
+                return false;
+            }
+        }
+        // Passed the found check
+        return true; 
     }
 
     if(column.type === csvDataHelper.types.enum) {
@@ -102,9 +109,13 @@ function getMismatchedFieldWarnings(parsedStudent, existingStudent) {
             continue;
         }
         if(!notProvided(existingValue) && !compareFields(existingValue, studentData.value, key)) {
+            let existingValueAsString = existingValue.toString();
+            if(key === 'disabilities') {
+                existingValueAsString = existingValue.map(val => val.name).join(' ');
+            }
             mismatchedCells.push({
                 cellId: studentData.id, 
-                warning: `Student already exists and value will overwrite current records. Current: ${existingValue.toString()}`
+                warning: `Student already exists and value will overwrite current records. Current: ${existingValueAsString}`
             });
         }
     }
@@ -187,25 +198,48 @@ function recheckRequiredStudentData(studentData, currentStudents, runningList) {
     };
 }
 
+function checkDisabilities(provided, validDisabilities) {
+    if(notProvided(provided)) {
+        return true;
+    }
+    const disabilities = provided.split(' ');
+    for(const disability of disabilities) {
+        const matched = validDisabilities.find(dis => dis.fullName === disability || dis.name === disability.toUpperCase());
+        if(!matched) {
+            return false;
+        }
+    }
+
+    return true;
+}
+
 /**
  * Parse the non-required fields of the imported student
  * @param {object} studentData 
  */
-function parseExtraStudentData(studentData) {
+function parseExtraStudentData(studentData, validDisabilities) {
     const parsed = {};
     for(const optional of csvDataHelper.optionalFields) {
         const parsedField = csvDataHelper.findFieldByAlias(studentData, optional.validAlias);
         const warning = getWarningsForCell(optional, parsedField);
+        let error = null;
+        if(optional.field === 'disabilities') {
+            // error if one of the values mismatches
+            if(!checkDisabilities(parsedField, validDisabilities)) {
+                error = 'One or more of the disabilities is an unexpected value';
+            }
+        }
         parsed[optional.field] = {
             value: warning ? parsedField : normalizeValue(optional, parsedField),
             warning,
+            error,
         }
     }
     return {
         ...parsed,
     };
 }
-function recheckExtraStudentData(studentData) {
+function recheckExtraStudentData(studentData, validDisabilities) {
     const parsed = {};
     const { warnings, ...restOfData} = studentData;
     for(const optional of csvDataHelper.optionalFields) {
@@ -213,9 +247,16 @@ function recheckExtraStudentData(studentData) {
         const { id, value, } = fieldData; 
         const checkedValue = value === '' ? null : value.toString(); 
         const newWarning = getWarningsForCell(optional, checkedValue);
+        let error = null;
+        if(optional.field === 'disabilities') {
+            if(!checkDisabilities(checkedValue, validDisabilities)) {
+                error = 'One or more of the disabilities is an unexpected value';
+            }
+        }
         parsed[optional.field] = {
             value: newWarning ? checkedValue : normalizeValue(optional, checkedValue),
             warning: newWarning,
+            error,
             id,
         }
     }
@@ -266,11 +307,11 @@ function assignUniqueIdsForCells(row) {
     return assigned;
 }
 
-function parseStudentCSVRow(studentData, currentStudents, runningList) {
+function parseStudentCSVRow(studentData, currentStudents, runningList, validDisabilities) {
     const normalizedStudentData = fromEntries(Object.entries(studentData).map(csvDataHelper.normalizeFieldNames));
     const [required, optional] = [
         parseRequiredStudentData(normalizedStudentData, currentStudents, runningList),
-        parseExtraStudentData(normalizedStudentData, currentStudents)
+        parseExtraStudentData(normalizedStudentData, validDisabilities)
     ];
     const studentDataRow = assignUniqueIdsForCells({...required, ...optional});
     const {errors, warnings} = findErrorsAndWarningsForRow(studentDataRow);
@@ -286,11 +327,11 @@ function parseStudentCSVRow(studentData, currentStudents, runningList) {
     }
 }
 
-function checkStudentRow(studentData, currentStudents, runningList) {
+function checkStudentRow(studentData, currentStudents, runningList, validDisabilities) {
     const data = fromEntries(Object.entries(studentData));
     const [required, optional] = [
         recheckRequiredStudentData(data, currentStudents, runningList),
-        recheckExtraStudentData(data, currentStudents)
+        recheckExtraStudentData(data, validDisabilities)
     ];
     const studentDataRow = {...required, ...optional};
     const { errors, warnings } = findErrorsAndWarningsForRow(studentDataRow);
@@ -312,10 +353,10 @@ function checkStudentRow(studentData, currentStudents, runningList) {
  * @param {Array<Object>} data the data from a parsed CSV file 
  * @param {Array<Student>} currentStudents the current students to check changes against
  */
-async function translateImportStudentCSV(data, currentStudents = []) {
+async function translateImportStudentCSV(data, currentStudents = [], validDisabilities) {
     let students = [];
     for(const studentData of data) {
-        students.push(parseStudentCSVRow(studentData, currentStudents, students));
+        students.push(parseStudentCSVRow(studentData, currentStudents, students, validDisabilities));
     }
     const warnings = students.reduce((warningList, row) => [...warningList, ...row.warnings], []);
     const errors = students.reduce((errorList, row) => [...errorList, ...row.errors], []);
@@ -332,10 +373,10 @@ async function translateImportStudentCSV(data, currentStudents = []) {
  * @param {Array<Object>} data the data that has already been processed translateImportStudentCSV 
  * @param {Array<Student>} currentStudents the current students to check changes against
  */
-async function recheckImport(data, currentStudents = []) {
+async function recheckImport(data, currentStudents = [], validDisabilities) {
     let students = [];
     for(const studentData of data) {
-        students.push(checkStudentRow(studentData, currentStudents, students));
+        students.push(checkStudentRow(studentData, currentStudents, students, validDisabilities));
     }
     const warnings = students.reduce((warningList, row) => [...warningList, ...row.warnings], []);
     const errors = students.reduce((errorList, row) => [...errorList, ...row.errors], []);

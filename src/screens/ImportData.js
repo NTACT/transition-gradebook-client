@@ -39,6 +39,7 @@ class ImportData extends Component {
     @observable hoveringWarning = null;
     @observable loading = false;
     @observable importedStudents = null;
+    @observable disabilities = [];
 
     @action.bound
     async handleSchoolYearChange(e) {
@@ -67,7 +68,8 @@ class ImportData extends Component {
             if(errors.length) {
                 console.error(errors);
             }
-            const { students, ...fileReport} = await translateImportStudentCSV(data, this.schoolYear.students);
+            console.log(this.disabilities);
+            const { students, ...fileReport} = await translateImportStudentCSV(data, this.schoolYear.students, this.disabilities);
             this.importedStudents = students;
             this.fileReport = fileReport;
         } finally {
@@ -137,7 +139,7 @@ class ImportData extends Component {
 
 
     @action.bound
-    handleCSVDataChange = debounce(async updatedCSV =>{
+    async handleCSVDataChange(updatedCSV) {
         if(!this.schoolYear || !this.term) {
             return;
         }
@@ -145,10 +147,10 @@ class ImportData extends Component {
         this.selectedWarnings = [];
         this.hoveringError = null;
         this.hoveringWarning = null;
-        const { students, ...fileReport } = await recheckImport(updatedCSV, this.schoolYear.students);
+        const { students, ...fileReport } = await recheckImport(updatedCSV, this.schoolYear.students, this.disabilities);
         this.importedStudents = students;
         this.fileReport = fileReport;
-    }, 1000)
+    }
 
     @computed
     get selectedCells() {
@@ -175,7 +177,7 @@ class ImportData extends Component {
         this.selectedWarnings = [];
         this.hoveringError = null;
         this.hoveringWarning = null;
-        const { students, ...fileReport } = await recheckImport(this.importedStudents, this.schoolYear.students);
+        const { students, ...fileReport } = await recheckImport(this.importedStudents, this.schoolYear.students, this.disabilities);
         this.importedStudents = students;
         this.fileReport = fileReport;
     }
@@ -234,6 +236,10 @@ class ImportData extends Component {
             }
         }
         await this.submit();
+    }
+
+    async componentDidMount() {
+        this.disabilities = await this.props.store.fetchDisabilities();
     }
 
     render() {
