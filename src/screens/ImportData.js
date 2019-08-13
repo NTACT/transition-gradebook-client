@@ -4,6 +4,7 @@ import React, { Component, useState, useEffect } from 'react';
 import { withRouter } from 'react-router-dom';
 import styled, {css} from 'styled-components';
 import sweetalert from 'sweetalert2';
+import debounce from 'lodash/debounce';
 import * as breakpoints from '../breakpoints';
 import BlockButton from '../components/BlockButton';
 import Column from '../components/Column';
@@ -136,7 +137,7 @@ class ImportData extends Component {
 
 
     @action.bound
-    async handleCSVDataChange(updatedCSV) {
+    handleCSVDataChange = debounce(async updatedCSV =>{
         if(!this.schoolYear || !this.term) {
             return;
         }
@@ -147,7 +148,7 @@ class ImportData extends Component {
         const { students, ...fileReport } = await recheckImport(updatedCSV, this.schoolYear.students);
         this.importedStudents = students;
         this.fileReport = fileReport;
-    }
+    }, 1000)
 
     @computed
     get selectedCells() {

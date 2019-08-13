@@ -1,8 +1,7 @@
+import nanoid from 'nanoid';
+import moment from 'moment';
+import { csvDataHelper } from 'tgb-shared';
 import { Settings } from '../components/Icons';
-
-const nanoid = require('nanoid');
-const moment = require('moment');
-const { csvDataHelper } = require('tgb-shared');
 
 const notProvided = value => value === undefined || value === null;
 
@@ -17,7 +16,7 @@ function normalizeValue(field, value) {
         case types.enum:
             return value;
         case types.boolean:
-            return csvDataHelper.toYesNoBooleanValue(value);
+            return csvDataHelper.yesNoBooleanFromString(value);
         case types.date:
             return moment(value).format('MM/DD/YYYY');
         case types.integer:
@@ -55,6 +54,44 @@ function findImportingStudentWithId(parsedStudentData, runningList) {
     return null;
 }
 
+function diffArray(existing, provided) {
+    const existingAsSet = new Set(existing);
+    const providedAsSet = new Set(provided.split(' '));
+    for(const element of existingAsSet) {
+        providedAsSet.delete(element);
+    }
+    return providedAsSet.length;
+}
+
+function compareFields(existingStudentField, csvField, fieldName) {
+    const column = csvDataHelper.columns.find(col => col.field === fieldName);
+    if(column.type === csvDataHelper.types.boolean) {
+        if(csvDataHelper.isValidBoolean(csvField)) {
+            const booleanValue = csvDataHelper.yesNoBooleanFromString(csvField);
+            return existingStudentField === booleanValue.getBooleanValue();
+        }
+    }
+
+    if(column.type === csvDataHelper.types.date) {
+        const existingAsDate = moment(existingStudentField);
+        const providedAsDate = moment(csvField);
+        return existingAsDate.year() === providedAsDate.year() 
+            && existingAsDate.month() === providedAsDate.month() 
+            && existingAsDate.date() === providedAsDate.date();
+    }
+
+    if(column.type === csvDataHelper.types.array) {
+        return diffArray(existingStudentField, csvDataHelper) === 0;
+    }
+
+    if(column.type === csvDataHelper.types.enum) {
+        if(typeof column.deserialize === 'function') {
+            return column.deserialize(existingStudentField) === column.deserialize(csvField);
+        }
+    }
+    return existingStudentField.toString().toLowerCase() === csvField.toString().toLowerCase();
+}
+
 function getMismatchedFieldWarnings(parsedStudent, existingStudent) {
     const mismatchedCells = [];
     const importEntries = Object.entries(parsedStudent);
@@ -64,7 +101,7 @@ function getMismatchedFieldWarnings(parsedStudent, existingStudent) {
         if(notProvided(studentData.value) || studentData.value === '') {
             continue;
         }
-        if(!notProvided(existingValue) && existingValue.toString().toLowerCase() !== studentData.value) {
+        if(!notProvided(existingValue) && !compareFields(existingValue, studentData.value, key)) {
             mismatchedCells.push({
                 cellId: studentData.id, 
                 warning: `Student already exists and value will overwrite current records. Current: ${existingValue.toString()}`
@@ -309,13 +346,6 @@ async function recheckImport(data, currentStudents = []) {
     };
 }
 
-// Ugly hack to allow this to be tested
-if(process.env.NODE_ENV === 'test') {
-    module.exports = {
-        translateImportStudentCSV,
-        recheckImport
-    };
-}
 export {
     translateImportStudentCSV, 
     recheckImport

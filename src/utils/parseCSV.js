@@ -1,9 +1,8 @@
-const Papa = require('papaparse');
+import Papa from 'papaparse';
 
 const defaultParseConfig = {
     // Map header as field names
     header: true,
-    // display as strings, handle real values on the server
     dynamicTyping: false,
     delimiter: ',',
     // lines that are completely empty or have only whitespaces in all columns are ignored
@@ -23,7 +22,4 @@ async function parseCSV(file) {
     });
 }
 
-if(process.env.NODE_ENV === 'test') {
-    module.exports = parseCSV;
-}
 export default parseCSV;

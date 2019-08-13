@@ -66,6 +66,19 @@ const CSVStudentUploadPreview = (props) => {
         );
     }
 
+    function renderWarningHover(entry, cell) {
+        if(!entry.currentStudent && !cell.warning) {
+            return null;
+        }
+        let warningMessage;
+        if(entry.currentStudent) {
+            warningMessage = 'Student already exists and value will overwrite current records.';
+        } else {
+            warningMessage = cell.warning;
+        }
+        return <WarningErrorHover mismatch={entry.currentStudent}>{warningMessage}</WarningErrorHover>
+    }
+
 
     function renderCells(entry) {
         return (
@@ -87,7 +100,7 @@ const CSVStudentUploadPreview = (props) => {
                             {editableField && editableField.cellId === cell.id ? renderEditable(column, cell.value) : renderReadonly(cell.value)}
                         </CellContent>
                         {cell.error && <WarningErrorHover>{cell.error}</WarningErrorHover>}
-                        {(cell.warning || entry.currentStudent) && <WarningErrorHover>{cell.warning}</WarningErrorHover>}
+                        {renderWarningHover(entry, cell)}
                     </Cell>
                 )
             })}
@@ -183,6 +196,7 @@ const CellHover = styled(Column)`
 
 const WarningErrorHover = styled(CellHover)`
     bottom: 62px;
+    ${props => props.mismatch && css`height: 75px;`}
 `;
 
 const CellWidth = css`width: 150px;`;
@@ -206,6 +220,7 @@ const CSVContainer = styled('table')`
     table-layout: fixed;
     position: relative;
     left: 55px;
+    min-height: 150px;
 `;
 
 const CSVHead = styled('thead')`
@@ -330,8 +345,8 @@ const EditableSelect = styled(({value, options, onChange}) => (
 const EditableYesNoSelect = styled(({value, onChange}) => (
     <select value={value} onChange={onChange}>
         {(value === undefined || value === null) && (<option value="" />)}
-        <option value="true">Yes</option>
-        <option value="false">No</option>
+        <option value="Yes">Yes</option>
+        <option value="No">No</option>
     </select>
 ))`
   ${editableCellStyle}
