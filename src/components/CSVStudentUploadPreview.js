@@ -67,7 +67,7 @@ const CSVStudentUploadPreview = (props) => {
     }
 
     function renderWarningHover(entry, cell) {
-        if(!entry.currentStudent && !cell.warning) {
+        if(!cell.warning) {
             return null;
         }
         return <WarningErrorHover mismatch={entry.currentStudent}>{cell.warning}</WarningErrorHover>

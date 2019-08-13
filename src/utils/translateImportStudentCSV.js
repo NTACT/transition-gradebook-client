@@ -20,7 +20,6 @@ function normalizeValue(field, value) {
             return moment(value).format('MM/DD/YYYY');
         case types.integer:
         case types.float:
-            return +value;
         default:
             return value;
     }
@@ -53,8 +52,7 @@ function findImportingStudentWithId(parsedStudentData, runningList) {
     return null;
 }
 
-function compareFields(existingStudentField, csvField, fieldName) {
-    const column = csvDataHelper.columns.find(col => col.field === fieldName);
+function compareFields(existingStudentField, csvField, column) {
     if(column.type === csvDataHelper.types.boolean) {
         if(csvDataHelper.isValidBoolean(csvField)) {
             const booleanValue = csvDataHelper.yesNoBooleanFromString(csvField);
@@ -99,103 +97,21 @@ function compareFields(existingStudentField, csvField, fieldName) {
     return existingStudentField.toString().toLowerCase() === csvField.toString().toLowerCase();
 }
 
-function getMismatchedFieldWarnings(parsedStudent, existingStudent) {
-    const mismatchedCells = [];
-    const importEntries = Object.entries(parsedStudent);
-    for(const [key, studentData] of importEntries) {
-        const existingValue = existingStudent[key];
-        // If the new data isn't provided, it will (or should) be ignored on the server.
-        if(notProvided(studentData.value) || studentData.value === '') {
-            continue;
-        }
-        if(!notProvided(existingValue) && !compareFields(existingValue, studentData.value, key)) {
-            let existingValueAsString = existingValue.toString();
-            if(key === 'disabilities') {
-                existingValueAsString = existingValue.map(val => val.name).join(' ');
-            }
-            mismatchedCells.push({
-                cellId: studentData.id, 
-                warning: `Student already exists and value will overwrite current records. Current: ${existingValueAsString}`
-            });
-        }
-    }
-    return mismatchedCells;
-}
-
 function getErrorsForCell(field, data) {
     if(csvDataHelper.isRequiredAndMissing(field, data)) {
-        return 'Required data is missing';
+        return `Required data is missing`;
     }
     if(csvDataHelper.isRequiredAndUnacceptedValue(field, data)) {
-        return 'Required data is an unexpected value';
+        return `Required data is an unexpected value`;
     }
     return null;
 }
 
 function getWarningsForCell(field, data) {
     if(csvDataHelper.isOptionalAndUnacceptedValue(field, data)) {
-        return 'Data is an unexpected value';
+        return `Data is an unexpected value.`;
     }
     return null;
-}
-
-/**
- * Get the value for required student data
- * @param {object} studentData 
- */
-function parseRequiredStudentData(studentData, currentStudents, runningList) {
-    const parsed = {};
-    for(const required of csvDataHelper.requiredFields) {
-        const parsedField = csvDataHelper.findFieldByAlias(studentData, required.validAlias);
-        const error = getErrorsForCell(required, parsedField);
-        parsed[required.field] = {
-            value: error ? parsedField : normalizeValue(required, parsedField),
-            error,
-        }
-    }
-    if(findExistingStudentWithId(parsed, currentStudents) !== null) {
-        parsed.currentStudent = true;
-    }
-    if(findImportingStudentWithId(parsed, runningList) !== null) {
-        const { studentId, } = parsed;
-        // Replace any existing error with this one
-        parsed['studentId'] = {
-            ...studentId,
-            error: `Duplicate student ID (${studentId.value})`
-        }
-    }
-    return {
-        ...parsed,
-    };
-}
-
-function recheckRequiredStudentData(studentData, currentStudents, runningList) {
-    const parsed = {};
-    for(const required of csvDataHelper.requiredFields) {
-        const fieldData = studentData[required.field];
-        const { id, value } = fieldData; 
-        const newError = getErrorsForCell(required, value);
-        parsed[required.field] = {
-            value: newError || null ? value : normalizeValue(required, value),
-            error: newError,
-            id,
-        }
-    }
-
-    if(findExistingStudentWithId(parsed, currentStudents) !== null) {
-        parsed.currentStudent = true;
-    }
-    if(findImportingStudentWithId(parsed, runningList) !== null) {
-        const { studentId, } = parsed;
-        // Replace any existing error with this one
-        parsed['studentId'] = {
-            ...studentId,
-            error: `Duplicate student ID (${studentId.value})`
-        }
-    }
-    return {
-        ...parsed,
-    };
 }
 
 function checkDisabilities(provided, validDisabilities) {
@@ -211,58 +127,6 @@ function checkDisabilities(provided, validDisabilities) {
     }
 
     return true;
-}
-
-/**
- * Parse the non-required fields of the imported student
- * @param {object} studentData 
- */
-function parseExtraStudentData(studentData, validDisabilities) {
-    const parsed = {};
-    for(const optional of csvDataHelper.optionalFields) {
-        const parsedField = csvDataHelper.findFieldByAlias(studentData, optional.validAlias);
-        const warning = getWarningsForCell(optional, parsedField);
-        let error = null;
-        if(optional.field === 'disabilities') {
-            // error if one of the values mismatches
-            if(!checkDisabilities(parsedField, validDisabilities)) {
-                error = 'One or more of the disabilities is an unexpected value';
-            }
-        }
-        parsed[optional.field] = {
-            value: warning ? parsedField : normalizeValue(optional, parsedField),
-            warning,
-            error,
-        }
-    }
-    return {
-        ...parsed,
-    };
-}
-function recheckExtraStudentData(studentData, validDisabilities) {
-    const parsed = {};
-    const { warnings, ...restOfData} = studentData;
-    for(const optional of csvDataHelper.optionalFields) {
-        const fieldData = restOfData[optional.field];
-        const { id, value, } = fieldData; 
-        const checkedValue = value === '' ? null : value.toString(); 
-        const newWarning = getWarningsForCell(optional, checkedValue);
-        let error = null;
-        if(optional.field === 'disabilities') {
-            if(!checkDisabilities(checkedValue, validDisabilities)) {
-                error = 'One or more of the disabilities is an unexpected value';
-            }
-        }
-        parsed[optional.field] = {
-            value: newWarning ? checkedValue : normalizeValue(optional, checkedValue),
-            warning: newWarning,
-            error,
-            id,
-        }
-    }
-    return {
-        ...parsed,
-    };
 }
 
 // Object.fromEntries doesn't have good support
@@ -307,45 +171,72 @@ function assignUniqueIdsForCells(row) {
     return assigned;
 }
 
-function parseStudentCSVRow(studentData, currentStudents, runningList, validDisabilities) {
-    const normalizedStudentData = fromEntries(Object.entries(studentData).map(csvDataHelper.normalizeFieldNames));
-    const [required, optional] = [
-        parseRequiredStudentData(normalizedStudentData, currentStudents, runningList),
-        parseExtraStudentData(normalizedStudentData, validDisabilities)
-    ];
-    const studentDataRow = assignUniqueIdsForCells({...required, ...optional});
-    const {errors, warnings} = findErrorsAndWarningsForRow(studentDataRow);
-    let mismatchedCellWarnings = [];
-    if(studentDataRow.currentStudent) {
-        mismatchedCellWarnings = getMismatchedFieldWarnings(studentDataRow, findExistingStudentWithId(studentDataRow, currentStudents));
-    }
+function existingStudent(translated, currentStudents) {
     return {
-        ...studentDataRow,
-        id: nanoid(),
-        errors,
-        warnings: [...warnings, ...mismatchedCellWarnings],
+        ...translated,
+        currentStudent: findExistingStudentWithId(translated, currentStudents) !== null,
     }
 }
 
-function checkStudentRow(studentData, currentStudents, runningList, validDisabilities) {
-    const data = fromEntries(Object.entries(studentData));
-    const [required, optional] = [
-        recheckRequiredStudentData(data, currentStudents, runningList),
-        recheckExtraStudentData(data, validDisabilities)
-    ];
-    const studentDataRow = {...required, ...optional};
-    const { errors, warnings } = findErrorsAndWarningsForRow(studentDataRow);
-    let mismatchedCellWarnings = [];
-    if(studentDataRow.currentStudent) {
-        mismatchedCellWarnings = getMismatchedFieldWarnings(studentDataRow, findExistingStudentWithId(studentDataRow, currentStudents));
+function translateRow(studentData) {
+    const normalizedStudentData = fromEntries(Object.entries(studentData).map(csvDataHelper.normalizeFieldNames));
+    const translated = {};
+    for(const column of [...csvDataHelper.requiredFields, ...csvDataHelper.optionalFields]) {
+        const translatedField = csvDataHelper.findFieldByAlias(normalizedStudentData, column.validAlias);
+        translated[column.field] = {
+            value: normalizeValue(column, translatedField),
+            rawValue: translatedField,
+        }
     }
-    return {
-        ...required,
-        ...optional,
-        id: studentData.id,
-        errors,
-        warnings: [...warnings, ...mismatchedCellWarnings],
+    return assignUniqueIdsForCells(translated);
+}
+
+function attachErrors(currentStudent, importingStudents, validDisabilities) {
+    const studentWithErrors = {...currentStudent};
+    for(const required of csvDataHelper.requiredFields) {
+        const importingValue = currentStudent[required.field].value;
+        const requiredDataError = getErrorsForCell(required, importingValue);
+        studentWithErrors[required.field].error = requiredDataError;
     }
+    if(currentStudent.disabilities.value !== '' && !checkDisabilities(currentStudent.disabilities.value, validDisabilities)) {
+        const disabilitiesError = 'One or more of the disabilities is an unexpected value';;
+        studentWithErrors.disabilities.error = disabilitiesError;
+    }
+    const duplicateCheck = findImportingStudentWithId(currentStudent, importingStudents);
+    if(duplicateCheck && duplicateCheck.studentId.id !== currentStudent.studentId.id) {
+        const { studentId, } = currentStudent;
+        const duplicateError =  `Duplicate student ID (${studentId.value})`;
+        studentWithErrors.studentId.error = duplicateError;
+    }
+    return studentWithErrors;
+}
+
+function attachWarnings(currentStudent, currentStudents) {
+    const studentWithWarnings = {...currentStudent}
+    for(const optional of csvDataHelper.optionalFields) {
+        const warning = getWarningsForCell(optional, currentStudent[optional.field].rawValue);
+        studentWithWarnings[optional.field].warning = warning;
+    }
+    const existingStudent = findExistingStudentWithId(currentStudent, currentStudents);
+    if(existingStudent) {
+        for(const column of csvDataHelper.columns) {
+            if(studentWithWarnings[column.field].warning) {
+                // Already has a warning. Skip this field, for now
+                continue;
+            }
+            const existingValue = existingStudent[column.field];
+            const importingValue = currentStudent[column.field].value;
+            if(notProvided(importingValue) || importingValue === '' || notProvided(existingValue)) {
+                // will be ignored by the server
+                continue;
+            }
+
+            if(!compareFields(existingValue, importingValue, column)) {
+                studentWithWarnings[column.field].warning = `Student already exists and value will overwrite current records.`;
+            }
+        }
+    }
+    return studentWithWarnings;
 }
 
 /**
@@ -354,19 +245,29 @@ function checkStudentRow(studentData, currentStudents, runningList, validDisabil
  * @param {Array<Student>} currentStudents the current students to check changes against
  */
 async function translateImportStudentCSV(data, currentStudents = [], validDisabilities) {
-    let students = [];
-    for(const studentData of data) {
-        students.push(parseStudentCSVRow(studentData, currentStudents, students, validDisabilities));
-    }
-    const warnings = students.reduce((warningList, row) => [...warningList, ...row.warnings], []);
-    const errors = students.reduce((errorList, row) => [...errorList, ...row.errors], []);
+    const translatedData = data.map(student => translateRow(student))
+        .map((student => existingStudent(student, currentStudents)));
+    const translatedWithErrors = translatedData.map(translated => attachErrors(translated, translatedData, validDisabilities));
+    const translatedWithErrorsAndWarnings = translatedWithErrors.map(translated => attachWarnings(translated, currentStudents));
+
+    const students = translatedWithErrorsAndWarnings.map(translated => {
+        const { errors, warnings } = findErrorsAndWarningsForRow(translated);
+        return {
+            ...translated, 
+            errors,
+            warnings,
+            id: nanoid(),
+        }
+    });
+
+    const warnings = students.reduce((warningList, currentRow) => [...warningList, ...currentRow.warnings], []);
+    const errors = students.reduce((errorList, currentRow) => [...errorList, ...currentRow.errors], []);
     return {
         students,
-        warnings,
         errors,
-    };
+        warnings,
+    }
 }
-
 
 /**
  * Recheck the import that has already been processed by translateImportStudentCSV
@@ -374,17 +275,32 @@ async function translateImportStudentCSV(data, currentStudents = [], validDisabi
  * @param {Array<Student>} currentStudents the current students to check changes against
  */
 async function recheckImport(data, currentStudents = [], validDisabilities) {
-    let students = [];
-    for(const studentData of data) {
-        students.push(checkStudentRow(studentData, currentStudents, students, validDisabilities));
-    }
-    const warnings = students.reduce((warningList, row) => [...warningList, ...row.warnings], []);
-    const errors = students.reduce((errorList, row) => [...errorList, ...row.errors], []);
+    const removedErrorsAndWarnings = data.map(student => {
+        const { error, warning, ...rest} = student;
+        return {
+            ...rest
+        } 
+    }).map((student => existingStudent(student, currentStudents)))
+    const recheckedWithErrors = removedErrorsAndWarnings.map(checked => attachErrors(checked, data, validDisabilities));
+    const recheckedWithErrorsAndWarnings = recheckedWithErrors.map(checked => attachWarnings(checked, currentStudents));
+
+    const students = recheckedWithErrorsAndWarnings.map(translated => {
+        const { errors, warnings } = findErrorsAndWarningsForRow(translated);
+        return {
+            ...translated, 
+            errors,
+            warnings,
+            id: nanoid(),
+        }
+    });
+
+    const warnings = students.reduce((warningList, currentRow) => [...warningList, ...currentRow.warnings], []);
+    const errors = students.reduce((errorList, currentRow) => [...errorList, ...currentRow.errors], []);
     return {
         students,
-        warnings,
         errors,
-    };
+        warnings,
+    }
 }
 
 export {

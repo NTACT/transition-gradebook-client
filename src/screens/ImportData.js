@@ -68,7 +68,6 @@ class ImportData extends Component {
             if(errors.length) {
                 console.error(errors);
             }
-            console.log(this.disabilities);
             const { students, ...fileReport} = await translateImportStudentCSV(data, this.schoolYear.students, this.disabilities);
             this.importedStudents = students;
             this.fileReport = fileReport;
@@ -177,9 +176,10 @@ class ImportData extends Component {
         this.selectedWarnings = [];
         this.hoveringError = null;
         this.hoveringWarning = null;
-        const { students, ...fileReport } = await recheckImport(this.importedStudents, this.schoolYear.students, this.disabilities);
-        this.importedStudents = students;
-        this.fileReport = fileReport;
+        this.importedStudents = null;
+        this.file = null;
+        this.fileReport = null;
+        this.schoolYear = await this.props.store.fetchSchoolYear(this.schoolYearId);
     }
 
     async submit() {
