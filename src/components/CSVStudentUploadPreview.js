@@ -68,15 +68,16 @@ const CSVStudentUploadPreview = (props) => {
         );
     }
 
-    function renderWarningHover(entry, cell) {
-        if(!cell.warning) {
+    function renderWarningHover(entry, cell, rowNumber, column) {
+        // If there are no warnings or if there is an error (errors take priority), dont render
+        if(!cell.warning || cell.error) {
             return null;
         }
-        return <WarningErrorHover mismatch={entry.currentStudent}>{cell.warning}</WarningErrorHover>
+        return <WarningErrorHover large={entry.currentStudent} firstThree={rowNumber <= 3}>{cell.warning}</WarningErrorHover>
     }
 
 
-    function renderCells(entry) {
+    function renderCells(entry, rowNumber) {
         return (
             <>
             {csvDataHelper.columns.map(column => {
@@ -97,8 +98,8 @@ const CSVStudentUploadPreview = (props) => {
                             ))}
                             {editableField && editableField.cellId === cell.id ? renderEditable(column, cell.value) : renderReadonly(cell.value)}
                         </CellContent>
-                        {cell.error && <WarningErrorHover>{cell.error}</WarningErrorHover>}
-                        {renderWarningHover(entry, cell)}
+                        {cell.error && <WarningErrorHover firstThree={rowNumber <= 3} large={column.field === 'disabilities'}>{cell.error}</WarningErrorHover>}
+                        {renderWarningHover(entry, cell, rowNumber, column)}
                     </Cell>
                 )
             })}
@@ -146,11 +147,17 @@ const CSVStudentUploadPreview = (props) => {
                         </HeaderRow>
                     </CSVHead>
                     <CSVBody>
-                        {csvData.map(row => (
+                        {csvData.map((row, rowIdx) => (
                             <CSVEntry key={row.id}>
-                                {renderCells(row)}
+                                {renderCells(row, rowIdx + 1)}
                             </CSVEntry>
                         ))}
+                        {csvData.length <= 21 && (
+                            <PaddingRow>
+                                {csvDataHelper.columns.map(column => <Cell key={`padding_cell_${column.headerText}`}/>)}
+                            </PaddingRow>
+                        )
+                        }
                     </CSVBody>
                 </CSVContainer>
             </ScrollableContainer>
@@ -192,9 +199,26 @@ const CellHover = styled(Column)`
     }
 `;
 
+function handleFirstThreeRows({firstThree}) {
+    if(firstThree) {
+        // change the little arrow from the bottom to the top 
+        return css`
+            top: 20px;
+            &:after {
+                bottom: 100%;
+                border-width: 0px 10px 10px 10px;
+            }
+        `;
+    } else {
+        return css`
+            top: -76px;
+        `;
+    }
+}
+
 const WarningErrorHover = styled(CellHover)`
-    bottom: 62px;
-    ${props => props.mismatch && css`height: 75px;`}
+    ${handleFirstThreeRows}
+    ${props => props.large && css`height: 75px;`}
 `;
 
 const CellWidth = css`width: 150px;`;
@@ -219,6 +243,7 @@ const CSVContainer = styled('table')`
     position: relative;
     left: 55px;
     min-height: 150px;
+    height: 100%;
 `;
 
 const CSVHead = styled('thead')`
@@ -274,6 +299,7 @@ const CSVEntry = styled('tr')`
 `;
 
 const Cell = styled('td')`
+    position: relative;
     height: 20px;
     border: 1px solid #D8D8D8;
     padding: 2px 5px;
@@ -426,3 +452,7 @@ const EditableArrayField = ({value, onChange}) => {
     }
     return <EditableCell type="text" value={displayValue} onChange={onChange} />
 };
+
+const PaddingRow = styled(CSVEntry)`
+    height: 100%;
+`;
