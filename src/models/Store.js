@@ -420,8 +420,8 @@ export default class Store {
   }
 
   @task('Import students from CSV')
-  async importStudentsFromCSV(schoolYear, csvData) {
-    await this.axios.post(`/api/schoolYears/${schoolYear.id}/import`, csvData);
+  async importStudentsFromCSV(schoolYear, term, csvData) {
+    await this.axios.post(`/api/schoolYears/${schoolYear.id}/${term}/import`, csvData);
     // Create and edit paths are very different, so instead of handling those paths, just re-fetch the school year
     return this.fetchSchoolYear(schoolYear.id)
   }
