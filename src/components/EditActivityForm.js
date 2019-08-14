@@ -396,6 +396,9 @@ const EventTimePicker = styled(MultipleDatePicker)`
   width: 234px;
   font-size: 12px;
   margin-right: 15px;
+  font-family: "Open Sans";
+  font-style: italic;
+  color: #4A4A4A;
 `;
 
 const EventAddButton = styled(Button)`
