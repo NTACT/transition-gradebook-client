@@ -29,7 +29,7 @@ const CSVStudentUploadPreview = (props) => {
         }
     }
 
-    function handleValueChange(type, e) {
+    function handleValueChange(e) {
         if(!editableField) {
             return;
         }
@@ -52,23 +52,23 @@ const CSVStudentUploadPreview = (props) => {
         switch(fieldType) {
             case csvDataHelper.types.boolean:
                 type = 'checkbox';
-                return <EditableYesNoSelect value={value} onChange={e => handleValueChange(type, e)} autoFocus/>
+                return <EditableYesNoSelect value={value} onChange={handleValueChange} autoFocus/>
             case csvDataHelper.types.enum:
-                return <EditableSelect options={field.enumValues || field.validValues} value={value} onChange={e => handleValueChange(type, e)} />
+                return <EditableSelect options={field.enumValues || field.validValues} value={value} onChange={handleValueChange} />
             case csvDataHelper.types.date:
                 type = 'date';
                 break;
             case csvDataHelper.types.array:
-                return <EditableArrayField value={value} onChange={(e) => handleValueChange(type, e)} autoFocus />
+                return <EditableArrayField value={value} onChange={handleValueChange} autoFocus />
             default:
                 type = 'text';
         }
         return (
-            <EditableCell type={type} value={value} onChange={(e) => handleValueChange(type, e)} autoFocus />
+            <EditableCell type={type} value={value} onChange={handleValueChange} autoFocus />
         );
     }
 
-    function renderWarningHover(entry, cell, rowNumber, column) {
+    function renderWarningHover(entry, cell, rowNumber) {
         // If there are no warnings or if there is an error (errors take priority), dont render
         if(!cell.warning || cell.error) {
             return null;
@@ -99,7 +99,7 @@ const CSVStudentUploadPreview = (props) => {
                             {editableField && editableField.cellId === cell.id ? renderEditable(column, cell.value) : renderReadonly(cell.value)}
                         </CellContent>
                         {cell.error && <WarningErrorHover firstThree={rowNumber <= 3} large={column.field === 'disabilities'}>{cell.error}</WarningErrorHover>}
-                        {renderWarningHover(entry, cell, rowNumber, column)}
+                        {renderWarningHover(entry, cell, rowNumber)}
                     </Cell>
                 )
             })}
@@ -156,8 +156,7 @@ const CSVStudentUploadPreview = (props) => {
                             <PaddingRow>
                                 {csvDataHelper.columns.map(column => <Cell key={`padding_cell_${column.headerText}`}/>)}
                             </PaddingRow>
-                        )
-                        }
+                        )}
                     </CSVBody>
                 </CSVContainer>
             </ScrollableContainer>

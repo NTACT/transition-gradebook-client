@@ -20,7 +20,7 @@ import Spinner from '../components/Spinner';
 import parseCSV from '../utils/parseCSV';
 import {translateImportStudentCSV, recheckImport, getDownloadTemplateUrl} from '../utils/translateImportStudentCSV';
 import first from '../utils/first';
-
+import toggleArrayValue from '../utils/toggleArrayValue';
 
 @withRouter
 @inject('store')
@@ -123,20 +123,16 @@ class ImportData extends Component {
 
     @action.bound
     handleWarningClick(warningId) {
-        if(this.selectedWarnings.find(warn => warn === warningId)) {
-            this.selectedWarnings = this.selectedWarnings.filter(warn => warn !== warningId);
-        } else {
-            this.selectedWarnings.push(warningId);
-        }
+        const warnings = [...this.selectedWarnings];
+        toggleArrayValue(warnings, warningId);
+        this.selectedWarnings = warnings;
     }
 
     @action.bound
     handleErrorClick(errorId) {
-        if(this.selectedErrors.find(err => err === errorId)) {
-            this.selectedErrors = this.selectedErrors.filter(err => err !== errorId);
-        } else {
-            this.selectedErrors.push(errorId);
-        }
+        const errors = [...this.selectedErrors];
+        toggleArrayValue(errors, errorId);
+        this.selectedErrors = errors;
     }
 
     @action.bound
@@ -146,7 +142,7 @@ class ImportData extends Component {
 
     @action.bound
     handleErrorHover(errorId) {
-        this.hoveringWarning  = errorId;;
+        this.hoveringWarning  = errorId;
     }
 
 
@@ -159,9 +155,11 @@ class ImportData extends Component {
         this.selectedWarnings = [];
         this.hoveringError = null;
         this.hoveringWarning = null;
+        this.loading = true;
         const { students, ...fileReport } = await recheckImport(updatedCSV, this.schoolYear.students, this.disabilities);
         this.importedStudents = students;
         this.fileReport = fileReport;
+        this.loading = false;
     }
 
     @computed
