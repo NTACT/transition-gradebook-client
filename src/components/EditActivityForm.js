@@ -61,11 +61,9 @@ class EditActivityForm extends Component {
   }
 
   @action.bound handleAddEventClick(event) {
-    console.log(this.eventTimes)
     this.handleChange();
     event.preventDefault();
     this.eventTimes.forEach(event => {
-      console.log(event);
       const date = new Date(event);
       if (!isValidDate(date)) {
         this.invalidDateError = new Error(`Invalid date. Format should be: YYYY-MM-DD`);
@@ -260,7 +258,7 @@ class EditActivityForm extends Component {
                     <EventList>
                       {events.map(event =>
                         <EventListItem key={event.id}>
-                          {event.eventTime.toDateString()}
+                          {event.eventTime.toLocaleDateString("en-US", { year: 'numeric', month: 'long', day: 'numeric' })}
 
                           <EventDeleteButton onClick={this.handleEventRemove.bind(null, event)}><EventDeleteIcon /></EventDeleteButton>
                         </EventListItem>
@@ -399,6 +397,9 @@ const EventTimePicker = styled(MultipleDatePicker)`
   font-family: "Open Sans";
   font-style: italic;
   color: #4A4A4A;
+  display: flex;
+  justify-content: center;
+  align-items: center
 `;
 
 const EventAddButton = styled(Button)`

@@ -67,3 +67,7 @@ export const OrangeSettings = styled.img.attrs({
 export const WhiteChevron = styled.img.attrs({
   src: require('../assets/white_chevron_icon.png')
 })``
+
+export const Calendar = styled.img.attrs({
+  src: require('../assets/calendar_icon.svg')
+})``

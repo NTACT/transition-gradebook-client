@@ -5,12 +5,12 @@ import 'react-day-picker/lib/style.css';
 import styled from 'styled-components';
 import { observable, action } from 'mobx';
 import { observer } from 'mobx-react';
+import { Calendar } from './Icons';
 
 @observer
 class MultipleDatePicker extends Component {
   @observable show = false
   @observable current = new Date()
-  @observable selectedDays = []
 
   @action.bound YearMonthForm = ({ date, localeUtils }) => {
     const currentYear = new Date().getFullYear()
@@ -70,20 +70,23 @@ class MultipleDatePicker extends Component {
 
   render() {
     const { className, value } = this.props
-    const { 
-      showCalendar, 
-      closeCalendar, 
-      show, 
-      handleDayClick, 
+    const {
+      showCalendar,
+      closeCalendar,
+      show,
+      handleDayClick,
       YearMonthForm,
       current
     } = this
 
     return (
       <Container>
-        <Button className={className} onClick={showCalendar}>
+        <div className={className}>
           Add New Events to this Activity
-        </Button>
+          <Button onClick={showCalendar}>
+            <CalendarIcon />
+          </Button>
+        </div>
         {show &&
           <CalendarItems>
             <DayPicker
@@ -93,12 +96,9 @@ class MultipleDatePicker extends Component {
               modifiers={modifiers}
               modifiersStyles={modifiersStyles}
               fixedWeeks
-              captionElement={({ date, localeUtils }) => (
-                <YearMonthForm
-                  date={date}
-                  localeUtils={localeUtils}
-                />
-              )}
+              captionElement={({ date, localeUtils }) =>
+                <YearMonthForm date={date} localeUtils={localeUtils} />
+              }
             />
             <DoneButton onClick={closeCalendar}> DONE </DoneButton>
           </CalendarItems>
@@ -121,6 +121,14 @@ const modifiersStyles = {
   }
 }
 
+const CalendarIcon = styled(Calendar)`
+  margin-left: 24px;
+`
+
+const Container = styled.div`
+  position: relative;
+`
+
 const DoneButton = styled(Button)`
   background-color: #F5633A;
   color: white;
@@ -129,10 +137,6 @@ const DoneButton = styled(Button)`
   font-size: 16px;
   font-family: 'Oswald';
   line-height: 24px;
-`
-
-const Container = styled.div`
-  position: relative;
 `
 
 const CalendarItems = styled.div`
