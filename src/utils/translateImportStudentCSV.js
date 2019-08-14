@@ -244,7 +244,7 @@ function attachErrors(currentStudent, importingStudents, validDisabilities) {
         const requiredDataError = getErrorsForCell(required, importingValue);
         studentWithErrors[required.field].error = requiredDataError;
     }
-    const { grade, gradeType } = currentStudent;
+    const { grade, gradeType, gradeLevel, exitCategory, postSchoolOutcome } = currentStudent;
     if(grade.value) {
         if(!gradeType.value) {
             studentWithErrors.grade.error = 'Grade type must be specified when a grade is specified';
@@ -256,6 +256,17 @@ function attachErrors(currentStudent, importingStudents, validDisabilities) {
             }
         }
     }
+
+    // DB schema requirement
+    if(gradeLevel.value === 'Post-school') {
+        if(!exitCategory.value) {
+            studentWithErrors.exitCategory.error = 'Exit category is required when the grade level is Post-school';
+        }
+        if(!postSchoolOutcome.value) {
+            studentWithErrors.postSchoolOutcome.error = 'Post-school outcome is required when the grade level is Post-school';
+        }
+    }
+
     if(currentStudent.disabilities.value !== '' && !checkDisabilities(currentStudent.disabilities.value, validDisabilities)) {
         const disabilitiesError = 'One or more of the disabilities is an unexpected value';;
         studentWithErrors.disabilities.error = disabilitiesError;
