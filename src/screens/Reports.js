@@ -10,7 +10,6 @@ import NavigationBar from '../components/NavigationBar';
 import ListContainer from '../components/ListContainer';
 import ListItem from '../components/ListItem';
 import ListItemInfo from '../components/ListItemInfo';
-import List from '../components/List';
 import TabContainer from '../components/TabContainer';
 import Tabs from '../components/Tabs';
 import Tab from '../components/Tab';
