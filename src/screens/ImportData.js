@@ -1,9 +1,10 @@
 import { action, computed, observable } from 'mobx';
 import { inject, observer } from 'mobx-react';
-import React, { Component, useState, useEffect } from 'react';
+import React, { Component, useState, useEffect, useCallback } from 'react';
 import { withRouter } from 'react-router-dom';
 import styled, {css} from 'styled-components';
 import sweetalert from 'sweetalert2';
+import debounce from 'lodash/debounce';
 import * as breakpoints from '../breakpoints';
 import BlockButton from '../components/BlockButton';
 import Column from '../components/Column';
@@ -392,6 +393,7 @@ const Content = styled(Section.Content)`
 const ImportFormContainer = styled(Column)`
   flex: 1;
   max-width: 450px;
+  min-width: 360px;
   height: 100%;
   background-color: #4F4F4F;
   align-items: center;
@@ -559,6 +561,10 @@ const StyledCSVStudentUploadPreview = styled(CSVStudentUploadPreview)`
     height: 100%;
     max-height: 500px;
     width: 100%;
+    @media ${breakpoints.mediumOrSmall} {
+        max-width: 95vw;
+    }
+    max-width: 95vw;
     min-width: 330px;
     margin-top: 6px;
     margin-bottom: 15px;

@@ -2,6 +2,7 @@ import React from 'react';
 import styled, { css } from 'styled-components';
 import Column from './Column';
 import Row from './Row';
+import * as breakpoints from '../breakpoints';
 
 const CSVFileReport = ({ errors = [], warnings = [], selectedErrors = [], selectedWarnings = [], onErrorEnter, onErrorLeave, onErrorClick, onWarningEnter, onWarningLeave, onWarningClick }) => (
     <FileUploadReportContainer>
@@ -162,6 +163,10 @@ const FileUploadReportContainer = styled(Column)`
     align-self: flex-start;
     ${ReportWithLabel} + ${ReportWithLabel} {
         margin-top: 20px;
+    }
+
+    @media ${breakpoints.mediumOrSmall} {
+        align-self: center;
     }
 `;
 
