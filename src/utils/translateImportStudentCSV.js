@@ -345,7 +345,13 @@ async function recheckImport(data, currentStudents = [], validDisabilities) {
     }
 }
 
+function getDownloadTemplateUrl() {
+    const headers = encodeURIComponent(csvDataHelper.columns.map(column => column.headerText).join(','));
+    return `data:text/csv;charset=utf-8,${headers}`;
+}
+
 export {
     translateImportStudentCSV, 
-    recheckImport
+    recheckImport,
+    getDownloadTemplateUrl,
 };

@@ -18,7 +18,7 @@ import TermSelect from '../components/TermSelect';
 import CSVStudentUploadPreview from '../components/CSVStudentUploadPreview';
 import Spinner from '../components/Spinner';
 import parseCSV from '../utils/parseCSV';
-import {translateImportStudentCSV, recheckImport} from '../utils/translateImportStudentCSV';
+import {translateImportStudentCSV, recheckImport, getDownloadTemplateUrl} from '../utils/translateImportStudentCSV';
 import first from '../utils/first';
 
 
@@ -308,6 +308,7 @@ class ImportData extends Component {
                                     selectedWarnings={[...selectedWarnings, hoveringWarning]}
                                 />
                             )}
+                            <DownloadTemplateLink href={getDownloadTemplateUrl()} download="student-import-template.csv">Download Template</DownloadTemplateLink>
                         </ImportFormContainer>
                         {file && ( 
                             loading ? (<DataPreview loading><Spinner /></DataPreview>)
@@ -648,3 +649,8 @@ const CSVDataImportPreview = ({studentData, onDataChanged, onImportClicked, onCa
         </DataPreview>
     );
 }
+
+const DownloadTemplateLink = styled.a`
+    /* Only a dev tool */
+    display: ${process.env.NODE_ENV === 'development' ? 'block': 'none'}; 
+`;
