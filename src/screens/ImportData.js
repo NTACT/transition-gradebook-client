@@ -4,7 +4,6 @@ import React, { Component, useState, useEffect, useCallback } from 'react';
 import { withRouter } from 'react-router-dom';
 import styled, {css} from 'styled-components';
 import sweetalert from 'sweetalert2';
-import debounce from 'lodash/debounce';
 import * as breakpoints from '../breakpoints';
 import BlockButton from '../components/BlockButton';
 import Column from '../components/Column';
@@ -40,7 +39,6 @@ class ImportData extends Component {
     @observable loading = false;
     @observable importedStudents = null;
     @observable disabilities = [];
-    @observable currentTermStudents = [];
 
     @action.bound
     async handleSchoolYearChange(e) {
@@ -56,7 +54,7 @@ class ImportData extends Component {
         this.selectedWarnings = [];
         this.hoveringError = null;
         this.hoveringWarning = null;
-        const { students, ...fileReport } = await recheckImport(this.importedStudents, this.currentTermStudents, this.disabilities);
+        const { students, ...fileReport } = await recheckImport(this.importedStudents, this.schoolYear.students, this.disabilities);
         this.importedStudents = students;
         this.fileReport = fileReport;
     }
@@ -64,8 +62,6 @@ class ImportData extends Component {
     @action.bound
     async handleTermChange(e) {
         this.term = e.target.value;
-        this.currentTermStudents = await this.props.store.fetchTermStudents({id : this.term});
-        await this.recheckImport();
 
     }
 
@@ -85,7 +81,7 @@ class ImportData extends Component {
             if(errors.length) {
                 console.error(errors);
             }
-            const { students, ...fileReport} = await translateImportStudentCSV(data, this.currentTermStudents, this.disabilities);
+            const { students, ...fileReport} = await translateImportStudentCSV(data, this.schoolYear.students, this.disabilities);
             this.importedStudents = students;
             this.fileReport = fileReport;
         } finally {
@@ -163,7 +159,7 @@ class ImportData extends Component {
         this.selectedWarnings = [];
         this.hoveringError = null;
         this.hoveringWarning = null;
-        const { students, ...fileReport } = await recheckImport(updatedCSV, this.currentTermStudents, this.disabilities);
+        const { students, ...fileReport } = await recheckImport(updatedCSV, this.schoolYear.students, this.disabilities);
         this.importedStudents = students;
         this.fileReport = fileReport;
     }
@@ -197,13 +193,11 @@ class ImportData extends Component {
         this.file = null;
         this.fileReport = null;
         this.term = null;
-        this.currentTermStudents = null;
     }
 
     async handleUploadFailure() {
         this.schoolYear = await this.props.store.fetchSchoolYear(this.schoolYearId);
-        this.currentTermStudents = await this.props.store.fetchTermStudents({id: this.term});
-        const { students, ...fileReport} = await recheckImport(this.importedStudents, this.currentTermStudents, this.disabilities);
+        const { students, ...fileReport} = await recheckImport(this.importedStudents, this.schoolYear.students, this.disabilities);
         this.importedStudents = students;
         this.fileReport = fileReport;
     }
