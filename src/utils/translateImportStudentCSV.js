@@ -1,6 +1,7 @@
 import nanoid from 'nanoid';
 import moment from 'moment';
 import { csvDataHelper } from 'tgb-shared';
+import enums from '../enums';
 
 /**
  * Attempt to get the value using the valid aliases for the fields
@@ -40,6 +41,9 @@ function isOptionalAndUnacceptedValue(field, uploadedValue) {
     }
     if (typeof uploadedValue === 'undefined' || uploadedValue === null) {
         return false;
+    }
+    if(field.type === csvDataHelper.types.integer || field.type === csvDataHelper.types.float) {
+        return isNaN(+uploadedValue);
     }
     return !field.required && !field.validValues.map(val => val.toLowerCase()).includes(uploadedValue.toString().toLowerCase());
 }
@@ -239,6 +243,18 @@ function attachErrors(currentStudent, importingStudents, validDisabilities) {
         const importingValue = currentStudent[required.field].value;
         const requiredDataError = getErrorsForCell(required, importingValue);
         studentWithErrors[required.field].error = requiredDataError;
+    }
+    const { grade, gradeType } = currentStudent;
+    if(grade.value) {
+        if(!gradeType.value) {
+            studentWithErrors.grade.error = 'Grade type must be specified when a grade is specified';
+        } else {
+            if(gradeType === 'percent' || gradeType === 'gpa') {
+                studentWithErrors.grade.error = isNaN(+grade.value) ? 'Grade is not a valid number' : studentWithErrors.grade.error;
+            } else {
+                studentWithErrors.grade.error = !enums.gradeLetters.find(letter => letter === grade.value.toUpperCase()) ? 'Grade is not a valid letter grade' : studentWithErrors.grade.error;
+            }
+        }
     }
     if(currentStudent.disabilities.value !== '' && !checkDisabilities(currentStudent.disabilities.value, validDisabilities)) {
         const disabilitiesError = 'One or more of the disabilities is an unexpected value';;
