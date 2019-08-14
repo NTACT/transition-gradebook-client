@@ -4,7 +4,6 @@ import React, { Component, useState, useEffect } from 'react';
 import { withRouter } from 'react-router-dom';
 import styled, {css} from 'styled-components';
 import sweetalert from 'sweetalert2';
-import debounce from 'lodash/debounce';
 import * as breakpoints from '../breakpoints';
 import BlockButton from '../components/BlockButton';
 import Column from '../components/Column';
@@ -64,7 +63,7 @@ class ImportData extends Component {
         this.selectedWarnings = [];
         this.lastSelectedFileReport = null;
         try {
-            const { data, meta, errors } = await parseCSV(this.file);
+            const { data, errors } = await parseCSV(this.file);
             if(errors.length) {
                 console.error(errors);
             }
@@ -182,6 +181,13 @@ class ImportData extends Component {
         this.schoolYear = await this.props.store.fetchSchoolYear(this.schoolYearId);
     }
 
+    async handleUploadFailure() {
+        this.schoolYear = await this.props.store.fetchSchoolYear(this.schoolYearId);
+        const { students, ...fileReport} = await recheckImport(this.importedStudents, this.schoolYear.students, this.disabilities);
+        this.importedStudents = students;
+        this.fileReport = fileReport;
+    }
+
     async submit() {
         this.loading = true;
         try {
@@ -204,7 +210,7 @@ class ImportData extends Component {
             });
             console.error(e);
             // Refresh the student list and recheck the import, in case some of the students were successfully uploaded
-            await this.handleUploadComplete();
+            await this.handleUploadFailure();
         } finally {
             this.loading = false;
         }

@@ -2,6 +2,48 @@ import nanoid from 'nanoid';
 import moment from 'moment';
 import { csvDataHelper } from 'tgb-shared';
 
+/**
+ * Attempt to get the value using the valid aliases for the fields
+ * @param {object} studentData the parsed student object
+ * @param {Array<string>} aliases a list of valid aliases
+ */
+function findFieldByAlias(studentData, aliases) {
+    if (!studentData) {
+        return undefined;
+    }
+    for (const alias of aliases) {
+        const data = studentData[alias];
+        if (data) {
+            return data;
+        }
+    }
+    return undefined;
+}
+
+function isRequiredAndMissing(field, uploadedValue) {
+    return field.required && !uploadedValue
+}
+
+function isRequiredAndUnacceptedValue(field, uploadedValue) {
+    if (!field.validValues || !field.required) {
+        return false;
+    }
+    if (typeof uploadedValue === 'undefined') {
+        return true;
+    }
+    return uploadedValue === null || !field.validValues.map(val => val.toLowerCase()).includes(uploadedValue.toString().toLowerCase());
+}
+
+function isOptionalAndUnacceptedValue(field, uploadedValue) {
+    if (!field.validValues) {
+        return false;
+    }
+    if (typeof uploadedValue === 'undefined' || uploadedValue === null) {
+        return false;
+    }
+    return !field.required && !field.validValues.map(val => val.toLowerCase()).includes(uploadedValue.toString().toLowerCase());
+}
+
 const notProvided = value => value === undefined || value === null;
 
 function normalizeValue(field, value) {
@@ -98,17 +140,17 @@ function compareFields(existingStudentField, csvField, column) {
 }
 
 function getErrorsForCell(field, data) {
-    if(csvDataHelper.isRequiredAndMissing(field, data)) {
+    if(isRequiredAndMissing(field, data)) {
         return `Required data is missing`;
     }
-    if(csvDataHelper.isRequiredAndUnacceptedValue(field, data)) {
+    if(isRequiredAndUnacceptedValue(field, data)) {
         return `Required data is an unexpected value`;
     }
     return null;
 }
 
 function getWarningsForCell(field, data) {
-    if(csvDataHelper.isOptionalAndUnacceptedValue(field, data)) {
+    if(isOptionalAndUnacceptedValue(field, data)) {
         return `Data is an unexpected value.`;
     }
     return null;
@@ -182,7 +224,7 @@ function translateRow(studentData) {
     const normalizedStudentData = fromEntries(Object.entries(studentData).map(csvDataHelper.normalizeFieldNames));
     const translated = {};
     for(const column of [...csvDataHelper.requiredFields, ...csvDataHelper.optionalFields]) {
-        const translatedField = csvDataHelper.findFieldByAlias(normalizedStudentData, column.validAlias);
+        const translatedField = findFieldByAlias(normalizedStudentData, column.validAlias);
         translated[column.field] = {
             value: normalizeValue(column, translatedField),
             rawValue: translatedField,
