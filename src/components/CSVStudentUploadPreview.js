@@ -90,9 +90,11 @@ const CSVStudentUploadPreview = (props) => {
                         onClick={() => onClick(entry.id, cell.id)}
                     >
                         <CellContent>
-                            {column.field === 'studentId' && !entry.currentStudent && (
+                            {column.field === 'studentId' && (!entry.currentStudent ? (
                                 <NewStudentDotAndHover />
-                            )}
+                            ) : (
+                                <ExistingStudent />
+                            ))}
                             {editableField && editableField.cellId === cell.id ? renderEditable(column, cell.value) : renderReadonly(cell.value)}
                         </CellContent>
                         {cell.error && <WarningErrorHover>{cell.error}</WarningErrorHover>}
@@ -389,11 +391,18 @@ const NewStudent = styled(({children, ...rest}) => (
     border-radius: 50%;
 `;
 
+const ExistingStudent = styled.div`
+    height: 6px;	
+    width: 6px;	
+    background-color: transparent;
+    border-radius: 50%;
+`;
+
 const CellContent = styled(Row)`
     justify-content: center;
     align-items: center;
     position: relative;
-    ${NewStudent} {
+    ${NewStudent}, ${ExistingStudent} {
         margin-right: 6px;
     }
 `;
