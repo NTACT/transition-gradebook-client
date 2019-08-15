@@ -12,7 +12,13 @@ class MultipleDatePicker extends Component {
   @observable show = false
   @observable current = new Date()
 
-  @action.bound YearMonthForm = ({ date, localeUtils }) => {
+  @action.bound handleMonthYearChange(e) {
+    const { year, month } = e.target.form
+    this.current = new Date(year.value, month.value)
+  }
+
+  YearMonthForm = ({ date, localeUtils }) => {
+    const { handleMonthYearChange } = this
     const currentYear = new Date().getFullYear()
     const fromMonth = new Date(currentYear - 1, 0)
     const toMonth = new Date(currentYear + 5, 11)
@@ -23,21 +29,16 @@ class MultipleDatePicker extends Component {
       years.push(i)
     }
 
-    const handleChange = (e) => {
-      const { year, month } = e.target.form
-      this.current = new Date(year.value, month.value)
-    }
-
     return (
       <div className="DayPicker-Caption">
-        <select name="month" onChange={handleChange} value={date.getMonth()}>
+        <select name="month" onChange={handleMonthYearChange} value={date.getMonth()}>
           {months.map((month, i) => (
             <option key={month} value={i}>
               {month}
             </option>
           ))}
         </select>
-        <select name="year" onChange={handleChange} value={date.getFullYear()}>
+        <select name="year" onChange={handleMonthYearChange} value={date.getFullYear()}>
           {years.map(year => (
             <option key={year} value={year}>
               {year}
@@ -48,12 +49,14 @@ class MultipleDatePicker extends Component {
     )
   }
 
-  @action.bound showCalendar = (event) => {
+
+
+  @action.bound showCalendar(event) {
     event.preventDefault()
     this.show = true
   }
 
-  @action.bound closeCalendar = (event) => {
+  @action.bound closeCalendar(event) {
     event.preventDefault()
     this.show = false
   }
@@ -63,6 +66,7 @@ class MultipleDatePicker extends Component {
     const {
       showCalendar,
       closeCalendar,
+
       show,
       YearMonthForm,
       current
