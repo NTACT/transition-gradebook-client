@@ -23,6 +23,7 @@ import responsive from '../utils/responsive';
 import * as Icons from '../components/Icons';
 import * as breakpoints from '../breakpoints';
 import OpenFiltersButton from '../components/OpenFiltersButton';
+import RadioButton from '../components/RadioButton';
 
 @responsive
 @withRouter
@@ -33,6 +34,7 @@ class Students extends Component {
   @observable filtersOpen = false;
   @observable filter = null;
   @observable loadTask = null;
+  @observable selectedStudents = []
 
   @computed get normalizedSearch() {
     return (this.search || '').trim().toLowerCase();
@@ -64,8 +66,14 @@ class Students extends Component {
   }
 
   @action.bound handleStudentClick(student) {
-    const { schoolYear } = this;
-    this.props.history.push(student.getViewRoute(schoolYear));
+    const { schoolYear, schoolYearId } = this;
+    this.selectedStudents.push(student)
+    if (this.selectedStudents.length === 1) {
+      this.props.history.push(student.getViewRoute(schoolYear));
+    } else {
+      // TODO: switch to base view component, handle multiple select
+      this.props.history.push(`/${schoolYearId}/students`)
+    }
   }
 
   @action.bound async handleCreateStudentClick() {
@@ -155,13 +163,9 @@ class Students extends Component {
   }
 
   renderStudentListItem = student => (
-    <StudentListItem
-      key={student.id}
-      student={student}
-      onClick={this.handleStudentClick}
-    >
-      <StudentEditButton onClick={this.handleStudentEditClick.bind(null, student)}>
-        <EditIcon/>
+    <StudentListItem key={student.id} student={student}>
+      <StudentEditButton onClick={this.handleStudentClick.bind(null, student)}>
+        <RadioButton checked={this.selectedStudents.includes(student)} />
       </StudentEditButton>
     </StudentListItem>
   );
@@ -357,11 +361,6 @@ const ExportButton = styled(Button)`
 const ExportIcon = styled(Icons.ArrowSquare)`
   width: 22px;
   height: 20px;
-`;
-
-const EditIcon = styled(Icons.PenSquare)`
-  width: 19px;
-  height: 19px;
 `;
 
 const StudentEditButton = styled(Button)``;
