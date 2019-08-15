@@ -82,6 +82,7 @@ const CSVStudentUploadPreview = (props) => {
             <>
             {csvDataHelper.columns.map(column => {
                 const cell = entry[column.field];
+                const editMode = editableField && editableField.cellId === cell.id;
                 return (
                     <Cell 
                         key={cell.id} 
@@ -89,6 +90,7 @@ const CSVStudentUploadPreview = (props) => {
                         isWarning={!!cell.warning || entry.currentStudent} 
                         selected={isSelected(cell)} 
                         onClick={() => onClick(entry.id, cell.id)}
+                        editMode={editMode}
                     >
                         <CellContent>
                             {column.field === 'studentId' && (!entry.currentStudent ? (
@@ -306,6 +308,11 @@ const Cell = styled('td')`
     ${getColors}
     ${CellWidth}
 
+    ${props => props.editMode && css`
+        padding-top: 0;
+        padding-bottom: 0;
+    `};
+
     &:hover {
         ${WarningErrorHover} {
             display: flex;
@@ -427,6 +434,7 @@ const CellContent = styled(Row)`
     justify-content: center;
     align-items: center;
     position: relative;
+    ${CellWidth}
     ${NewStudent}, ${ExistingStudent} {
         margin-right: 6px;
     }

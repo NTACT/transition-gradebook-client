@@ -155,11 +155,9 @@ class ImportData extends Component {
         this.selectedWarnings = [];
         this.hoveringError = null;
         this.hoveringWarning = null;
-        this.loading = true;
         const { students, ...fileReport } = await recheckImport(updatedCSV, this.schoolYear.students, this.disabilities);
         this.importedStudents = students;
         this.fileReport = fileReport;
-        this.loading = false;
     }
 
     @computed
