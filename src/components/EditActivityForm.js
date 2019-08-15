@@ -20,6 +20,7 @@ import XButton from './XButton';
 import SpinnerOverlay from './SpinnerOverlay';
 import * as breakpoints from '../breakpoints';
 import MultipleDatePicker from './MultipleDatePicker';
+import { DateUtils } from 'react-day-picker/DayPicker';
 
 const NONE = '';
 const eventSortFn = (a, b) => b.eventTime - a.eventTime; // most recent first
@@ -76,7 +77,7 @@ class EditActivityForm extends Component {
         });
       }
     })
-    this.eventTimes.splice(0, this.eventTimes.length)
+    this.eventTimes = []
     this.events = this.events.sort(eventSortFn);
     return false;
   }
@@ -180,6 +181,16 @@ class EditActivityForm extends Component {
     history.push(student.getViewRoute(schoolYear));
   }
 
+  @action.bound handleDayClick(day, { selected }) {
+    const { eventTimes } = this
+    if (selected) {
+      const selectedIndex = eventTimes.findIndex(selectedDay => DateUtils.isSameDay(selectedDay, day))
+      eventTimes.splice(selectedIndex, 1)
+    } else {
+      eventTimes.push(day)
+    }
+  }
+
   @action componentDidMount() {
     const { activity } = this.props;
 
@@ -205,6 +216,7 @@ class EditActivityForm extends Component {
       submitTask,
       dirty,
       invalidDateError,
+      handleDayClick
     } = this;
 
     return (
@@ -248,7 +260,7 @@ class EditActivityForm extends Component {
               <EventTimeContainer>
                 <EventTimeInputRow>
                   {/* onChange={this.handleEventTimeChange} */}
-                  <EventTimePicker value={eventTimes} />
+                  <EventTimePicker value={eventTimes} handleDayClick={handleDayClick} />
                   <EventAddButton onClick={this.handleAddEventClick} disabled={eventTimes.length === 0}>ADD EVENT</EventAddButton>
                 </EventTimeInputRow>
 

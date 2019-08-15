@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 import Button from './Button';
-import DayPicker, { DateUtils } from 'react-day-picker/DayPicker';
+import DayPicker from 'react-day-picker/DayPicker';
 import 'react-day-picker/lib/style.css';
 import styled from 'styled-components';
 import { observable, action } from 'mobx';
@@ -58,23 +58,12 @@ class MultipleDatePicker extends Component {
     this.show = false
   }
 
-  @action.bound handleDayClick = (day, { selected }) => {
-    const { value } = this.props
-    if (selected) {
-      const selectedIndex = value.findIndex(selectedDay => DateUtils.isSameDay(selectedDay, day));
-      value.splice(selectedIndex, 1);
-    } else {
-      value.push(day);
-    }
-  }
-
   render() {
-    const { className, value } = this.props
+    const { className, value, handleDayClick } = this.props
     const {
       showCalendar,
       closeCalendar,
       show,
-      handleDayClick,
       YearMonthForm,
       current
     } = this
