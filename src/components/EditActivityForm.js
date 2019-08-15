@@ -9,7 +9,6 @@ import Label from './Label';
 import Select from './Select';
 import Textarea from './Textarea';
 import Button from './Button';
-import DatePicker from './DatePicker';
 import FormError from './FormError';
 import FormRow from './FormRow';
 import FormColumn from './FormColumn';
@@ -20,6 +19,8 @@ import EnumSelect from './EnumSelect';
 import XButton from './XButton';
 import SpinnerOverlay from './SpinnerOverlay';
 import * as breakpoints from '../breakpoints';
+import MultipleDatePicker from './MultipleDatePicker';
+import { DateUtils } from 'react-day-picker/DayPicker';
 
 const NONE = '';
 const eventSortFn = (a, b) => b.eventTime - a.eventTime; // most recent first
@@ -32,7 +33,7 @@ class EditActivityForm extends Component {
   @observable activityToEdit = null;
   @observable activityTypeId = null;
   @observable frequency = null;
-  @observable eventTime = null;
+  @observable eventTimes = [];
   @observable events = [];
   @observable dirty = true;
   @observable invalidDateError = null;
@@ -42,6 +43,7 @@ class EditActivityForm extends Component {
 
   @computed get edit() {
     return !!this.activityToEdit;
+
   }
 
   @action handleChange() {
@@ -62,23 +64,27 @@ class EditActivityForm extends Component {
   @action.bound handleAddEventClick(event) {
     this.handleChange();
     event.preventDefault();
-    const date = new Date(this.eventTime + 'T01:01:01.00');
-    if(!isValidDate(date)) {
-      this.invalidDateError = new Error(`Invalid date. Format should be: YYYY-MM-DD`);
-      return;
-    }
-    this.events.push({
-      id: `event-${tempIdCounter++}`,
-      eventTime: date
-    });
-    this.eventTime = null;
+    this.eventTimes.forEach(event => {
+      const date = new Date(event);
+      if (!isValidDate(date)) {
+        this.invalidDateError = new Error(`Invalid date. Format should be: YYYY-MM-DD`);
+        return;
+      }
+      if (this.events.every(event => event.eventTime.getTime() !== date.getTime())) {
+        this.events.push({
+          id: `event-${tempIdCounter++}`,
+          eventTime: date
+        });
+      }
+    })
+    this.eventTimes = []
     this.events = this.events.sort(eventSortFn);
     return false;
   }
 
   @action.bound handleEventTimeChange(event) {
     this.handleChange();
-    this.eventTime = event.target.value;
+    this.eventTimes = event.target.value;
   }
 
   @action.bound async handleEventRemove(activityEvent, event) {
@@ -92,7 +98,7 @@ class EditActivityForm extends Component {
       cancelButtonText: 'No'
     });
 
-    if(!confirmResult.value) return;
+    if (!confirmResult.value) return;
 
     this.handleChange();
     this.events.remove(activityEvent);
@@ -124,19 +130,19 @@ class EditActivityForm extends Component {
       events,
     };
 
-    if(edit) {
+    if (edit) {
       this.submitTask = store.editStudentActivity(student, schoolYear, activityToEdit, fields);
       const activity = await this.submitTask;
       activityToEdit.patch(activity);
       swal('Success', 'Activity saved', 'success');
-    } else { 
+    } else {
       this.submitTask = store.createStudentActivity(student, schoolYear, fields);
       const activity = await this.submitTask;
-      if(onCreateActivity) onCreateActivity(activity);
+      if (onCreateActivity) onCreateActivity(activity);
       swal('Success', 'Activity created', 'success');
     }
 
-    this.close();    
+    this.close();
   }
 
   @action async delete() {
@@ -149,13 +155,13 @@ class EditActivityForm extends Component {
       cancelButtonText: 'No'
     });
 
-    if(!confirmResult.value) return false;
+    if (!confirmResult.value) return false;
     const { store, onDeleteActivity } = this.props;
     try {
       await store.deleteActivity(this.activityToEdit);
-      if(onDeleteActivity) onDeleteActivity(this.activityToEdit);
+      if (onDeleteActivity) onDeleteActivity(this.activityToEdit);
       this.close();
-    } catch(error) {
+    } catch (error) {
       await swal({
         type: 'error',
         title: 'Oops...',
@@ -175,10 +181,20 @@ class EditActivityForm extends Component {
     history.push(student.getViewRoute(schoolYear));
   }
 
+  @action.bound handleDayClick(day, { selected }) {
+    const { eventTimes } = this
+    if (selected) {
+      const selectedIndex = eventTimes.findIndex(selectedDay => DateUtils.isSameDay(selectedDay, day))
+      eventTimes.splice(selectedIndex, 1)
+    } else {
+      eventTimes.push(day)
+    }
+  }
+
   @action componentDidMount() {
     const { activity } = this.props;
 
-    if(activity) {
+    if (activity) {
       this.activityToEdit = activity;
       this.activityTypeId = activity.activityType.id;
       this.events = activity.events.sort(eventSortFn);
@@ -195,19 +211,20 @@ class EditActivityForm extends Component {
       activityTypeId,
       frequency,
       notes,
-      eventTime,
+      eventTimes,
       events,
       submitTask,
       dirty,
       invalidDateError,
+      handleDayClick
     } = this;
 
     return (
       <Root>
-        <SpinnerOverlay open={submitTask && submitTask.pending}/>
+        <SpinnerOverlay open={submitTask && submitTask.pending} />
         <Rejected task={submitTask}>
           {error =>
-            <FormError 
+            <FormError
               error={error}
               keyNames={{
                 activityTypeId: 'Activity Type'
@@ -217,8 +234,8 @@ class EditActivityForm extends Component {
         </Rejected>
         <Form onSubmit={this.handleSubmit}>
           <Header>
-            <Title>{edit ? 'EDIT' : 'ADD'} { group.name.toUpperCase() } ACTIVITY</Title>
-            <XButton component={Link} to={student.getViewRoute(schoolYear)}/>
+            <Title>{edit ? 'EDIT' : 'ADD'} {group.name.toUpperCase()} ACTIVITY</Title>
+            <XButton component={Link} to={student.getViewRoute(schoolYear)} />
           </Header>
 
           <FormRow>
@@ -233,7 +250,7 @@ class EditActivityForm extends Component {
 
             <FormColumn>
               <Label>Frequency</Label>
-              <EnumSelect name="activityFrequencies" value={frequency} onChange={this.handleFrequencyChange} placeholder="Select a frequency"/>
+              <EnumSelect name="activityFrequencies" value={frequency} onChange={this.handleFrequencyChange} placeholder="Select a frequency" />
             </FormColumn>
           </FormRow>
 
@@ -242,8 +259,9 @@ class EditActivityForm extends Component {
               <Label>Number of Events: {events.length}</Label>
               <EventTimeContainer>
                 <EventTimeInputRow>
-                  <EventTimePicker value={eventTime || ''} onChange={this.handleEventTimeChange}/>
-                  <EventAddButton onClick={this.handleAddEventClick} disabled={!eventTime}>ADD EVENT</EventAddButton>
+                  {/* onChange={this.handleEventTimeChange} */}
+                  <EventTimePicker value={eventTimes} handleDayClick={handleDayClick} />
+                  <EventAddButton onClick={this.handleAddEventClick} disabled={eventTimes.length === 0}>ADD EVENT</EventAddButton>
                 </EventTimeInputRow>
 
                 {events.length > 0 &&
@@ -252,9 +270,9 @@ class EditActivityForm extends Component {
                     <EventList>
                       {events.map(event =>
                         <EventListItem key={event.id}>
-                          {event.eventTime.toDateString()}
+                          {event.eventTime.toLocaleDateString("en-US", { year: 'numeric', month: 'long', day: 'numeric' })}
 
-                          <EventDeleteButton onClick={this.handleEventRemove.bind(null, event)}><EventDeleteIcon/></EventDeleteButton>
+                          <EventDeleteButton onClick={this.handleEventRemove.bind(null, event)}><EventDeleteIcon /></EventDeleteButton>
                         </EventListItem>
                       )}
                     </EventList>
@@ -263,14 +281,14 @@ class EditActivityForm extends Component {
               </EventTimeContainer>
             </FormColumn>
             <FormColumn>
-              {invalidDateError && <FormError error={invalidDateError}/>}
+              {invalidDateError && <FormError error={invalidDateError} />}
             </FormColumn>
           </FormRow>
 
           <FormRow>
             <FormColumn>
               <Label>Notes</Label>
-              <NoteTextarea value={notes} onChange={this.handleNotesChange}/>
+              <NoteTextarea value={notes} onChange={this.handleNotesChange} />
             </FormColumn>
           </FormRow>
 
@@ -380,12 +398,20 @@ const EventTimeContainer = styled.div`
 const EventTimeInputRow = styled.div`
   display: flex;
   flex-direction: row;
-  align-items: stretch;
 `;
 
-const EventTimePicker = styled(DatePicker)`
+const EventTimePicker = styled(MultipleDatePicker)`
   background-color: #F2F2F2;
+  height: 40px;	
+  width: 234px;
+  font-size: 12px;
   margin-right: 15px;
+  font-family: "Open Sans";
+  font-style: italic;
+  color: #4A4A4A;
+  display: flex;
+  justify-content: center;
+  align-items: center
 `;
 
 const EventAddButton = styled(Button)`
