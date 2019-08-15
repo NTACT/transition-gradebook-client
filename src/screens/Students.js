@@ -270,7 +270,6 @@ class Students extends Component {
                 </SubRouteWrapper>
               );
             }}/>
-            
           </Content>
         </Main>
       </Screen>
