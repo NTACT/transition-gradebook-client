@@ -4,6 +4,9 @@ import { observer, inject } from 'mobx-react';
 import * as breakpoints from '../breakpoints'
 import { XIcon } from './Icons';
 import Button from './Button';
+import Tabs from './Tabs';
+import Tab from './Tab';
+import TabContainer from './TabContainer'
 
 @inject('store')
 @observer
@@ -21,9 +24,21 @@ class MultipleStudentInfoView extends Component {
     )
   }
 
+  MultipleStudentTabs = () => {
+    return (
+      <MultipleTabContainer>
+        <MultipleTabs>
+          <MultipleTab active={true}>
+            ACTIVITIES
+          </MultipleTab>
+        </MultipleTabs>
+      </MultipleTabContainer>
+    )
+  }
+
   render() {
     const { selectedStudents } = this.props
-    const { SelectedStudent } = this
+    const { SelectedStudent, MultipleStudentTabs } = this
 
     const numberSelected = `${selectedStudents.length} Students Selected`
     return (
@@ -40,12 +55,42 @@ class MultipleStudentInfoView extends Component {
               </SelectedStudentRow>
             </SelectedHeader>
           </Header>
+          <Content>
+            <MultipleStudentTabs />
+          </Content>
         </Main>
       </Root>
     )
   }
 }
 export default MultipleStudentInfoView;
+
+const MultipleTab = styled(Tab).attrs({
+  activeBackgroundColor: '#D43425',
+  inactiveBackgroundColor: 'white',
+  activeTextColor: 'white',
+  inactiveTextColor: '#D43425'
+})``
+
+const MultipleTabs = styled(Tabs)`
+  padding-left: 38px;
+  padding-top: 0;
+  max-width: 100%;
+`
+
+const MultipleTabContainer = styled(TabContainer)`
+  border-bottom: 0px solid white;
+  background-color: #F0F0F0;
+  height: auto;
+  max-width: 100%
+`
+
+const Content = styled.div`
+  position: relative;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+`
 
 const SelectedStudentItem = styled.div`
   display: flex;
