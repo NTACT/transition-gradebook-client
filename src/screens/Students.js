@@ -24,6 +24,7 @@ import * as Icons from '../components/Icons';
 import * as breakpoints from '../breakpoints';
 import OpenFiltersButton from '../components/OpenFiltersButton';
 import RadioButton from '../components/RadioButton';
+import MultipleStudentInfoView from '../components/MultipleStudentInfoView';
 
 @responsive
 @withRouter
@@ -46,17 +47,17 @@ class Students extends Component {
 
   @computed get filteredStudents() {
     const { normalizedSearch, filter, students } = this;
-    if(!normalizedSearch.length && !filter) return students;
+    if (!normalizedSearch.length && !filter) return students;
     return students.filter(student => {
-      if(normalizedSearch.length && student.searchMatches(normalizedSearch)) return true;
-      if(filter && student.filterMatches(filter)) return true;
+      if (normalizedSearch.length && student.searchMatches(normalizedSearch)) return true;
+      if (filter && student.filterMatches(filter)) return true;
       return false;
     });
   }
 
   @computed get schoolYear() {
     const { loadTask } = this;
-    if(!loadTask.resolved) return null;
+    if (!loadTask.resolved) return null;
     return loadTask.result;
   }
 
@@ -66,13 +67,15 @@ class Students extends Component {
   }
 
   @action.bound handleStudentClick(student) {
-    const { schoolYear, schoolYearId } = this;
-    this.selectedStudents.push(student)
-    if (this.selectedStudents.length === 1) {
+    const { schoolYear, schoolYearId, selectedStudents } = this;
+    if (!selectedStudents.includes(student)) {
+      selectedStudents.push(student)
+    }
+
+    if (selectedStudents.length === 1) {
       this.props.history.push(student.getViewRoute(schoolYear));
     } else {
-      // TODO: switch to base view component, handle multiple select
-      this.props.history.push(`/${schoolYearId}/students`)
+      this.props.history.push(`/${schoolYearId}/students/multiple`)
     }
   }
 
@@ -90,7 +93,7 @@ class Students extends Component {
       cancelButtonText: 'No'
     }).then(result => result.value);
 
-    if(!confirmed) return;
+    if (!confirmed) return;
 
     this.props.history.push(`/${schoolYear.id}/students/new`);
   }
@@ -117,7 +120,7 @@ class Students extends Component {
     const { history, store } = this.props;
     const { schoolYear } = this;
 
-    if(!store.isCurrentSchoolYear(schoolYear) && !await student.confirmHistoricEdit()) return;
+    if (!store.isCurrentSchoolYear(schoolYear) && !await student.confirmHistoricEdit()) return;
 
     history.push(student.getEditRoute(schoolYear));
   }
@@ -127,18 +130,22 @@ class Students extends Component {
     const { store } = this.props;
     const csvString = await store.getStudentExportData(schoolYear, filter ? filteredStudents : null);
     const filename = `students-${schoolYear.yearRange}${filter ? '-filtered' : ''}.csv`;
-    downloadString(csvString , 'text/csv', filename);
+    downloadString(csvString, 'text/csv', filename);
   }
 
   @action async load() {
     const { store } = this.props;
     const schoolYear = store.getSchoolYearById(this.schoolYearId);
-    
-    if(schoolYear && schoolYear.students.length) {
+
+    if (schoolYear && schoolYear.students.length) {
       this.loadTask = AsyncTask.resolve(schoolYear);
     } else {
       this.loadTask = store.fetchSchoolYear(this.schoolYearId);
     }
+  }
+
+  @action.bound handleStudentRemove(id) {
+    this.selectedStudents = this.selectedStudents.filter(student => student.id !== id)
   }
 
   componentWillMount() {
@@ -148,7 +155,7 @@ class Students extends Component {
   componentDidUpdate(prevProps) {
     const schoolYearId = +this.props.match.params.schoolYearId;
     const prevSchoolYearId = +prevProps.match.params.schoolYearId;
-    if(schoolYearId !== prevSchoolYearId) {
+    if (schoolYearId !== prevSchoolYearId) {
       this.load();
       this.filter = null;
     }
@@ -157,21 +164,23 @@ class Students extends Component {
   renderLoadingSubroute() {
     return (
       <SubRouteWrapper>
-        <SpinnerOverlay open/>
+        <SpinnerOverlay open />
       </SubRouteWrapper>
     );
   }
 
-  renderStudentListItem = student => (
-    <StudentListItem key={student.id} student={student}>
-      <StudentEditButton onClick={this.handleStudentClick.bind(null, student)}>
-        <RadioButton checked={this.selectedStudents.includes(student)} />
-      </StudentEditButton>
-    </StudentListItem>
-  );
+  @action.bound renderStudentListItem(student) {
+    const { selectedStudents, handleStudentClick } = this
+
+    return (
+      <StudentListItem key={student.id} student={student}>
+        <RadioButton checked={selectedStudents.includes(student)} onChange={handleStudentClick.bind(null, student)} />
+      </StudentListItem>
+    )
+  };
 
   render() {
-    const { search, filter, schoolYearId, filteredStudents, schoolYear, loadTask } = this;
+    const { search, filter, schoolYearId, filteredStudents, schoolYear, loadTask, handleStudentRemove, selectedStudents } = this;
     const { schoolYears } = this.props.store;
 
     return (
@@ -197,79 +206,99 @@ class Students extends Component {
               <SearchForm>
                 <OpenFiltersButton onClick={this.handleFilterPanelToggle} />
                 <SearchInputContainer>
-                  <SearchInput onChange={this.handleSearchChange} value={search}/>
-                  <SearchIcon/>
+                  <SearchInput onChange={this.handleSearchChange} value={search} />
+                  <SearchIcon />
                 </SearchInputContainer>
                 <AddStudentButton onClick={this.handleCreateStudentClick}>
-                  <AddIcon/>
+                  <AddIcon />
                 </AddStudentButton>
               </SearchForm>
 
 
               <StudentList
                 students={filteredStudents}
+                selectedStudents={selectedStudents}
                 renderItem={this.renderStudentListItem}
               />
 
               <Pending task={loadTask}>
-                {() => !this.props.breakpoints.mediumOrSmall && <SpinnerOverlay open/>}
+                {() => !this.props.breakpoints.mediumOrSmall && <SpinnerOverlay open />}
               </Pending>
 
               <ExportButton onClick={this.handleExportClick}>
-                <div/>
+                <div />
                 EXPORT STUDENT DATA
-                <ExportIcon/>
+                <ExportIcon />
               </ExportButton>
             </StudentListContainer>
 
-            <StyledDivider/>
+            <StyledDivider />
 
             <Route path={`/${schoolYearId}/students/new`} render={props => {
-              if(schoolYear) {
+              if (schoolYear) {
                 return (
                   <SubRouteWrapper>
-                    <CreateStudentForm schoolYear={schoolYear}/>
+                    <CreateStudentForm schoolYear={schoolYear} />
                   </SubRouteWrapper>
                 );
               } else {
                 return this.renderLoadingSubroute();
               }
-            }}/>
+            }} />
 
             <Route path={`/${schoolYearId}/students/edit/:studentId`} render={props => {
-              if(!schoolYear) return this.renderLoadingSubroute();
+              if (!schoolYear) return this.renderLoadingSubroute();
               const student = filteredStudents.find(student => student.id === +props.match.params.studentId);
 
-              if(!student) return (<Redirect to={`/${schoolYearId}/students`}/>);
+              if (!student) return (<Redirect to={`/${schoolYearId}/students`} />);
 
               return (
                 <SubRouteWrapper>
-                  <EditStudentForm 
+                  <EditStudentForm
                     key={student.id}
                     student={student}
                     schoolYear={schoolYear}
                   />
                 </SubRouteWrapper>
               );
-            }}/>
+            }} />
 
             <Route path={`/${schoolYearId}/students/view/:studentId`} render={props => {
-              if(!schoolYear) return this.renderLoadingSubroute();
+              if (!schoolYear) return this.renderLoadingSubroute();
               const studentId = +props.match.params.studentId;
               const student = filteredStudents.find(student => student.id === studentId);
 
-              if(!student) return (<Redirect to={`/${schoolYearId}/students`}/>);
+              if (!student) return (<Redirect to={`/${schoolYearId}/students`} />);
 
               return (
                 <SubRouteWrapper>
-                  <StudentInfoView 
+                  <StudentInfoView
                     key={`${student.id}-${schoolYear.id}` /* Force re-mounting/re-loading on change */}
                     student={student}
                     schoolYear={schoolYear}
                   />
                 </SubRouteWrapper>
               );
-            }}/>
+            }} />
+
+            <Route path={`/${schoolYearId}/students/multiple`} render={props => {
+              const { selectedStudents } = this
+
+              if (selectedStudents.length <= 1) {
+                // TODO: need to see what the expected behavior is at this level
+                this.selectedStudents = [] 
+                return (<Redirect to={`/${schoolYearId}/students`} />)
+              }
+
+              return (
+                <SubRouteWrapper>
+                  <MultipleStudentInfoView
+                    selectedStudents={selectedStudents}
+                    handleStudentRemove={handleStudentRemove}
+                  />
+                </SubRouteWrapper>
+              )
+            }} />
           </Content>
         </Main>
       </Screen>
@@ -362,8 +391,6 @@ const ExportIcon = styled(Icons.ArrowSquare)`
   height: 20px;
 `;
 
-const StudentEditButton = styled(Button)``;
-
 const SearchForm = styled.div`
   width: 100%;
   height: 71px;
@@ -412,7 +439,7 @@ const YearSelectHandle = styled(Icons.WhiteChevron)`
 `;
 
 const YearSelect = styled(Select).attrs({
-  Handle: () => () => (<YearSelectHandle/>)
+  Handle: () => () => (<YearSelectHandle />)
 })`
   min-width: 120px;
   background-color: inherit;
