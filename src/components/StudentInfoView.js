@@ -13,6 +13,8 @@ import Tabs from './Tabs';
 import TermSelect from './TermSelect';
 import { Pending, Resolved, Rejected } from './Task';
 import * as breakpoints from '../breakpoints';
+import Button from './Button';
+import { PenSquare } from './Icons';
 
 const checkIsRiskRoute = pathname => /\/risks\/\d+\/?/.test(pathname);
 
@@ -31,7 +33,7 @@ class StudentInfoView extends Component {
   async loadActivities() {
     const { store } = this.props;
     const { student, schoolYear } = this.props;
-    if(student.isPostSchool) return;
+    if (student.isPostSchool) return;
     this.loadActivitiesTask = store.fetchStudentActivities(student, schoolYear);
     this.activities = await this.loadActivitiesTask;
   }
@@ -61,6 +63,14 @@ class StudentInfoView extends Component {
     this.activities.remove(activity);
   }
 
+  @action.bound async handleStudentEditClick(student) {
+    const { history, store, schoolYear } = this.props;
+
+    if (!store.isCurrentSchoolYear(schoolYear) && !await student.confirmHistoricEdit()) return;
+
+    history.push(student.getEditRoute(schoolYear));
+  }
+
   renderTabs() {
     const { pathname } = this.props.location;
     const isRiskRoute = checkIsRiskRoute(pathname);
@@ -74,7 +84,7 @@ class StudentInfoView extends Component {
           >
             ACTIVITIES
           </StudentTab>
-          <StudentTab 
+          <StudentTab
             onClick={this.handleRisksTabClick}
             active={isRiskRoute}
             data-risk-tab
@@ -96,22 +106,22 @@ class StudentInfoView extends Component {
         <Route path="/*/risks/:termId" render={props => {
           const termId = +props.match.params.termId;
           const term = schoolYear.terms.find(term => term.id === termId);
-          if(!term) return null;
+          if (!term) return null;
 
           return (
             <React.Fragment>
               {this.renderTabs()}
-              <StudentRisksView student={student} schoolYear={schoolYear} term={term}/>
+              <StudentRisksView student={student} schoolYear={schoolYear} term={term} />
             </React.Fragment>
           );
-        }}/>
+        }} />
 
         <Route path="/*/activities/create/:groupId" render={props => {
           const groupId = +props.match.params.groupId;
           const group = store.getActivityTypeGroupById(groupId);
 
           return (
-            <EditActivityForm 
+            <EditActivityForm
               key="create-activity"
               student={student}
               schoolYear={schoolYear}
@@ -119,26 +129,26 @@ class StudentInfoView extends Component {
               onCreateActivity={this.handleActivityCreated}
             />
           );
-        }}/>
+        }} />
 
         <Route path="/*/activities/edit/:activityId" render={props => {
           const activityId = +props.match.params.activityId;
           const activity = activities.find(activity => activity.id === activityId);
-          if(!activity) return null;
+          if (!activity) return null;
 
           const group = store.getActivityTypeGroupById(activity.activityType.activityTypeGroupId);
 
-          return(
+          return (
             <EditActivityForm
               key="edit-activity"
-              student={student} 
-              schoolYear={schoolYear} 
+              student={student}
+              schoolYear={schoolYear}
               group={group}
               activity={activity}
               onDeleteActivity={this.handleActivityDeleted}
             />
           );
-        }}/>
+        }} />
 
         <Route path="/" render={() =>
           <React.Fragment>
@@ -149,7 +159,7 @@ class StudentInfoView extends Component {
               activities={activities}
             />
           </React.Fragment>
-        }/>
+        } />
 
       </Switch>
     );
@@ -190,31 +200,36 @@ class StudentInfoView extends Component {
               <StudentName>{student.fullName}</StudentName>
               <StudentDescription>{student.description}</StudentDescription>
             </StudentText>
+            <SideHeader>
+              <Route path="/*/risks/:termId" render={props =>
+                <StyledTermSelect
+                  hidden={schoolYear.termType === 'annual'}
+                  value={props.match.params.termId}
+                  schoolYear={schoolYear}
+                  onChange={this.handleTermChange}
+                />
+              } />
 
-            <Route path="/*/risks/:termId" render={props =>
-              <StyledTermSelect
-                hidden={schoolYear.termType === 'annual'}
-                value={props.match.params.termId}
-                schoolYear={schoolYear}
-                onChange={this.handleTermChange}
-              />
-            }/>
+              <Button onClick={this.handleStudentEditClick.bind(null, student)}>
+                <EditIcon />
+              </Button>
+            </SideHeader>
           </Header>
-          {student.isPostSchool 
+          {student.isPostSchool
             ? this.renderPostSchoolContent()
             : <Content>
-                <Resolved task={loadActivitiesTask}>
-                  {this.renderSubroutes}
-                </Resolved>
+              <Resolved task={loadActivitiesTask}>
+                {this.renderSubroutes}
+              </Resolved>
 
-                <Rejected task={loadActivitiesTask}>
-                  {error => error.message}
-                </Rejected>
+              <Rejected task={loadActivitiesTask}>
+                {error => error.message}
+              </Rejected>
 
-                <Pending task={loadActivitiesTask}>
-                  {this.renderSubroutes}
-                </Pending>
-              </Content>
+              <Pending task={loadActivitiesTask}>
+                {this.renderSubroutes}
+              </Pending>
+            </Content>
           }
         </Main>
       </Root>
@@ -223,6 +238,17 @@ class StudentInfoView extends Component {
 }
 
 export default StudentInfoView;
+
+const SideHeader = styled.div`
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+`
+
+const EditIcon = styled(PenSquare)`
+  width: 19px;
+  height: 19px;
+`;
 
 const Root = styled.div`
   flex: 1;
@@ -273,7 +299,7 @@ const PostSchoolContentBody = styled.div`
   }
 `;
 
-const StudentTabs = styled(Tabs).attrs({flipped: true})`
+const StudentTabs = styled(Tabs).attrs({ flipped: true })`
   padding-left: 38px;
   padding-top: 0;
   max-width: 100%;
@@ -340,6 +366,7 @@ const StudentDescription = styled.h2`
 `;
 
 const StyledTermSelect = styled(TermSelect)`
+  margin-right: 8px;
   min-width: 150px;
   background-color: #E7E7E7;
   border-radius: 4px;
