@@ -71,3 +71,7 @@ export const WhiteChevron = styled.img.attrs({
 export const Calendar = styled.img.attrs({
   src: require('../assets/calendar_icon.svg')
 })``
+
+export const XIcon = styled.img.attrs({
+  src: require('../assets/x_icon.svg')
+})``

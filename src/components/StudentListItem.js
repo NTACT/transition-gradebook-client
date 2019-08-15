@@ -54,7 +54,6 @@ const Root = styled.li`
   position: relative;
   min-height: 70px;
   padding: 0 20px 0 0;
-  cursor: pointer;
   display: flex;
   flex-direction: row;
   justify-content: space-between;
