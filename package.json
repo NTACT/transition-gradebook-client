@@ -87,7 +87,7 @@
     "sw-precache-webpack-plugin": "0.11.5",
     "sweetalert2": "^7.20.5",
     "terser-webpack-plugin": "1.1.0",
-    "tgb-shared": "file:../shared",
+    "tgb-shared": "git+https://github.com/NTACT/transition-gradebook-shared.git",
     "url-loader": "1.1.1",
     "webpack": "4.19.1",
     "webpack-dev-server": "3.1.14",
