@@ -141,17 +141,20 @@ const ListItem = styled(Row)`
 `;
 
 const ReportCount = styled(Row)`
-color: #FFFFFF;
-font-weight: bold;
-font-family: "Open Sans";	
-margin-top: 5px;
-font-size: 12px;
+    color: #FFFFFF;
+    font-weight: bold;
+    font-family: "Open Sans";	
+    margin-top: 5px;
+    font-size: 12px;
 `;
 
 const ReportWithLabel = styled(Column)`
     width: 100%;
     max-width: 300px;
     margin-left: 40px;
+    @media ${breakpoints.mediumOrSmall} {
+        margin-left: 0;
+    }
 `;
 
 

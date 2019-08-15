@@ -440,6 +440,9 @@ const InputWithLabel = styled(Column)`
     width: 100%;
     max-width: 300px;
     margin-left: 40px;
+    @media ${breakpoints.mediumOrSmall} {
+        margin-left: 0;
+    }
 `;
 
 const Form = styled(Column)`
