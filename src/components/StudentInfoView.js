@@ -151,14 +151,14 @@ class StudentInfoView extends Component {
         }} />
 
         <Route path="/" render={() =>
-          <React.Fragment>
+          <>
             {this.renderTabs()}
             <StudentActivityList
               student={student}
               schoolYear={schoolYear}
               activities={activities}
             />
-          </React.Fragment>
+          </>
         } />
 
       </Switch>
