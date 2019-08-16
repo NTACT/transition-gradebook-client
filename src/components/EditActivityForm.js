@@ -113,7 +113,7 @@ class EditActivityForm extends Component {
 
   @action.bound async handleSubmit(event) {
     event.preventDefault();
-    const { store, student, students, schoolYear, onCreateActivity } = this.props;
+    const { store, student, students, schoolYear } = this.props;
     const {
       edit,
       frequency,
