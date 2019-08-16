@@ -69,13 +69,12 @@ class Students extends Component {
   @action.bound handleStudentClick(student) {
     const { schoolYear, schoolYearId, selectedStudents } = this;
     if (!selectedStudents.includes(student)) {
-      selectedStudents.push(student)
+      this.selectedStudents = selectedStudents.concat([student])
     }
 
-    if (selectedStudents.length === 1) {
-      this.props.history.push(student.getViewRoute(schoolYear));
-    } else {
-      this.props.history.push(`/${schoolYearId}/students/multiple`)
+    const path = this.selectedStudents.length === 1 ? student.getViewRoute(schoolYear) : `/${schoolYearId}/students/multiple`
+    if (this.props.location.pathname !== path) {
+      this.props.history.push(path)
     }
   }
 
@@ -285,8 +284,12 @@ class Students extends Component {
               const { selectedStudents } = this
 
               if (selectedStudents.length <= 1) {
-                // TODO: need to see what the expected behavior is at this level
-                this.selectedStudents = [] 
+                if (selectedStudents.length === 1) {
+                  const [student] = selectedStudents
+                  this.selectedStudents = [student]
+                  return (<Redirect to={student.getViewRoute(schoolYear)} />)
+                }
+                this.selectedStudents = []
                 return (<Redirect to={`/${schoolYearId}/students`} />)
               }
 
