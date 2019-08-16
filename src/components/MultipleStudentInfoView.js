@@ -7,7 +7,6 @@ import Button from './Button';
 import Tabs from './Tabs';
 import Tab from './Tab';
 import TabContainer from './TabContainer'
-import { groupActivities } from './StudentActivityList';
 import List from './List';
 import MultipleStudentActivityListItem from './MultipleStudentActivityListItem';
 import { Route, Switch, withRouter } from 'react-router-dom';

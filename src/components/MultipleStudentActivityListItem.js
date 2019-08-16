@@ -1,14 +1,13 @@
 import React, { Component } from 'react'
 import styled from 'styled-components';
 import Button from './Button';
-import { inject, observer } from 'mobx-react';
-import { observable, action } from 'mobx';
+import { observer } from 'mobx-react';
+import { action } from 'mobx';
 import { withRouter } from 'react-router-dom';
 import { RedCirclePlus } from './Icons';
 import * as breakpoints from '../breakpoints';
 
 @withRouter
-@inject('store')
 @observer
 class MultipleStudentActivityListItem extends Component {
   @action.bound handleActivityCreateClick() {
