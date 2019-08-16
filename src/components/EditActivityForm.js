@@ -113,7 +113,7 @@ class EditActivityForm extends Component {
 
   @action.bound async handleSubmit(event) {
     event.preventDefault();
-    const { store, student, schoolYear, onCreateActivity } = this.props;
+    const { store, student, students, schoolYear, onCreateActivity } = this.props;
     const {
       edit,
       frequency,
@@ -136,13 +136,22 @@ class EditActivityForm extends Component {
       activityToEdit.patch(activity);
       swal('Success', 'Activity saved', 'success');
     } else {
-      this.submitTask = store.createStudentActivity(student, schoolYear, fields);
-      const activity = await this.submitTask;
-      if (onCreateActivity) onCreateActivity(activity);
+      if (students) {
+        students.forEach((async (student) => this.createStudentActivity(student, schoolYear, fields)))
+      } else {
+        this.createStudentActivity(student, schoolYear, fields)
+      }
       swal('Success', 'Activity created', 'success');
     }
 
     this.close();
+  }
+
+  @action.bound async createStudentActivity(student, schoolYear, fields) {
+    const { onCreateActivity, store } = this.props
+    this.submitTask = store.createStudentActivity(student, schoolYear, fields);
+    const activity = await this.submitTask;
+    if (onCreateActivity) onCreateActivity(activity);
   }
 
   @action async delete() {
@@ -177,8 +186,8 @@ class EditActivityForm extends Component {
   }
 
   @action close() {
-    const { history, student, schoolYear } = this.props;
-    history.push(student.getViewRoute(schoolYear));
+    const { history, student, students, schoolYear } = this.props;
+    history.push(students ? `/${schoolYear.id}/students/multiple` : student.getViewRoute(schoolYear));
   }
 
   @action.bound handleDayClick(day, { selected }) {
@@ -205,7 +214,7 @@ class EditActivityForm extends Component {
   }
 
   render() {
-    const { student, schoolYear, group } = this.props;
+    const { student, students, schoolYear, group } = this.props;
     const {
       edit,
       activityTypeId,
@@ -235,7 +244,7 @@ class EditActivityForm extends Component {
         <Form onSubmit={this.handleSubmit}>
           <Header>
             <Title>{edit ? 'EDIT' : 'ADD'} {group.name.toUpperCase()} ACTIVITY</Title>
-            <XButton component={Link} to={student.getViewRoute(schoolYear)} />
+            <XButton component={Link} to={students ? `/${schoolYear.id}/students/multiple` : student.getViewRoute(schoolYear)} />
           </Header>
 
           <FormRow>

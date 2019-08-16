@@ -295,6 +295,7 @@ class Students extends Component {
                   <MultipleStudentInfoView
                     selectedStudents={selectedStudents}
                     handleStudentRemove={handleStudentRemove}
+                    schoolYear={schoolYear}
                   />
                 </SubRouteWrapper>
               )
