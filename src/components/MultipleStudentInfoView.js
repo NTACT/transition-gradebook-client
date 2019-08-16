@@ -7,10 +7,34 @@ import Button from './Button';
 import Tabs from './Tabs';
 import Tab from './Tab';
 import TabContainer from './TabContainer'
+import { groupActivities } from './StudentActivityList';
+import List from './List';
+import MultipleStudentActivityListItem from './MultipleStudentActivityListItem';
+import { Route, Switch, withRouter } from 'react-router-dom';
+import EditActivityForm from './EditActivityForm';
 
+@withRouter
 @inject('store')
 @observer
 class MultipleStudentInfoView extends Component {
+
+  ActivityList = () => {
+    const { MultipleStudentTabs } = this
+    const { store } = this.props;
+    const { activityTypeGroups } = store
+    return (
+      <>
+        <MultipleStudentTabs />
+        <ListRoot>
+          <GroupList>
+            {activityTypeGroups.map(group => (
+              <MultipleStudentActivityListItem key={group.id} group={group} />
+            ))}
+          </GroupList>
+        </ListRoot>
+      </>
+    )
+  }
 
   SelectedStudent = ({ id, name }) => {
     const { handleStudentRemove } = this.props
@@ -37,8 +61,8 @@ class MultipleStudentInfoView extends Component {
   }
 
   render() {
-    const { selectedStudents } = this.props
-    const { SelectedStudent, MultipleStudentTabs } = this
+    const { selectedStudents, schoolYear, location, store } = this.props
+    const { SelectedStudent, ActivityList } = this
 
     const numberSelected = `${selectedStudents.length} Students Selected`
     return (
@@ -56,7 +80,23 @@ class MultipleStudentInfoView extends Component {
             </SelectedHeader>
           </Header>
           <Content>
-            <MultipleStudentTabs />
+            <Switch>
+              <Route path={`/*/multiple/activities/create/:groupId`} render={props => {
+                const groupId = +props.match.params.groupId
+                const group = store.getActivityTypeGroupById(groupId)
+                return (
+                  <FormContainer>
+                    <EditActivityForm
+                      key="create-activity"
+                      schoolYear={schoolYear}
+                      group={group}
+                      students={selectedStudents}
+                    />
+                  </FormContainer>
+                )
+              }} />
+              <Route path={`${location.pathname}/`} render={ActivityList} />
+            </Switch>
           </Content>
         </Main>
       </Root>
@@ -64,6 +104,23 @@ class MultipleStudentInfoView extends Component {
   }
 }
 export default MultipleStudentInfoView;
+
+const FormContainer = styled.div`
+  margin-top: 20px;
+`
+
+const GroupList = styled(List)`
+  flex: 1;
+  z-index: 2;
+  overflow: visible;
+`
+
+const ListRoot = styled.div`
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  background-color: #D43425;
+`
 
 const MultipleTab = styled(Tab).attrs({
   activeBackgroundColor: '#D43425',
@@ -76,13 +133,15 @@ const MultipleTabs = styled(Tabs)`
   padding-left: 38px;
   padding-top: 0;
   max-width: 100%;
+  justify-content: flex-start;
 `
 
 const MultipleTabContainer = styled(TabContainer)`
   border-bottom: 0px solid white;
   background-color: #F0F0F0;
   height: auto;
-  max-width: 100%
+  max-width: 100%;
+  margin-top: 20px;
 `
 
 const Content = styled.div`
@@ -136,7 +195,7 @@ const SelectedHeader = styled.div`
   flex-direction: column;
   justify-content: center;
   padding: 30px 30px 11px 30px;
-  color: #4A4A4A
+  color: #4A4A4A;
 `
 
 const Header = styled.div`
@@ -145,7 +204,7 @@ const Header = styled.div`
   align-items: center;
   max-height: 75px;
   min-height: 75px;
-  margin 9px 30px 9px 0;
+  margin: 9px 30px 9px 0;
   justify-content: space-between;
 
   @media ${breakpoints.small} {
@@ -167,6 +226,6 @@ const Main = styled.div`
 const Root = styled.div`
   display: flex;
   flex: 1;
-  background-color: #F0F0F0
+  background-color: #F0F0F0;
   max-width: 100vew;
 `
