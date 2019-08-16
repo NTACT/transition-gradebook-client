@@ -141,7 +141,7 @@ class EditActivityForm extends Component {
       } else {
         this.createStudentActivity(student, schoolYear, fields)
       }
-      swal('Success', 'Activity created', 'success');
+      swal('Success', students ? 'Activities created' : 'Activity created', 'success');
     }
 
     this.close();
