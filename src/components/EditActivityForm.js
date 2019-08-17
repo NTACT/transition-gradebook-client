@@ -261,7 +261,9 @@ class EditActivityForm extends Component {
                 <EventTimeInputRow>
                   {/* onChange={this.handleEventTimeChange} */}
                   <EventTimePicker value={eventTimes} handleDayClick={handleDayClick} />
-                  <EventAddButton onClick={this.handleAddEventClick} disabled={eventTimes.length === 0}>ADD EVENT</EventAddButton>
+                  <EventAddButton onClick={this.handleAddEventClick} disabled={eventTimes.length === 0}>
+                    ADD {eventTimes.length > 1 ? "EVENTS" : "EVENT"}
+                  </EventAddButton>
                 </EventTimeInputRow>
 
                 {events.length > 0 &&
@@ -407,7 +409,6 @@ const EventTimePicker = styled(MultipleDatePicker)`
   font-size: 12px;
   margin-right: 15px;
   font-family: "Open Sans";
-  font-style: italic;
   color: #4A4A4A;
   display: flex;
   justify-content: center;

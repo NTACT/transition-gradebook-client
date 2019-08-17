@@ -6,6 +6,7 @@ import styled from 'styled-components';
 import { observable, action } from 'mobx';
 import { observer } from 'mobx-react';
 import { Calendar } from './Icons';
+import Tooltip from './Tooltip';
 
 @observer
 class MultipleDatePicker extends Component {
@@ -49,7 +50,15 @@ class MultipleDatePicker extends Component {
     )
   }
 
+  @action.bound renderDay(day) {
+    const { value } = this.props
+    const date = day.getDate()
+    const [first] = value
+    const Date = () => 
+      value.length === 1 && first.getTime() === day.getTime() ? <Tooltip text={"Select an additional occurrence or click done."}>{date}</Tooltip> : date
 
+    return <Date />
+  }
 
   @action.bound showCalendar(event) {
     event.preventDefault()
@@ -66,20 +75,24 @@ class MultipleDatePicker extends Component {
     const {
       showCalendar,
       closeCalendar,
-
       show,
       YearMonthForm,
-      current
+      current,
+      renderDay
     } = this
+
+    const daysSelected = value.length
+    const CalendarText = () =>
+      daysSelected === 0 ? <NoDateText> Add New Events to this Activity </NoDateText> : <DateSelectedText>{`${daysSelected} days selected`}</DateSelectedText>
 
     return (
       <Container>
-        <div className={className}>
-          Add New Events to this Activity
-          <Button onClick={showCalendar}>
+        <Button onClick={showCalendar}>
+          <div className={className}>
+            <CalendarText />
             <CalendarIcon />
-          </Button>
-        </div>
+          </div>
+        </Button>
         {show &&
           <CalendarItems>
             <DayPicker
@@ -88,6 +101,7 @@ class MultipleDatePicker extends Component {
               onDayClick={handleDayClick}
               modifiers={modifiers}
               modifiersStyles={modifiersStyles}
+              renderDay={renderDay}
               fixedWeeks
               captionElement={({ date, localeUtils }) =>
                 <YearMonthForm date={date} localeUtils={localeUtils} />
@@ -101,6 +115,14 @@ class MultipleDatePicker extends Component {
   }
 }
 export default MultipleDatePicker;
+
+const NoDateText = styled.div`
+  font-style: italic;
+`
+
+const DateSelectedText = styled.div`
+  font-weight: bold;
+`
 
 const modifiers = {
   weekends: {
