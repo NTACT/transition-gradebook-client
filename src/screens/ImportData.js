@@ -329,6 +329,7 @@ class ImportData extends Component {
                                     onDataChanged={this.handleCSVDataChange} 
                                     onImportClicked={this.handleImportClicked}
                                     onCancelClicked={this.handleCancel}
+                                    buttonsEnabled={errors.length === 0}
                                 />
                             )
                         )}
@@ -533,7 +534,7 @@ const ButtonContainer = styled(Row)`
     ${BlockButton} {
         height: 40px;	
         width: 120px;	
-        background-color: #D8D8D8;
+        ${props => props.enabled ? css`background-color: #F5633A;` : css`background-color: #D8D8D8;`}
     }
     margin-top: 10px;
 `;
@@ -615,7 +616,7 @@ const ImportDataForm = ({
 );
 
 
-const CSVDataImportPreview = ({studentData, onDataChanged, onImportClicked, onCancelClicked, selected}) => {
+const CSVDataImportPreview = ({studentData, onDataChanged, onImportClicked, onCancelClicked, selected, buttonsEnabled}) => {
     const [data, setData] = useState([]);
 
     function onCellChanged(rowId, cellId, inputValue) {
@@ -659,7 +660,7 @@ const CSVDataImportPreview = ({studentData, onDataChanged, onImportClicked, onCa
             />
             <Import>
                 <div>Do you want to import this data?</div>
-                <ButtonContainer>
+                <ButtonContainer enabled={buttonsEnabled}>
                     <ImportButton onClick={onImportClicked}>IMPORT</ImportButton>
                     <CancelButton onClick={onCancelClicked}>CANCEL</CancelButton>
                 </ButtonContainer>
