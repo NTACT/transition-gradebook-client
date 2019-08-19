@@ -136,20 +136,16 @@ class EditActivityForm extends Component {
       activityToEdit.patch(activity);
       swal('Success', 'Activity saved', 'success');
     } else {
-      if (students) {
-        students.forEach((async (student) => this.createStudentActivity(student, schoolYear, fields)))
-      } else {
-        this.createStudentActivity(student, schoolYear, fields)
-      }
+      this.createStudentActivity(students || [student], schoolYear, fields)
       swal('Success', students ? 'Activities created' : 'Activity created', 'success');
     }
 
     this.close();
   }
 
-  @action.bound async createStudentActivity(student, schoolYear, fields) {
+  @action.bound async createStudentActivity(students, schoolYear, fields) {
     const { onCreateActivity, store } = this.props
-    this.submitTask = store.createStudentActivity(student, schoolYear, fields);
+    this.submitTask = store.createStudentActivity(students, schoolYear, fields);
     const activity = await this.submitTask;
     if (onCreateActivity) onCreateActivity(activity);
   }

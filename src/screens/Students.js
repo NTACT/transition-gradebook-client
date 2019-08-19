@@ -168,7 +168,7 @@ class Students extends Component {
     );
   }
 
-  @action.bound renderStudentListItem(student) {
+  renderStudentListItem = (student) => {
     const { selectedStudents, handleStudentClick } = this
 
     return (

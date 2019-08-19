@@ -56,7 +56,8 @@ class StudentInfoView extends Component {
   }
 
   @action.bound handleActivityCreated(activity) {
-    this.activities.push(activity);
+    const [newActivity] = activity
+    this.activities.push(newActivity);
   }
 
   @action.bound handleActivityDeleted(activity) {
