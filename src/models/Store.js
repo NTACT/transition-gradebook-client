@@ -360,10 +360,17 @@ export default class Store {
     return Activity.fromArray(result.data.activities).sort((a, b) => b.createdAt - a.createdAt);
   }
 
-  @task('Create student activity')
-  async createStudentActivity(student, schoolYear, fields) {
-    const result = await this.axios.post(`/api/activities/${student.id}/${schoolYear.id}`, fields);
-    return new Activity(result.data.activity);
+  @task('Create one or more student activities')
+  async createStudentActivity(students, schoolYear, fields) {
+    const payload = { 
+      schoolYearId: schoolYear.id, 
+      studentIds: students.map(student => student.id), 
+      ...fields 
+    }
+
+    const result = await this.axios.post(`/api/activities`, payload);
+    const activities = result.data.activities.map(activity => new Activity(activity))
+    return activities;
   }
 
   @task('Edit student activity')

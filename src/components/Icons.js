@@ -75,3 +75,7 @@ export const Calendar = styled.img.attrs({
 export const SelectIconLight = styled.img.attrs({
   src: require('../assets/select_icon_light.png')
 })``;
+
+export const XIcon = styled.img.attrs({
+  src: require('../assets/x_icon.svg')
+})``
