@@ -1,6 +1,6 @@
 import { action, computed, observable } from 'mobx';
 import { inject, observer } from 'mobx-react';
-import React, { Component, useState, useEffect, useCallback } from 'react';
+import React, { Component, useState, useEffect } from 'react';
 import { withRouter } from 'react-router-dom';
 import styled, {css} from 'styled-components';
 import sweetalert from 'sweetalert2';
