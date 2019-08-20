@@ -23,10 +23,10 @@ const TooltipComponent = styled.div`
   .tooltiptext {
     display: flex;
     width: 140px;
-    background-color: black;
+    background-color: #F5633A;
     color: #FFF;
     text-align: center;
-    border-radius: 6px;
+    border-radius: 2px;
     padding: 3px;
     position: absolute;
     z-index: 1;
@@ -44,6 +44,6 @@ const TooltipComponent = styled.div`
     margin-left: -5px;
     border-width: 5px;
     border-style: solid;
-    border-color: black transparent transparent transparent;
+    border-color: #F5633A transparent transparent transparent;
   }
 `
