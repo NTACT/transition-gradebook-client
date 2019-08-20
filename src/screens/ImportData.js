@@ -39,6 +39,7 @@ class ImportData extends Component {
     @observable loading = false;
     @observable importedStudents = null;
     @observable disabilities = [];
+    @observable lastSelected = null;
 
     @action.bound
     async handleSchoolYearChange(e) {
@@ -123,16 +124,16 @@ class ImportData extends Component {
 
     @action.bound
     handleWarningClick(warningId) {
-        const warnings = [...this.selectedWarnings];
-        toggleArrayValue(warnings, warningId);
-        this.selectedWarnings = warnings;
+        // the selected lists have their values toggled, so if this is "toggling off" (has the cellId in this list),
+        // don't change the "lastSelected" cell
+        this.lastSelected = this.selectedWarnings.includes(warningId) ? this.lastSelected : warningId;
+        toggleArrayValue(this.selectedWarnings, warningId);
     }
 
     @action.bound
     handleErrorClick(errorId) {
-        const errors = [...this.selectedErrors];
-        toggleArrayValue(errors, errorId);
-        this.selectedErrors = errors;
+        this.lastSelected = this.selectedErrors.includes(errorId) ? this.lastSelected : errorId;
+        toggleArrayValue(this.selectedErrors, errorId);
     }
 
     @action.bound
@@ -162,7 +163,12 @@ class ImportData extends Component {
 
     @computed
     get selectedCells() {
-        return [...this.selectedErrors, ...this.selectedWarnings, this.hoveringError, this.hoveringWarning]
+        return [...this.selectedErrors, ...this.selectedWarnings]
+    }
+
+    @computed
+    get hoveringOver() {
+        return this.hoveringError || this.hoveringWarning;
     }
 
     @computed
@@ -273,6 +279,8 @@ class ImportData extends Component {
             loading,
             importedStudents,
             selectedCells,
+            hoveringOver,
+            lastSelected,
         } = this;
         const { schoolYears } = this.props.store;
 
@@ -326,9 +334,12 @@ class ImportData extends Component {
                                 <CSVDataImportPreview 
                                     studentData={importedStudents} 
                                     selected={selectedCells}
+                                    hoveringOver={hoveringOver}
+                                    lastSelected={lastSelected}
                                     onDataChanged={this.handleCSVDataChange} 
                                     onImportClicked={this.handleImportClicked}
                                     onCancelClicked={this.handleCancel}
+                                    buttonsEnabled={errors.length === 0}
                                 />
                             )
                         )}
@@ -533,7 +544,7 @@ const ButtonContainer = styled(Row)`
     ${BlockButton} {
         height: 40px;	
         width: 120px;	
-        background-color: #D8D8D8;
+        ${props => props.enabled ? css`background-color: #F5633A;` : css`background-color: #D8D8D8;`}
     }
     margin-top: 10px;
 `;
@@ -615,7 +626,7 @@ const ImportDataForm = ({
 );
 
 
-const CSVDataImportPreview = ({studentData, onDataChanged, onImportClicked, onCancelClicked, selected}) => {
+const CSVDataImportPreview = ({studentData, onDataChanged, onImportClicked, onCancelClicked, selected, hoveringOver, buttonsEnabled, lastSelected}) => {
     const [data, setData] = useState([]);
 
     function onCellChanged(rowId, cellId, inputValue) {
@@ -656,10 +667,12 @@ const CSVDataImportPreview = ({studentData, onDataChanged, onImportClicked, onCa
                 selected={selected} 
                 onCSVCellChange={onCellChanged}
                 onCSVCellFocusChange={onCSVCellFocusChange}
+                hoverOver={hoveringOver}
+                lastSelected={lastSelected}
             />
             <Import>
                 <div>Do you want to import this data?</div>
-                <ButtonContainer>
+                <ButtonContainer enabled={buttonsEnabled}>
                     <ImportButton onClick={onImportClicked}>IMPORT</ImportButton>
                     <CancelButton onClick={onCancelClicked}>CANCEL</CancelButton>
                 </ButtonContainer>

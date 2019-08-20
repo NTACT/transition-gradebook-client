@@ -8,14 +8,14 @@ import Row from './Row';
 
 
 const CSVStudentUploadPreview = (props) => {
-    const { csvData = [], selected = [], lastSelected, onCSVCellChange, onCSVCellFocusChange, ...rest} = props;
+    const { csvData = [], selected = [], hoverOver, lastSelected, onCSVCellChange, onCSVCellFocusChange, ...rest} = props;
     
     const [editableField, setEditableField] = useState({rowId: null, cellId: null});
     const [focused, setFocused] = useState(false);
     const [loading, setLoading] = useState(true);
 
     function isSelected(cell) {
-        return !!selected.find(selectedItem => selectedItem === cell.id);
+        return !!selected.find(selectedItem => selectedItem === cell.id) || hoverOver === cell.id;
     }
 
     function onClick(newRowId, newCellId) {
@@ -76,6 +76,20 @@ const CSVStudentUploadPreview = (props) => {
         return <WarningErrorHover large={entry.currentStudent} firstThree={rowNumber <= 3}>{cell.warning}</WarningErrorHover>
     }
 
+    function focusCell(cellId) {
+        const focused = document.getElementById(cellId);
+        if(!focused) return;
+        // cell (focused element) => table => container div
+        const offsetParent = focused.offsetParent.offsetParent;
+        offsetParent.scrollTo(focused.offsetLeft - 200, focused.offsetTop);
+    }
+
+    useEffect(() => {
+        if(lastSelected) {
+            focusCell(lastSelected);
+        }
+    }, [lastSelected]);
+
 
     function renderCells(entry, rowNumber) {
         return (
@@ -86,6 +100,7 @@ const CSVStudentUploadPreview = (props) => {
                 return (
                     <Cell 
                         key={cell.id} 
+                        id={cell.id}
                         isError={!!cell.error} 
                         isWarning={!!cell.warning || entry.currentStudent} 
                         selected={isSelected(cell)} 
