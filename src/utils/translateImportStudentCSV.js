@@ -205,8 +205,8 @@ function findErrorsAndWarningsForRow(studentData) {
     return {errors, warnings};
 }
 
-function assignUniqueIdsForCells(row) {
-    const assigned = {};
+function assignUniqueIdsForCellsAndRow(row) {
+    const assigned = { id: nanoid() };
     for(const key in row) {
         const value = row[key];
         assigned[key] = {
@@ -234,7 +234,7 @@ function translateRow(studentData) {
             rawValue: translatedField,
         }
     }
-    return assignUniqueIdsForCells(translated);
+    return assignUniqueIdsForCellsAndRow(translated);
 }
 
 function attachErrors(currentStudent, importingStudents, validDisabilities) {
@@ -325,7 +325,6 @@ async function translateImportStudentCSV(data, currentStudents = [], validDisabi
             ...translated, 
             errors,
             warnings,
-            id: nanoid(),
         }
     });
 
@@ -354,7 +353,11 @@ function resetErrorsAndWarnings(student) {
  * @param {Array<Student>} currentStudents the current students to check changes against
  */
 async function recheckImport(data, currentStudents = [], validDisabilities) {
-    const removedErrorsAndWarnings = data.map((student => existingStudent(resetErrorsAndWarnings(student), currentStudents)))
+    const removedErrorsAndWarnings = data.map(student => existingStudent({
+            ...resetErrorsAndWarnings(student),
+            id: student.id,
+        }, currentStudents)
+    );
     const recheckedWithErrors = removedErrorsAndWarnings.map(checked => attachErrors(checked, data, validDisabilities));
     const recheckedWithErrorsAndWarnings = recheckedWithErrors.map(checked => attachWarnings(checked, currentStudents));
 
@@ -364,7 +367,6 @@ async function recheckImport(data, currentStudents = [], validDisabilities) {
             ...translated, 
             errors,
             warnings,
-            id: nanoid(),
         }
     });
 
