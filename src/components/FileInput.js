@@ -52,25 +52,12 @@ export default styled(FileInput)`
 
 `;
 
-const drawAttention = keyframes`
-    0% {
-        background-color: #D8D8D8;
-    }
-    50% {
-        background-color: #F5633A
-    }
-    100% {
-        background-color: #D8D8D8;
-    }
-`;
-
 const FileSelectButton = styled(BlockButton)`
     height: 40px;	
     width: 120px;	
-    background-color: #D8D8D8;
     margin-top: 7px;
 
-    ${props => props.enabled && css`animation: ${drawAttention} 1s forwards;`}
+    ${props => props.enabled ? css`background-color: #F5633A` : css`background-color: #D8D8D8;`}
     
     &:hover {
         ${props => props.enabled ? css`background-color: #F5633A` : css`background-color: #D8D8D8;`}

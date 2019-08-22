@@ -418,7 +418,10 @@ const YearSelect = styled(Select).attrs({
     font-size: 12px;
 `;
 
-const FormSelectHandle = styled(Icons.SelectIconLight)``;
+const FormSelectHandle = styled(Icons.SelectIconLight)`
+    height: 19px;	
+    width: 19px;
+`;
 
 const FormYearSelect = styled(Select).attrs({Handle: () => () => (<FormSelectHandle />)})`
     background-color: #4A4A4A;

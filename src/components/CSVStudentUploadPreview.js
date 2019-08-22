@@ -188,7 +188,7 @@ const clickOutsideConfig = {
 export default styled(onClickOutside(CSVStudentUploadPreview, clickOutsideConfig))``;
 
 const CellHover = styled(Column)`
-    height: 40px;	
+    height: 70px;	
     width: 145px;	
     background-color: #F5633A;
     position: absolute;
