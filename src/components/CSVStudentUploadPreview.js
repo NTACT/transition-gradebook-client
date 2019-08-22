@@ -380,7 +380,7 @@ const EditableCell = styled.input.attrs({type: 'text'})`
 
 const EditableSelect = styled(({value, options, onChange, ...rest}) => (
     <select value={value} onChange={onChange} {...rest}>
-        <option value="" selected disabled hidden></option>
+        <option value="" disabled hidden></option>
         {options.map(selectOption => <option key={selectOption} value={selectOption}>{selectOption}</option>)}
     </select>
 ))`
@@ -389,7 +389,7 @@ const EditableSelect = styled(({value, options, onChange, ...rest}) => (
 
 const EditableYesNoSelect = styled(({value, onChange, ...rest}) => (
     <select value={value} onChange={onChange} {...rest}>
-        <option value="" selected disabled hidden></option>
+        <option value="" disabled hidden></option>
         <option value="Yes">Yes</option>
         <option value="No">No</option>
     </select>

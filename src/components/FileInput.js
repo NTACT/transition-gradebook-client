@@ -1,6 +1,6 @@
 import React, { useRef } from 'react';
 import FileDrop from 'react-file-drop';
-import styled, {css, keyframes} from 'styled-components';
+import styled, { css } from 'styled-components';
 import BlockButton from './BlockButton';
 import Column from './Column';
 
