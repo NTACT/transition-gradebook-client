@@ -631,6 +631,7 @@ const CSVDataImportPreview = ({studentData, onDataChanged, onImportClicked, onCa
 
     function onCellChanged(rowId, cellId, inputValue) {
         const row = data.find(row => row.id === rowId);
+        console.log(rowId, cellId, inputValue);
         if(row) {
             const rowEntries = Object.entries(row);
             const cell = rowEntries.find(([_, value]) => value.id === cellId);
@@ -640,6 +641,8 @@ const CSVDataImportPreview = ({studentData, onDataChanged, onImportClicked, onCa
                 const newValue = { 
                     ...cellValues,
                     value: inputValue,
+                    // Used in the re-validation (unifies the initial import code and the recheck code)
+                    rawValue: inputValue
                 }
                 const updatedRow = {
                     ...row,

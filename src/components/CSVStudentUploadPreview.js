@@ -378,18 +378,18 @@ const EditableCell = styled.input.attrs({type: 'text'})`
     ${editableCellStyle}
 `;
 
-const EditableSelect = styled(({value, options, onChange}) => (
-    <select value={value} onChange={onChange}>
-        <option value="" />
+const EditableSelect = styled(({value, options, onChange, ...rest}) => (
+    <select value={value} onChange={onChange} {...rest}>
+        <option value="" selected disabled hidden></option>
         {options.map(selectOption => <option key={selectOption} value={selectOption}>{selectOption}</option>)}
     </select>
 ))`
     ${editableCellStyle}
 `;
 
-const EditableYesNoSelect = styled(({value, onChange}) => (
-    <select value={value} onChange={onChange}>
-        {(value === undefined || value === null) && (<option value="" />)}
+const EditableYesNoSelect = styled(({value, onChange, ...rest}) => (
+    <select value={value} onChange={onChange} {...rest}>
+        <option value="" selected disabled hidden></option>
         <option value="Yes">Yes</option>
         <option value="No">No</option>
     </select>
@@ -467,12 +467,12 @@ const NewStudentDotAndHover = styled((props) => (
 `;
 
 
-const EditableArrayField = ({value, onChange}) => {
+const EditableArrayField = ({value, onChange, ...rest}) => {
     let displayValue = value;
     if(Array.isArray(value)) {
         displayValue = value.join(' ');
     }
-    return <EditableCell type="text" value={displayValue} onChange={onChange} />
+    return <EditableCell type="text" value={displayValue} onChange={onChange} {...rest}/>
 };
 
 const PaddingRow = styled(CSVEntry)`
