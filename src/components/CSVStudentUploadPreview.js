@@ -1,10 +1,10 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import styled, { css } from 'styled-components';
 import { csvDataHelper } from 'tgb-shared';
-import onClickOutside from 'react-onclickoutside';
 import Column from './Column';
 import Spinner from './Spinner';
 import Row from './Row';
+import useOnClickOutside from '../utils/useOnClickOutside';
 
 
 const CSVStudentUploadPreview = (props) => {
@@ -13,6 +13,7 @@ const CSVStudentUploadPreview = (props) => {
     const [editableField, setEditableField] = useState({rowId: null, cellId: null});
     const [focused, setFocused] = useState(false);
     const [loading, setLoading] = useState(true);
+    const ref = useRef(null);
 
     function isSelected(cell) {
         return !!selected.find(selectedItem => selectedItem === cell.id) || hoverOver === cell.id;
@@ -137,11 +138,11 @@ const CSVStudentUploadPreview = (props) => {
         }
     }
 
-    CSVStudentUploadPreview.handleClickOutside = focusChangeListener;
-
     useEffect(() => {
         setLoading(false);
     }, []);
+
+    useOnClickOutside(ref, focusChangeListener);
 
     // Present a message while loading. Mostly for large files
     if(loading) {
@@ -156,7 +157,7 @@ const CSVStudentUploadPreview = (props) => {
 
     return (
         <Root {...rest}>
-            <ScrollableContainer>
+            <ScrollableContainer innerRef={ref}>
                 <CSVContainer>
                     <CSVHead>
                         <HeaderRow>
@@ -181,11 +182,7 @@ const CSVStudentUploadPreview = (props) => {
     );
 }
 
-const clickOutsideConfig = {
-    handleClickOutside: () => CSVStudentUploadPreview.handleClickOutside,
-}
-
-export default styled(onClickOutside(CSVStudentUploadPreview, clickOutsideConfig))``;
+export default styled(CSVStudentUploadPreview)``;
 
 const CellHover = styled(Column)`
     height: 70px;	
