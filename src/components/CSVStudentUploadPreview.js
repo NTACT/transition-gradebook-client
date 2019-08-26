@@ -1,10 +1,10 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import styled, { css } from 'styled-components';
 import { csvDataHelper } from 'tgb-shared';
-import onClickOutside from 'react-onclickoutside';
 import Column from './Column';
 import Spinner from './Spinner';
 import Row from './Row';
+import useOnClickOutside from '../utils/useOnClickOutside';
 
 
 const CSVStudentUploadPreview = (props) => {
@@ -13,6 +13,7 @@ const CSVStudentUploadPreview = (props) => {
     const [editableField, setEditableField] = useState({rowId: null, cellId: null});
     const [focused, setFocused] = useState(false);
     const [loading, setLoading] = useState(true);
+    const ref = useRef(null);
 
     function isSelected(cell) {
         return !!selected.find(selectedItem => selectedItem === cell.id) || hoverOver === cell.id;
@@ -137,11 +138,11 @@ const CSVStudentUploadPreview = (props) => {
         }
     }
 
-    CSVStudentUploadPreview.handleClickOutside = focusChangeListener;
-
     useEffect(() => {
         setLoading(false);
     }, []);
+
+    useOnClickOutside(ref, focusChangeListener);
 
     // Present a message while loading. Mostly for large files
     if(loading) {
@@ -156,7 +157,7 @@ const CSVStudentUploadPreview = (props) => {
 
     return (
         <Root {...rest}>
-            <ScrollableContainer>
+            <ScrollableContainer innerRef={ref}>
                 <CSVContainer>
                     <CSVHead>
                         <HeaderRow>
@@ -181,14 +182,10 @@ const CSVStudentUploadPreview = (props) => {
     );
 }
 
-const clickOutsideConfig = {
-    handleClickOutside: () => CSVStudentUploadPreview.handleClickOutside,
-}
-
-export default styled(onClickOutside(CSVStudentUploadPreview, clickOutsideConfig))``;
+export default styled(CSVStudentUploadPreview)``;
 
 const CellHover = styled(Column)`
-    height: 40px;	
+    height: 70px;	
     width: 145px;	
     background-color: #F5633A;
     position: absolute;
@@ -378,18 +375,18 @@ const EditableCell = styled.input.attrs({type: 'text'})`
     ${editableCellStyle}
 `;
 
-const EditableSelect = styled(({value, options, onChange}) => (
-    <select value={value} onChange={onChange}>
-        <option value="" />
+const EditableSelect = styled(({value, options, onChange, ...rest}) => (
+    <select value={value} onChange={onChange} {...rest}>
+        <option value="" disabled hidden></option>
         {options.map(selectOption => <option key={selectOption} value={selectOption}>{selectOption}</option>)}
     </select>
 ))`
     ${editableCellStyle}
 `;
 
-const EditableYesNoSelect = styled(({value, onChange}) => (
-    <select value={value} onChange={onChange}>
-        {(value === undefined || value === null) && (<option value="" />)}
+const EditableYesNoSelect = styled(({value, onChange, ...rest}) => (
+    <select value={value} onChange={onChange} {...rest}>
+        <option value="" disabled hidden></option>
         <option value="Yes">Yes</option>
         <option value="No">No</option>
     </select>
@@ -467,12 +464,12 @@ const NewStudentDotAndHover = styled((props) => (
 `;
 
 
-const EditableArrayField = ({value, onChange}) => {
+const EditableArrayField = ({value, onChange, ...rest}) => {
     let displayValue = value;
     if(Array.isArray(value)) {
         displayValue = value.join(' ');
     }
-    return <EditableCell type="text" value={displayValue} onChange={onChange} />
+    return <EditableCell type="text" value={displayValue} onChange={onChange} {...rest}/>
 };
 
 const PaddingRow = styled(CSVEntry)`

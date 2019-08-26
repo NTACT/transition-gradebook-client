@@ -1,5 +1,4 @@
 const { translateImportStudentCSV, recheckImport } = require('../src/utils/translateImportStudentCSV');
-const { csvDataHelper } = require('tgb-shared');
 const moment = require('moment');
 
 // Minimum amount of data required for the import to succeed
@@ -12,6 +11,7 @@ const validStudentCSV = {
     'Date of Birth': moment(new Date()).format('MM/DD/YYYY'),
     'Disabilities': 'AU ID',
     'Race': 'WH7',
+    'Grade/Age': 'age 18'
 }
 
 const invalidBasicData = {

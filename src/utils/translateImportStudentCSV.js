@@ -205,8 +205,8 @@ function findErrorsAndWarningsForRow(studentData) {
     return {errors, warnings};
 }
 
-function assignUniqueIdsForCells(row) {
-    const assigned = {};
+function assignUniqueIdsForCellsAndRow(row) {
+    const assigned = { id: nanoid() };
     for(const key in row) {
         const value = row[key];
         assigned[key] = {
@@ -234,11 +234,11 @@ function translateRow(studentData) {
             rawValue: translatedField,
         }
     }
-    return assignUniqueIdsForCells(translated);
+    return assignUniqueIdsForCellsAndRow(translated);
 }
 
 function attachErrors(currentStudent, importingStudents, validDisabilities) {
-    const studentWithErrors = {...currentStudent};
+    const studentWithErrors = { ...currentStudent };
     for(const required of csvDataHelper.requiredFields) {
         const importingValue = currentStudent[required.field].value;
         const requiredDataError = getErrorsForCell(required, importingValue);
@@ -325,7 +325,6 @@ async function translateImportStudentCSV(data, currentStudents = [], validDisabi
             ...translated, 
             errors,
             warnings,
-            id: nanoid(),
         }
     });
 
@@ -338,18 +337,27 @@ async function translateImportStudentCSV(data, currentStudents = [], validDisabi
     }
 }
 
+function resetErrorsAndWarnings(student) {
+    const clearedStudent = {};
+    for(const column of csvDataHelper.columns) {
+        const { error, warning, ...rest} = student[column.field];
+        clearedStudent[column.field] = {
+            ...rest
+        }
+    }
+    return clearedStudent;
+}
 /**
  * Recheck the import that has already been processed by translateImportStudentCSV
  * @param {Array<Object>} data the data that has already been processed translateImportStudentCSV 
  * @param {Array<Student>} currentStudents the current students to check changes against
  */
 async function recheckImport(data, currentStudents = [], validDisabilities) {
-    const removedErrorsAndWarnings = data.map(student => {
-        const { error, warning, ...rest} = student;
-        return {
-            ...rest
-        } 
-    }).map((student => existingStudent(student, currentStudents)))
+    const removedErrorsAndWarnings = data.map(student => existingStudent({
+            ...resetErrorsAndWarnings(student),
+            id: student.id,
+        }, currentStudents)
+    );
     const recheckedWithErrors = removedErrorsAndWarnings.map(checked => attachErrors(checked, data, validDisabilities));
     const recheckedWithErrorsAndWarnings = recheckedWithErrors.map(checked => attachWarnings(checked, currentStudents));
 
@@ -359,7 +367,6 @@ async function recheckImport(data, currentStudents = [], validDisabilities) {
             ...translated, 
             errors,
             warnings,
-            id: nanoid(),
         }
     });
 

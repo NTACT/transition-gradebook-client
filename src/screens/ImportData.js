@@ -40,24 +40,12 @@ class ImportData extends Component {
     @observable importedStudents = null;
     @observable disabilities = [];
     @observable lastSelected = null;
+    @observable pendingCSVDataUpdate = false;
 
     @action.bound
     async handleSchoolYearChange(e) {
         this.schoolYearId = +e.target.value;
         this.schoolYear = await this.props.store.fetchSchoolYear(this.schoolYearId);
-    }
-
-    async recheckImport() {
-        if(!this.importedStudents) {
-            return;
-        }
-        this.selectedErrors = [];
-        this.selectedWarnings = [];
-        this.hoveringError = null;
-        this.hoveringWarning = null;
-        const { students, ...fileReport } = await recheckImport(this.importedStudents, this.schoolYear.students, this.disabilities);
-        this.importedStudents = students;
-        this.fileReport = fileReport;
     }
 
     @action.bound
@@ -156,9 +144,14 @@ class ImportData extends Component {
         this.selectedWarnings = [];
         this.hoveringError = null;
         this.hoveringWarning = null;
-        const { students, ...fileReport } = await recheckImport(updatedCSV, this.schoolYear.students, this.disabilities);
-        this.importedStudents = students;
-        this.fileReport = fileReport;
+        this.pendingCSVDataUpdate = true;
+        try {
+            const { students, ...fileReport } = await recheckImport(updatedCSV, this.schoolYear.students, this.disabilities);
+            this.importedStudents = students;
+            this.fileReport = fileReport;
+        } finally {
+            this.pendingCSVDataUpdate = false;
+        }
     }
 
     @computed
@@ -181,11 +174,6 @@ class ImportData extends Component {
         return !this.loading;
     }
 
-    @computed
-    get canSubmit() {
-        return this.errors.length === 0;
-    }
-
     async handleUploadComplete() {
         this.selectedErrors = [];
         this.selectedWarnings = [];
@@ -199,12 +187,20 @@ class ImportData extends Component {
 
     async handleUploadFailure() {
         this.schoolYear = await this.props.store.fetchSchoolYear(this.schoolYearId);
-        const { students, ...fileReport} = await recheckImport(this.importedStudents, this.schoolYear.students, this.disabilities);
-        this.importedStudents = students;
-        this.fileReport = fileReport;
+        this.pendingCSVDataUpdate = true;
+        try {
+            const { students, ...fileReport} = await recheckImport(this.importedStudents, this.schoolYear.students, this.disabilities);
+            this.importedStudents = students;
+            this.fileReport = fileReport;
+        } finally {
+            this.pendingCSVDataUpdate = false
+        }
     }
 
     async submit() {
+        if(this.pendingCSVDataUpdate) {
+            return;
+        }
         this.loading = true;
         try {
             this.schoolYear = await this.props.store.importStudentsFromCSV(this.schoolYear, this.term, this.importedStudents);
@@ -418,7 +414,10 @@ const YearSelect = styled(Select).attrs({
     font-size: 12px;
 `;
 
-const FormSelectHandle = styled(Icons.SelectIconLight)``;
+const FormSelectHandle = styled(Icons.SelectIconLight)`
+    height: 19px;	
+    width: 19px;
+`;
 
 const FormYearSelect = styled(Select).attrs({Handle: () => () => (<FormSelectHandle />)})`
     background-color: #4A4A4A;
@@ -640,6 +639,8 @@ const CSVDataImportPreview = ({studentData, onDataChanged, onImportClicked, onCa
                 const newValue = { 
                     ...cellValues,
                     value: inputValue,
+                    // Used in the re-validation (unifies the initial import code and the recheck code)
+                    rawValue: inputValue
                 }
                 const updatedRow = {
                     ...row,
