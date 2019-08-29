@@ -227,7 +227,7 @@ class EditStudentForm extends Component {
   }
 
   render() {
-    const { schoolYear } = this.props;
+    const { schoolYear, student } = this.props;
     const {
       studentToEdit,
       firstName,
@@ -274,7 +274,7 @@ class EditStudentForm extends Component {
                 : 'ADD A NEW STUDENT'
               }
             </Title>
-            <XButton component={Link} to={`/${schoolYear.id}/students`}/>
+            <XButton component={Link} to={`/${schoolYear.id}/students/view/${studentToEdit ? student.id : ''}`}/>
           </Header>
 
           <Rejected task={submitTask}>
