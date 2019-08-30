@@ -377,7 +377,7 @@ const EditableCell = styled.input.attrs({type: 'text'})`
 
 const EditableSelect = styled(({value, options, onChange, ...rest}) => (
     <select value={value} onChange={onChange} {...rest}>
-        <option value="" disabled hidden></option>
+        <option value="">Select an option</option>
         {options.map(selectOption => <option key={selectOption} value={selectOption}>{selectOption}</option>)}
     </select>
 ))`

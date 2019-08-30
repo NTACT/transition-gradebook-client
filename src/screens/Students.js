@@ -70,6 +70,8 @@ class Students extends Component {
     const { schoolYear, schoolYearId, selectedStudents } = this;
     if (!selectedStudents.includes(student)) {
       this.selectedStudents = selectedStudents.concat([student])
+    } else {
+      this.handleStudentRemove(student.id);
     }
 
     const path = this.selectedStudents.length === 1 ? student.getViewRoute(schoolYear) : `/${schoolYearId}/students/multiple`
@@ -172,8 +174,8 @@ class Students extends Component {
     const { selectedStudents, handleStudentClick } = this
 
     return (
-      <StudentListItem key={student.id} student={student}>
-        <RadioButton checked={selectedStudents.includes(student)} onChange={handleStudentClick.bind(null, student)} />
+      <StudentListItem key={student.id} student={student} onClick={handleStudentClick.bind(null, student)}>
+        <StudentListRadio checked={selectedStudents.includes(student)} onChange={handleStudentClick.bind(null, student)} />
       </StudentListItem>
     )
   };
@@ -479,4 +481,10 @@ const SubRouteWrapper = styled.div`
     height: 100%;
     background-color: #F0F0F0;
   }
+`;
+
+const StudentListRadio = styled(RadioButton)`
+  @media ${breakpoints.mediumOrSmall}{
+    display: none; 
+  } 
 `;
