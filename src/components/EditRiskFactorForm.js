@@ -53,7 +53,7 @@ class RiskFactorEditForm extends Component {
   handleHasExtracurricularChange = this.handleBoolChange('hasExtracurricular');
   handleGradeTypeChange = gradeType => {
     this.setKey('gradeType', gradeType);
-    this.setKey('grade', '');
+    this.setKey('grade', null);
   };
 
   @action.bound async handleSubmit(event) {

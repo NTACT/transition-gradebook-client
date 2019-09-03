@@ -110,7 +110,7 @@ const CSVStudentUploadPreview = (props) => {
                     >
                         <CellContent>
                             {column.field === 'studentId' && (!entry.currentStudent ? (
-                                <NewStudentDotAndHover />
+                                <NewStudentDotAndHover firstThree={rowNumber <= 3}/>
                             ) : (
                                 <ExistingStudent />
                             ))}
@@ -415,10 +415,9 @@ const Loading = () => (
 
 
 const NewStudentHover = styled((props) => (
-    <CellHover {...props}><div>New Student with no existing information</div></CellHover>
+    <WarningErrorHover {...props}><div>New Student with no existing information</div></WarningErrorHover>
 ))`
-    top: -45px;
-    left: -65px;
+
 `;
 
 
@@ -452,10 +451,10 @@ const CellContent = styled(Row)`
     }
 `;
 
-const NewStudentDotAndHover = styled((props) => (
-    <Column {...props}>
+const NewStudentDotAndHover = styled(({firstThree,...rest}) => (
+    <Column {...rest}>
         <NewStudent/>
-        <NewStudentHover />
+        <NewStudentHover firstThree={firstThree} />
     </Column>
 ))`
     ${NewStudent}:hover ~ ${NewStudentHover} {
