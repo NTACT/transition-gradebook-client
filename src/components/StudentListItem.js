@@ -83,6 +83,7 @@ const StudentText = styled.div`
   justify-content: center;
   align-self: stretch;
   text-decoration: none;
+  cursor: pointer;
 `;
 
 const StudentName = styled.div`
