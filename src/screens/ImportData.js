@@ -394,7 +394,7 @@ const ImportFormContainer = styled(Column)`
   height: 100%;
   background-color: #4F4F4F;
   align-items: center;
-  overflow: scroll; 
+  overflow-y: auto;
 
   @media ${breakpoints.mediumOrSmall} {
     max-width: none;
