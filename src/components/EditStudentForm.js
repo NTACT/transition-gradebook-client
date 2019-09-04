@@ -37,6 +37,7 @@ class EditStudentForm extends Component {
   @observable postSchoolOutcomeOther = null;
   @observable exitCategory = null;
   @observable selectedDisabilities = [];
+  @observable plan504 = null; 
   @observable fetchDisabilitiesTask = null;
   @observable submitTask = null;
 
@@ -54,6 +55,7 @@ class EditStudentForm extends Component {
       postSchoolOutcomeOther,
       exitCategory,
       selectedDisabilities,
+      plan504,
     } = this;
 
     return {
@@ -70,6 +72,7 @@ class EditStudentForm extends Component {
         : postSchoolOutcome,
       birthday: new Date(birthday),
       disabilities: selectedDisabilities,
+      plan504,
     };
   }
 
@@ -99,6 +102,10 @@ class EditStudentForm extends Component {
 
   @action.bound handleEllChange(enabled) {
     this.ell = enabled;
+  }
+
+  @action.bound handle504PlanChange(enabled){
+    this.plan504 = enabled; 
   }
 
   @action.bound handleGradeLevelChange(event) {
@@ -212,6 +219,7 @@ class EditStudentForm extends Component {
     this.gradeLevel = student.gradeLevel;
     this.exitCategory = student.exitCategory;
     this.selectedDisabilities = student.disabilities.map(d => d.id);
+    this.plan504 = student.plan504; 
     if(enums.postSchoolOutcomes.includes(postSchoolOutcome)) {
       this.postSchoolOutcome = postSchoolOutcome;
     } else {
@@ -242,6 +250,7 @@ class EditStudentForm extends Component {
       postSchoolOutcomeOther,
       exitCategory,
       selectedDisabilities,
+      plan504,
       submitTask,
     } = this;
     const { disabilities } = this.props.store;
@@ -384,7 +393,15 @@ class EditStudentForm extends Component {
               </DisabilityCheckboxRow>
             )}
           </DisabilityCheckboxes>
-
+          <FormRow>
+          <FormColumn>
+              <InputLabel>Has 504 Plan</InputLabel>
+              <RadioRow>
+                <RadioButton onChange={this.handle504PlanChange.bind(null, true)} checked={plan504 === true} name="yes__504" label="Yes"/>
+                <RadioButton onChange={this.handle504PlanChange.bind(null, false)} checked={plan504 === false} name="no__504" label="No"/>
+              </RadioRow>
+            </FormColumn>
+            </FormRow>
           <FormRow>
             <FormColumn>
               <SaveButton onClick={this.handleSubmit}>SAVE</SaveButton>
