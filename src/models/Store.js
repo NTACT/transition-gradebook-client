@@ -253,6 +253,11 @@ export default class Store {
     });
   }
 
+  @task('Remove all students from a shool year')
+  async removeAllStudentsFromYear(schoolYear){
+    await this.axios.delete(`/api/schoolYears/${schoolYear.id}/students`);
+  }
+
   @task('Fetch disabilities')
   async fetchDisabilities() {
     const result = await this.axios.get('/api/disabilities');
@@ -352,6 +357,12 @@ export default class Store {
     const schoolYear = new SchoolYear(result.data.schoolYear);
     this.schoolYears.push(schoolYear);
     return schoolYear;
+  }
+
+  @task('Delete school year')
+  async deleteSchoolYear(schoolYear){
+    await this.axios.delete(`/api/schoolYears/${schoolYear.id}`);
+    return this.fetchSchoolYears(); 
   }
 
   @task('Fetch student activities')

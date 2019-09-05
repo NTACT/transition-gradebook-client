@@ -36,6 +36,7 @@ class NavigationBar extends Component {
         <MobileMenu open={mobileMenuOpen} onClose={this.toggleMobileMenu}>
           {admin && <Link to="/SchoolSettings">School Settings</Link>}
           {admin && <Link to="/AddYear">Add a Year</Link>}
+          {admin && <Link to="/ManageYears">Manage School Years</Link>}
           {admin && <Link to="/Users">Manage Users</Link>}
           <Link to="/ImportData">Import Data</Link>
           <Link to="/EditProfile">Edit Profile</Link>
@@ -74,6 +75,7 @@ class NavigationBar extends Component {
             }>
               {admin && <MenuLinkItem to="/SchoolSettings">School Settings</MenuLinkItem>}
               {admin && <MenuLinkItem to="/AddYear">Add a Year</MenuLinkItem>}
+              {admin && <MenuLinkItem to="/ManageYears">Manage School Years</MenuLinkItem>}
               {admin && <MenuLinkItem to="/Users">Manage Users</MenuLinkItem>}
               <MenuLinkItem to="/ImportData">Import Data</MenuLinkItem>
               <MenuLinkItem to="/EditProfile">Edit Profile</MenuLinkItem>
