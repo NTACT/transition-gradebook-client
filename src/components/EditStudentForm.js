@@ -397,8 +397,8 @@ class EditStudentForm extends Component {
           <FormColumn>
               <InputLabel>Has 504 Plan</InputLabel>
               <RadioRow>
-                <RadioButton onChange={this.handle504PlanChange.bind(null, true)} checked={plan504} name="yes__504" label="Yes"/>
-                <RadioButton onChange={this.handle504PlanChange.bind(null, false)} checked={!plan504} name="no__504" label="No"/>
+                <RadioButton onChange={this.handle504PlanChange.bind(null, true)} checked={plan504 === true} name="yes__504" label="Yes"/>
+                <RadioButton onChange={this.handle504PlanChange.bind(null, false)} checked={plan504 === false} name="no__504" label="No"/>
               </RadioRow>
             </FormColumn>
             </FormRow>
