@@ -242,7 +242,7 @@ function formatGradeName(gradeName) {
 }
 
 function formatPercent(count, total) {
-  return Math.floor(100 * count / total) + '%';
+  return (total === 0 || count === 0) ? '0%' : Math.floor(100 * count / total) + '%';
 }
 
 function formateDate(date) {
