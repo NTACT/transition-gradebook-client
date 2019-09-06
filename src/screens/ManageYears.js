@@ -40,23 +40,29 @@ class ManageYears extends Component {
       cancelButtonText: 'No'
     });
 
-
     if(!confirmResult.value) return;
 
-    // Delete all student data from school year
-    removeStudentData = store.removeAllStudentsFromYear(schoolYear); 
-    await removeStudentData; 
-    if(removeStudentData.resolved){
-      removeSchoolYear =  store.deleteSchoolYear(schoolYear);
-      await removeSchoolYear; 
-      if(removeSchoolYear.resolved) {
-        await swal(
-          'Success',
-          `School year ${schoolYear.year} - ${schoolYear.year+1} removed`,
-          'success'
-        );
+    try{
+      removeStudentData = store.removeAllStudentsFromYear(schoolYear); 
+      await removeStudentData; 
+      if(removeStudentData.resolved){
+        removeSchoolYear =  store.deleteSchoolYear(schoolYear);
+        await removeSchoolYear; 
+        if(removeSchoolYear.resolved) {
+          await swal(
+            'Success',
+            `School year ${schoolYear.year} - ${schoolYear.year+1} removed`,
+            'success'
+          );
 
-      } 
+        } 
+      }
+    } catch(e){
+      await swal(
+        'Error',
+        'Something went wrong',
+        'error'
+      ); 
     }
   }
   render() {
