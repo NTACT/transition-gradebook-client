@@ -25,6 +25,7 @@ import MissingSchoolYear from './screens/MissingSchoolYear';
 import SchoolSettings from './screens/SchoolSettings';
 import AddUser from './screens/AddUser';
 import AddYear from './screens/AddYear';
+import ManageYears from './screens/ManageYears'; 
 import ManageUsers from './screens/ManageUsers';
 import ImportData from './screens/ImportData';
 
@@ -92,6 +93,7 @@ class AuthenticatedApp extends Component {
           <Route path="/About" component={About}/>
           {admin && <Route path="/AddUser" component={AddUser}/>}
           {admin && <Route path="/AddYear" component={AddYear}/>}
+          {admin && <Route path="/ManageYears" component={ManageYears}/>}
           {admin && <Route path="/SchoolSettings" component={SchoolSettings}/>}
           {admin && <Route path="/Users" component={ManageUsers}/>}
           <Route path="/" component={Dashboard}/>
