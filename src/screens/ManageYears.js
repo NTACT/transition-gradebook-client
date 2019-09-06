@@ -33,7 +33,7 @@ class ManageYears extends Component {
 
     const confirmResult = await swal({
       title: `Are you sure you want to delete school year ${schoolYear.year} - ${schoolYear.year+1}?`,
-      text: `Deleting this school year will permanently delete all of the student data associated .`,
+      text: `Deleting this school year will permanently delete all of the associated student data.`,
       type: 'warning',
       showCancelButton: true,
       confirmButtonText: 'Yes',
