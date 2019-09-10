@@ -14,7 +14,6 @@ class TermSelect extends Component {
           <option
             key={term.id}
             value={term.id}
-            disabled={term.isInFuture}
           >
             {schoolYear.capitalizedTermType} {term.index + 1}
           </option>
