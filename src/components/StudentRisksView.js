@@ -5,9 +5,9 @@ import { observer, inject } from 'mobx-react';
 import { Route, Switch, withRouter } from 'react-router-dom';
 import Button from './Button';
 import ExpandableListItem from './ExpandableListItem';
-import EditRiskFactorForm  from './EditRiskFactorForm';
-import EditSkillsForm  from './EditSkillsForm';
-import EditCareerDevForm  from './EditCareerDevForm';
+import EditRiskFactorForm from './EditRiskFactorForm';
+import EditSkillsForm from './EditSkillsForm';
+import EditCareerDevForm from './EditCareerDevForm';
 import responsive from '../utils/responsive';
 import formatGrade from '../utils/formatGrade';
 
@@ -25,22 +25,22 @@ class StudentRisksView extends Component {
 
   confirmHistoricEdit() {
     const { store, student, term } = this.props;
-    if(store.isCurrentTerm(term)) return true;
+    if (store.isCurrentTerm(term)) return true;
     return student.confirmHistoricEdit();
   }
 
   @action.bound async handleEditRiskFactorsClick() {
-    if(!await this.confirmHistoricEdit()) return;
+    if (!(await this.confirmHistoricEdit())) return;
     this.props.history.push(this.props.location.pathname + '/riskFactors');
   }
 
   @action.bound async handleEditStudentSkillsClick() {
-    if(!await this.confirmHistoricEdit()) return;
+    if (!(await this.confirmHistoricEdit())) return;
     this.props.history.push(this.props.location.pathname + '/skills');
   }
 
   @action.bound async handleEditCareerDevClick() {
-    if(!await this.confirmHistoricEdit()) return;
+    if (!(await this.confirmHistoricEdit())) return;
     this.props.history.push(this.props.location.pathname + '/careerDev');
   }
 
@@ -57,29 +57,59 @@ class StudentRisksView extends Component {
           onEditClick={this.handleEditRiskFactorsClick}
           childHeight={groupListItemHeight}
         >
-          <ValueRow name="Grade" value={formatGrade(student.gradeType, student.grade)}/>
-          <ValueRow name="% of school time absent (excused or not)" value={student.absentPercent}/>
-          <ValueRow name="# of behavior marks/office referrals this yr" value={student.behaviorMarks}/>
-          <ValueRow name="Suspended this year" value={student.suspended}/>
-          <ValueRow name="Failing English/ELA class" value={student.failingEnglish}/>
-          <ValueRow name="Failing Math class" value={student.failingMath}/>
-          <ValueRow name="Failing any other course" value={student.failingOther}/>
-          <ValueRow name="On-track for grade level" value={student.onTrack}/>
-          <ValueRow name="Retained one or more years" value={student.retained}/>
-          <ValueRow name="Number of schools attended K-present" value={student.schoolsAttended}/>
-          <ValueRow name="Participated in at least 1 extracurricular activity" value={student.hasExtracurricular}/>
+          <ValueRow
+            name="Grade"
+            value={formatGrade(student.gradeType, student.grade)}
+          />
+          <ValueRow
+            name="% of school time absent (excused or not)"
+            value={student.absentPercent}
+          />
+          <ValueRow
+            name="# of behavior marks/office referrals this yr"
+            value={student.behaviorMarks}
+          />
+          <ValueRow name="Suspended this year" value={student.suspended} />
+          <ValueRow
+            name="Failing English/ELA class"
+            value={student.failingEnglish}
+          />
+          <ValueRow name="Failing Math class" value={student.failingMath} />
+          <ValueRow
+            name="Failing any other course"
+            value={student.failingOther}
+          />
+          <ValueRow name="On-track for grade level" value={student.onTrack} />
+          <ValueRow
+            name="Retained one or more years"
+            value={student.retained}
+          />
+          <ValueRow
+            name="Number of schools attended K-present"
+            value={student.schoolsAttended}
+          />
+          <ValueRow
+            name="Participated in at least 1 extracurricular activity"
+            value={student.hasExtracurricular}
+          />
         </GroupList>
 
-        <GroupList 
-          title="Student Skills" 
+        <GroupList
+          title="Student Skills"
           completePercent={student.skillPercentage}
           onEditClick={this.handleEditStudentSkillsClick}
           childHeight={groupListItemHeight}
         >
-          <ValueRow name="Self-determination skills" value={student.hasSelfDeterminationSkills}/>
-          <ValueRow name="Independent-living skills" value={student.hasIndependentLivingSkills}/>
-          <ValueRow name="Travel skills" value={student.hasTravelSkills}/>
-          <ValueRow name="Social skills" value={student.hasSocialSkills}/>
+          <ValueRow
+            name="Self-determination skills/self advocacy training"
+            value={student.hasSelfDeterminationSkills}
+          />
+          <ValueRow
+            name="Independent-living skills"
+            value={student.hasIndependentLivingSkills}
+          />
+          <ValueRow name="Travel skills" value={student.hasTravelSkills} />
+          <ValueRow name="Social skills" value={student.hasSocialSkills} />
         </GroupList>
 
         <GroupList
@@ -88,45 +118,60 @@ class StudentRisksView extends Component {
           onEditClick={this.handleEditCareerDevClick}
           childHeight={groupListItemHeight}
         >
-          <ValueRow name="Student attended IEP meeting" value={student.attendedIepMeeting}/>
-          {student.attendedIepMeeting &&
-            <ValueRow name="IEP Meeting Role" value={student.iepRole}/>
-          }
-          <ValueRow name="Career development/Graduation plan" value={student.hasGraduationPlan}/>
-          <ValueRow name="Post-school goals" value={student.postSchoolGoals}/>
+          <ValueRow
+            name="Student attended IEP meeting"
+            value={student.attendedIepMeeting}
+          />
+          {student.attendedIepMeeting && (
+            <ValueRow name="IEP Meeting Role" value={student.iepRole} />
+          )}
+          <ValueRow
+            name="Career development/Graduation plan"
+            value={student.hasGraduationPlan}
+          />
+          <ValueRow name="Post-school goals" value={student.postSchoolGoals} />
         </GroupList>
 
         <Switch>
-          <Route path="/*/riskFactors" render={props =>
-            <Overlay>
-              <EditRiskFactorForm 
-                key={student.id} 
-                student={student}
-                schoolYear={schoolYear}
-                term={term}
-              />
-            </Overlay>
-          }/>
-          <Route path="/*/skills" render={props =>
-            <Overlay>
-              <EditSkillsForm 
-                key={student.id} 
-                student={student}
-                schoolYear={schoolYear}
-                term={term}
-              />
-            </Overlay>
-          }/>
-          <Route path="/*/careerDev" render={props =>
-            <Overlay>
-              <EditCareerDevForm 
-                key={student.id} 
-                student={student}
-                schoolYear={schoolYear}
-                term={term}
-              />
-            </Overlay>
-          }/>
+          <Route
+            path="/*/riskFactors"
+            render={props => (
+              <Overlay>
+                <EditRiskFactorForm
+                  key={student.id}
+                  student={student}
+                  schoolYear={schoolYear}
+                  term={term}
+                />
+              </Overlay>
+            )}
+          />
+          <Route
+            path="/*/skills"
+            render={props => (
+              <Overlay>
+                <EditSkillsForm
+                  key={student.id}
+                  student={student}
+                  schoolYear={schoolYear}
+                  term={term}
+                />
+              </Overlay>
+            )}
+          />
+          <Route
+            path="/*/careerDev"
+            render={props => (
+              <Overlay>
+                <EditCareerDevForm
+                  key={student.id}
+                  student={student}
+                  schoolYear={schoolYear}
+                  term={term}
+                />
+              </Overlay>
+            )}
+          />
         </Switch>
       </Root>
     );
@@ -138,19 +183,24 @@ export default StudentRisksView;
 const Root = styled.div`
   position: relative;
   flex: 1;
-  background-color: #D43425;
+  background-color: #d43425;
 `;
 
 function GroupList(props) {
   const { title, completePercent, onEditClick, ...rest } = props;
 
   return (
-    <ExpandableListItem {...rest}
+    <ExpandableListItem
+      {...rest}
       header={
         <GroupListHeader>
           <GroupTitle>{title}</GroupTitle>
-          <GroupCompletePercent>{completePercent}% complete</GroupCompletePercent>
-          <EditButton onClick={onEditClick}><EditIcon/></EditButton>
+          <GroupCompletePercent>
+            {completePercent}% complete
+          </GroupCompletePercent>
+          <EditButton onClick={onEditClick}>
+            <EditIcon />
+          </EditButton>
         </GroupListHeader>
       }
     />
@@ -171,15 +221,15 @@ const ValueRow = styled(ExpandableListItem.Item).attrs({
 `;
 
 function formatValue(value) {
-  if(value == null) return '--';
-  if(value === true) return 'Yes';
-  if(value === false) return 'No';
+  if (value == null) return '--';
+  if (value === true) return 'Yes';
+  if (value === false) return 'No';
   return value;
 }
 
 const Key = styled.div``;
 const Value = styled.div`
-  color: #D43425;
+  color: #d43425;
 `;
 
 const EditIcon = styled.img.attrs({
@@ -212,7 +262,7 @@ const GroupTitle = styled.div`
 `;
 
 const GroupCompletePercent = styled.div`
-  color: #A20B0E;
+  color: #a20b0e;
   margin-right: 32px;
   font-size: 12px;
   font-style: italic;
@@ -227,8 +277,8 @@ const Overlay = styled.div`
   // 44px is the height of the tabs
   height: calc(100% + 44px);
   top: -44px;
-  background-color: #F2F2F2;
-  border-top: 1px solid #D43425;
+  background-color: #f2f2f2;
+  border-top: 1px solid #d43425;
   padding: 29px 35px 29px 35px;
 
   > * {

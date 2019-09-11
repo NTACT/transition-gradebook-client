@@ -20,6 +20,7 @@ import NumberOfStudents from '../components/reports/NumberOfStudents';
 import StudentReport from '../components/reports/StudentReport';
 import StudentRiskReport from '../components/reports/StudentRiskReport';
 import PostSchoolReport from '../components/reports/PostSchoolReport';
+import PreEtsReport from '../components/reports/PreEtsReport';
 import Divider from '../components/Divider';
 import * as breakpoints from '../breakpoints';
 
@@ -32,9 +33,10 @@ const pathNames = {
   riskRoster: subroute + summary + '/RiskRoster',
   riskSummary: subroute + summary + '/RiskSummary',
   numberOfStudents: subroute + summary + '/StudentCount',
+  preEts: subroute + summary + '/PreEts',
   student: subroute + individual + '/Student',
   studentRisk: subroute + individual + '/StudentRisk',
-  postSchool: subroute + individual + '/PostSchool',
+  postSchool: subroute + individual + '/PostSchool'
 };
 
 @inject('store')
@@ -55,18 +57,22 @@ class Reports extends Component {
 
   switchReportType = reportType => {
     const { history } = this.props;
-    if(reportType === 'individual') {
+    if (reportType === 'individual') {
       history.push('/Reports/Individual');
     } else {
-      history.push('/Reports')
+      history.push('/Reports');
     }
   };
 
-  checkReportTypeRoute = () => this.reportType = this.props.location.pathname.indexOf(individual) > -1 ? 'individual' : 'summary';
+  checkReportTypeRoute = () =>
+    (this.reportType =
+      this.props.location.pathname.indexOf(individual) > -1
+        ? 'individual'
+        : 'summary');
 
-  checkRoute = (path) => this.props.location.pathname === path;
+  checkRoute = path => this.props.location.pathname === path;
 
-  handleReportClick = (path) => {
+  handleReportClick = path => {
     if (this.props.location.pathname !== path) {
       this.props.history.push(path);
     }
@@ -79,23 +85,35 @@ class Reports extends Component {
       checkRoute,
       handleReportClick,
       reportType,
-      switchReportType,
+      switchReportType
     } = this;
 
     return (
       <Screen>
         <Main fullWidth>
           <Content>
-            <NavigationBar/>
+            <NavigationBar />
             <ListWrapper>
               <TabContainer>
                 <Tabs>
-                  <Tab active={reportType === 'individual'} onClick={() => switchReportType('individual')}>Individual</Tab>
-                  <Tab active={!reportType || reportType === 'summary'} onClick={() => switchReportType('summary')}>Summary</Tab>
+                  <Tab
+                    active={reportType === 'individual'}
+                    onClick={() => switchReportType('individual')}
+                  >
+                    Individual
+                  </Tab>
+                  <Tab
+                    active={!reportType || reportType === 'summary'}
+                    onClick={() => switchReportType('summary')}
+                  >
+                    Summary
+                  </Tab>
                 </Tabs>
               </TabContainer>
               <ReportLinkList hidden={reportType !== 'summary'}>
-                <ReportLink onClick={() => handleReportClick(pathNames.summary)}>
+                <ReportLink
+                  onClick={() => handleReportClick(pathNames.summary)}
+                >
                   <ListItem active={checkRoute(pathNames.summary)}>
                     <div>
                       Summary Report
@@ -103,7 +121,9 @@ class Reports extends Component {
                     </div>
                   </ListItem>
                 </ReportLink>
-                <ReportLink onClick={() => handleReportClick(pathNames.riskRoster)}>
+                <ReportLink
+                  onClick={() => handleReportClick(pathNames.riskRoster)}
+                >
                   <ListItem active={checkRoute(pathNames.riskRoster)}>
                     <div>
                       Risk Roster Report
@@ -111,7 +131,9 @@ class Reports extends Component {
                     </div>
                   </ListItem>
                 </ReportLink>
-                <ReportLink onClick={() => handleReportClick(pathNames.riskSummary)}>
+                <ReportLink
+                  onClick={() => handleReportClick(pathNames.riskSummary)}
+                >
                   <ListItem active={checkRoute(pathNames.riskSummary)}>
                     <div>
                       Risk Summary
@@ -119,17 +141,32 @@ class Reports extends Component {
                     </div>
                   </ListItem>
                 </ReportLink>
-                <ReportLink onClick={() => handleReportClick(pathNames.numberOfStudents)}>
+                <ReportLink
+                  onClick={() => handleReportClick(pathNames.numberOfStudents)}
+                >
                   <ListItem active={checkRoute(pathNames.numberOfStudents)}>
                     <div>
                       Number of Students
-                      <ListItemInfo>by disability, risk level, IEP role, support need, skills training, post-school outcomes (chart)</ListItemInfo>
+                      <ListItemInfo>
+                        by disability, risk level, IEP role, support need,
+                        skills training, post-school outcomes (chart)
+                      </ListItemInfo>
+                    </div>
+                  </ListItem>
+                </ReportLink>
+                <ReportLink onClick={() => handleReportClick(pathNames.preEts)}>
+                  <ListItem active={checkRoute(pathNames.preEts)}>
+                    <div>
+                      Pre-ETS Activities
+                      <ListItemInfo></ListItemInfo>
                     </div>
                   </ListItem>
                 </ReportLink>
               </ReportLinkList>
               <ReportLinkList hidden={reportType !== 'individual'}>
-                <ReportLink onClick={() => handleReportClick(pathNames.student)}>
+                <ReportLink
+                  onClick={() => handleReportClick(pathNames.student)}
+                >
                   <ListItem active={checkRoute(pathNames.student)}>
                     <div>
                       Student Report
@@ -137,7 +174,9 @@ class Reports extends Component {
                     </div>
                   </ListItem>
                 </ReportLink>
-                <ReportLink onClick={() => handleReportClick(pathNames.studentRisk)}>
+                <ReportLink
+                  onClick={() => handleReportClick(pathNames.studentRisk)}
+                >
                   <ListItem active={checkRoute(pathNames.studentRisk)}>
                     <div>
                       Risk Report
@@ -145,7 +184,9 @@ class Reports extends Component {
                     </div>
                   </ListItem>
                 </ReportLink>
-                <ReportLink onClick={() => handleReportClick(pathNames.postSchool)}>
+                <ReportLink
+                  onClick={() => handleReportClick(pathNames.postSchool)}
+                >
                   <ListItem active={checkRoute(pathNames.postSchool)}>
                     <div>
                       Post-School Student Report
@@ -156,43 +197,86 @@ class Reports extends Component {
               </ReportLinkList>
             </ListWrapper>
 
-            <StyledDivider/>
+            <StyledDivider />
 
-            <Route exact path={pathNames.summary} render={props =>
-              <SubRouteWrapper>
-                <SummaryReport store={store} schoolYears={schoolYears}/>
-              </SubRouteWrapper>
-            }/>
-            <Route path={pathNames.riskRoster} render={props =>
-              <SubRouteWrapper>
-                <RiskRosterReport store={store} schoolYears={schoolYears}/>
-              </SubRouteWrapper>
-            }/>
-            <Route path={pathNames.riskSummary} render={props =>
-              <SubRouteWrapper>
-                <RiskSummaryReport store={store} schoolYears={schoolYears}/>
-              </SubRouteWrapper>
-            }/>
-            <Route path={pathNames.numberOfStudents} render={props =>
-              <SubRouteWrapper>
-                <NumberOfStudents store={store} schoolYears={schoolYears}/>
-              </SubRouteWrapper>
-            }/>
-            <Route exact path={pathNames.student} render={props =>
-              <SubRouteWrapper>
-                <StudentReport store={store} schoolYears={schoolYears} closePath="/Reports/Individual"/>
-              </SubRouteWrapper>
-            }/>
-            <Route path={pathNames.studentRisk} render={props =>
-              <SubRouteWrapper>
-                <StudentRiskReport store={store} schoolYears={schoolYears} closePath="/Reports/Individual"/>
-              </SubRouteWrapper>
-            }/>
-            <Route path={pathNames.postSchool} render={props =>
-              <SubRouteWrapper>
-                <PostSchoolReport store={store} schoolYears={schoolYears} closePath="/Reports/Individual"/>
-              </SubRouteWrapper>
-            }/>
+            <Route
+              exact
+              path={pathNames.summary}
+              render={() => (
+                <SubRouteWrapper>
+                  <SummaryReport store={store} schoolYears={schoolYears} />
+                </SubRouteWrapper>
+              )}
+            />
+            <Route
+              path={pathNames.riskRoster}
+              render={() => (
+                <SubRouteWrapper>
+                  <RiskRosterReport store={store} schoolYears={schoolYears} />
+                </SubRouteWrapper>
+              )}
+            />
+            <Route
+              path={pathNames.riskSummary}
+              render={() => (
+                <SubRouteWrapper>
+                  <RiskSummaryReport store={store} schoolYears={schoolYears} />
+                </SubRouteWrapper>
+              )}
+            />
+            <Route
+              path={pathNames.numberOfStudents}
+              render={() => (
+                <SubRouteWrapper>
+                  <NumberOfStudents store={store} schoolYears={schoolYears} />
+                </SubRouteWrapper>
+              )}
+            />
+            <Route
+              path={pathNames.preEts}
+              render={() => (
+                <SubRouteWrapper>
+                  <PreEtsReport store={store} schoolYears={schoolYears} />
+                </SubRouteWrapper>
+              )}
+            />
+            <Route
+              exact
+              path={pathNames.student}
+              render={() => (
+                <SubRouteWrapper>
+                  <StudentReport
+                    store={store}
+                    schoolYears={schoolYears}
+                    closePath="/Reports/Individual"
+                  />
+                </SubRouteWrapper>
+              )}
+            />
+            <Route
+              path={pathNames.studentRisk}
+              render={() => (
+                <SubRouteWrapper>
+                  <StudentRiskReport
+                    store={store}
+                    schoolYears={schoolYears}
+                    closePath="/Reports/Individual"
+                  />
+                </SubRouteWrapper>
+              )}
+            />
+            <Route
+              path={pathNames.postSchool}
+              render={() => (
+                <SubRouteWrapper>
+                  <PostSchoolReport
+                    store={store}
+                    schoolYears={schoolYears}
+                    closePath="/Reports/Individual"
+                  />
+                </SubRouteWrapper>
+              )}
+            />
           </Content>
         </Main>
       </Screen>
@@ -201,7 +285,7 @@ class Reports extends Component {
 }
 
 const ReportLinkList = styled.div`
-  margin-top: 5px;  
+  margin-top: 5px;
 `;
 
 const ReportLink = styled.div``;
@@ -238,7 +322,7 @@ const SubRouteWrapper = styled.div`
     bottom: 0;
     width: 100%;
     height: 100%;
-    background-color: #F0F0F0;
+    background-color: #f0f0f0;
   }
 `;
 
