@@ -24,8 +24,12 @@ class SkillsEditForm extends Component {
   }
 
   handleBoolChange = key => value => this.setKey(key, value);
-  handleHasSelfDeterminationSkillsChange = this.handleBoolChange('hasSelfDeterminationSkills');
-  handleHasIndependentLivingSkillsChange = this.handleBoolChange('hasIndependentLivingSkills');
+  handleHasSelfDeterminationSkillsChange = this.handleBoolChange(
+    'hasSelfDeterminationSkills'
+  );
+  handleHasIndependentLivingSkillsChange = this.handleBoolChange(
+    'hasIndependentLivingSkills'
+  );
   handleHasTravelSkillsChange = this.handleBoolChange('hasTravelSkills');
   handleHasSocialSkillsChange = this.handleBoolChange('hasSocialSkills');
 
@@ -36,9 +40,9 @@ class SkillsEditForm extends Component {
       hasSelfDeterminationSkills: this.hasSelfDeterminationSkills,
       hasIndependentLivingSkills: this.hasIndependentLivingSkills,
       hasTravelSkills: this.hasTravelSkills,
-      hasSocialSkills: this.hasSocialSkills,
+      hasSocialSkills: this.hasSocialSkills
     });
-    
+
     await this.saveTask;
     this.dirty = false;
     await swal('Success', 'Student skills saved successfully.', 'success');
@@ -56,7 +60,7 @@ class SkillsEditForm extends Component {
   }
 
   componentDidUpdate(prevProps) {
-    if(prevProps.student !== this.props.student) {
+    if (prevProps.student !== this.props.student) {
       this.edit(this.props.student);
     }
   }
@@ -68,34 +72,52 @@ class SkillsEditForm extends Component {
       hasTravelSkills,
       hasSocialSkills,
       dirty,
-      saveTask,
+      saveTask
     } = this;
 
     return (
-      <RiskFormWrapper {...this.props} title="EDIT STUDENT SKILLS" onSubmit={this.handleSubmit} dirty={dirty} saveTask={saveTask}>
+      <RiskFormWrapper
+        {...this.props}
+        title="EDIT STUDENT SKILLS"
+        onSubmit={this.handleSubmit}
+        dirty={dirty}
+        saveTask={saveTask}
+      >
         <FormRow>
           <FormColumn>
-            <Label>Self-determination skills</Label>
-            <YesNoNullSelect value={hasSelfDeterminationSkills} onChange={this.handleHasSelfDeterminationSkillsChange}/>
+            <Label>Self-determination skills/self advocacy training</Label>
+            <YesNoNullSelect
+              value={hasSelfDeterminationSkills}
+              onChange={this.handleHasSelfDeterminationSkillsChange}
+            />
           </FormColumn>
           <FormColumn>
             <Label>Independent living skills</Label>
-            <YesNoNullSelect value={hasIndependentLivingSkills} onChange={this.handleHasIndependentLivingSkillsChange}/>
+            <YesNoNullSelect
+              value={hasIndependentLivingSkills}
+              onChange={this.handleHasIndependentLivingSkillsChange}
+            />
           </FormColumn>
         </FormRow>
 
         <FormRow>
           <FormColumn>
             <Label>Travel skills</Label>
-            <YesNoNullSelect value={hasTravelSkills} onChange={this.handleHasTravelSkillsChange}/>
+            <YesNoNullSelect
+              value={hasTravelSkills}
+              onChange={this.handleHasTravelSkillsChange}
+            />
           </FormColumn>
           <FormColumn>
             <Label>Social skills</Label>
-            <YesNoNullSelect value={hasSocialSkills} onChange={this.handleHasSocialSkillsChange}/>
+            <YesNoNullSelect
+              value={hasSocialSkills}
+              onChange={this.handleHasSocialSkillsChange}
+            />
           </FormColumn>
         </FormRow>
       </RiskFormWrapper>
     );
   }
-};
+}
 export default SkillsEditForm;
