@@ -113,7 +113,7 @@ class EditActivityForm extends Component {
 
   @action.bound async handleSubmit(event) {
     event.preventDefault();
-    const { store, student, students, schoolYear } = this.props;
+    const { store, student, students, schoolYear, onCreateActivity } = this.props;
     const {
       edit,
       frequency,
@@ -129,25 +129,19 @@ class EditActivityForm extends Component {
       notes,
       events,
     };
-
+    
     if (edit) {
       this.submitTask = store.editStudentActivity(student, schoolYear, activityToEdit, fields);
       const activity = await this.submitTask;
       activityToEdit.patch(activity);
       swal('Success', 'Activity saved', 'success');
     } else {
-      this.createStudentActivity(students || [student], schoolYear, fields)
-      swal('Success', students ? 'Activities created' : 'Activity created', 'success');
+      this.submitTask = store.createStudentActivity(students || [student], schoolYear, fields);
+      const activity = await this.submitTask;
+      if (onCreateActivity) onCreateActivity(activity);
+      swal('Success', 'Activity saved', 'success');
     }
-
     this.close();
-  }
-
-  @action.bound async createStudentActivity(students, schoolYear, fields) {
-    const { onCreateActivity, store } = this.props
-    this.submitTask = store.createStudentActivity(students, schoolYear, fields);
-    const activity = await this.submitTask;
-    if (onCreateActivity) onCreateActivity(activity);
   }
 
   @action async delete() {
