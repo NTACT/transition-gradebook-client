@@ -32,7 +32,6 @@ import MultipleStudentInfoView from '../components/MultipleStudentInfoView';
 @observer
 class Students extends Component {
   @observable search = '';
-  @observable studentSelected = ''; 
   @observable filtersOpen = false;
   @observable filter = null;
   @observable loadTask = null;
