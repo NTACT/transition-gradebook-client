@@ -67,14 +67,18 @@ class Students extends Component {
   }
 
   @action.bound handleStudentClick(student) {
-    const { schoolYear, schoolYearId, selectedStudents } = this;
+    const { schoolYearId, selectedStudents } = this;
+    let studentRoute = `/${schoolYearId}/students`;
+
     if (!selectedStudents.includes(student)) {
       this.selectedStudents = selectedStudents.concat([student])
     } else {
       this.handleStudentRemove(student.id);
     }
 
-    const path = this.selectedStudents.length === 1 ? student.getViewRoute(schoolYear) : `/${schoolYearId}/students/multiple`
+    studentRoute += this.selectedStudents.length === 1 ? `/view/${this.selectedStudents[0].student.id}` : `/multiple`;
+    
+    const path = studentRoute; 
     if (this.props.location.pathname !== path) {
       this.props.history.push(path)
     }
@@ -114,6 +118,7 @@ class Students extends Component {
 
   @action.bound handleSchoolYearChange(event) {
     const schoolYearId = +event.target.value;
+    this.selectedStudents = []; 
     this.props.history.push(`/${schoolYearId}/students`);
   }
 
