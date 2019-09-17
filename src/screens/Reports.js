@@ -158,7 +158,7 @@ class Reports extends Component {
                   <ListItem active={checkRoute(pathNames.preEts)}>
                     <div>
                       Pre-ETS Activities
-                      <ListItemInfo></ListItemInfo>
+                      <ListItemInfo>for one term</ListItemInfo>
                     </div>
                   </ListItem>
                 </ReportLink>
