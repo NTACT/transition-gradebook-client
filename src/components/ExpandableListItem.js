@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import styled from 'styled-components';
+import styled, { css } from 'styled-components';
 import { identity } from 'lodash';
 import { observable, action } from 'mobx';
 import { observer } from 'mobx-react';
@@ -17,9 +17,22 @@ class ExpandableListItem extends Component {
     this.expanded = !this.expanded;
   }
 
+  renderExpandButton() {
+    const { theme = 'dark', children } = this.props;
+    const { expanded } = this;
+    const childCount = filterChildren(children, identity).length;
+    const disabled = !childCount || this.props.disabled;
+    const isExpanded = !disabled && expanded;
+    if(theme === 'light') {
+      return <ExpandIconLight expanded={isExpanded}/>
+    }
+    return <ExpandIcon expanded={isExpanded} />
+
+  }
+
   render() {
     const { expanded } = this;
-    const { children, header, childHeight=60 } = this.props;
+    const { children, header, childHeight=60,} = this.props;
     const childCount = filterChildren(children, identity).length;
     const disabled = !childCount || this.props.disabled;
 
@@ -27,7 +40,7 @@ class ExpandableListItem extends Component {
       <Root {...this.props}>
         <Header>
           <ExpandButton disabled={disabled} onClick={disabled ? undefined : this.handleToggleExpanded}>
-            <ExpandIcon expanded={!disabled && expanded}/>
+            {this.renderExpandButton()}
           </ExpandButton>
           <HeaderChildren>
             {header}
@@ -108,10 +121,20 @@ const ExpandButton = styled(Button)`
   cursor: ${props => props.disabled ? 'default' : 'pointer'};
 `;
 
-const ExpandIcon = styled(Icons.CircleArrow)`
+const expandIconCommon = css`
   width: 22px;
   height: 22px;
-  opacity: 0.3;
-  transform: rotate(${props => props.expanded ? 180 : 0}deg);
   transition: transform 0.1s;
+`;
+
+const ExpandIcon = styled(Icons.CircleArrow)`
+  ${expandIconCommon}
+  transform: rotate(${props => props.expanded ? 180 : 0}deg);
+  opacity: 0.3;
+`;
+
+const ExpandIconLight = styled(Icons.WhiteCircleArrow)`
+  ${expandIconCommon}
+  transform: rotate(${props => props.expanded ? 270 : 90}deg);
+  opacity: 0.8;
 `;
