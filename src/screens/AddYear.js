@@ -338,7 +338,7 @@ class AddYear extends Component {
           <StudentListWrapper>
             <StudentListHeader>
               <ExportButton onClick={this.handleExportClick}>
-                EXPORT SELECTED STUDENTS
+                MIGRATE SELECTED STUDENTS
               </ExportButton>
             </StudentListHeader>
             <StudentList
