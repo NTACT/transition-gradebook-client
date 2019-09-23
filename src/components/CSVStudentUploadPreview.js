@@ -1,5 +1,6 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useMemo } from 'react';
 import styled, { css } from 'styled-components';
+import chunk from 'lodash/chunk';
 import { csvDataHelper } from 'tgb-shared';
 import Column from './Column';
 import Spinner from './Spinner';
@@ -14,6 +15,27 @@ const CSVStudentUploadPreview = (props) => {
     const [focused, setFocused] = useState(false);
     const [loading, setLoading] = useState(true);
     const ref = useRef(null);
+    const pages = chunk(csvData, 50);
+    const [page, setPage] = useState(0);
+    const [focusRequest, setFocusRequest] = useState(null);
+
+    // Map cells to pages for quick "jump to"
+    const cellsByPage = useMemo(() => {
+        const cellMap = {}
+        for (let i = 0; i < pages.length; i++) {
+            const pageRows = pages[i];
+            for(const row of pageRows) {
+                for (const cell in row) {
+                    if (row.hasOwnProperty(cell)) {
+                        const element = row[cell];
+                        cellMap[element.id] = i;
+                    }
+                }
+            }
+        }
+        return cellMap;
+    }, [pages]);
+
 
     function isSelected(cell) {
         return !!selected.find(selectedItem => selectedItem === cell.id) || hoverOver === cell.id;
@@ -78,12 +100,25 @@ const CSVStudentUploadPreview = (props) => {
     }
 
     function focusCell(cellId) {
-        const focused = document.getElementById(cellId);
-        if(!focused) return;
-        // cell (focused element) => table => container div
-        const offsetParent = focused.offsetParent.offsetParent;
-        offsetParent.scrollTo(focused.offsetLeft - 200, focused.offsetTop);
+        const pg = cellsByPage[cellId];
+        if(pg) {
+            setPage(pg);
+            setFocusRequest({cellId, page: pg});
+        }
     }
+
+    useEffect(() => {
+        if(focusRequest && focusRequest.page === page) {
+            const focused = document.getElementById(focusRequest.cellId);
+            if(!focused) return;
+            // cell (focused element) => table => container div
+            const offsetParent = focused.offsetParent.offsetParent;
+            offsetParent.scrollTo(focused.offsetLeft - 200, focused.offsetTop);
+            setFocusRequest(null);
+        }
+    }, [focusRequest, page]);
+
+
 
     useEffect(() => {
         if(lastSelected) {
@@ -91,6 +126,19 @@ const CSVStudentUploadPreview = (props) => {
         }
     }, [lastSelected]);
 
+    function pageForward() {
+        setPage(Math.min(page + 1, pages.length - 1));
+    }
+
+    function pageBackward() {
+        setPage(Math.max(0, page - 1));
+    }
+
+    function pageTo(idx) {
+        if(idx < 0) idx = 0;
+        if(idx > pages.length - 1) idx = pages.length - 1;
+        setPage(idx);
+    }
 
     function renderCells(entry, rowNumber) {
         return (
@@ -165,7 +213,7 @@ const CSVStudentUploadPreview = (props) => {
                         </HeaderRow>
                     </CSVHead>
                     <CSVBody>
-                        {csvData.map((row, rowIdx) => (
+                        {pages[page].map((row, rowIdx) => (
                             <CSVEntry key={row.id}>
                                 {renderCells(row, rowIdx + 1)}
                             </CSVEntry>
@@ -178,6 +226,15 @@ const CSVStudentUploadPreview = (props) => {
                     </CSVBody>
                 </CSVContainer>
             </ScrollableContainer>
+            {pages.length > 1 && (
+                <Pagination>
+                    <PaginationLink onClick={pageBackward}>&lt;</PaginationLink>
+                    {pages.map((_, idx) => (
+                        <PaginationLink key={`page_${idx}`} onClick={() => pageTo(idx)} selected={idx === page}>{idx + 1}</PaginationLink>
+                    ))}
+                    <PaginationLink onClick={pageForward}>&gt;</PaginationLink>
+                </Pagination>
+            )}
         </Root>
     );
 }
@@ -473,4 +530,26 @@ const EditableArrayField = ({value, onChange, ...rest}) => {
 
 const PaddingRow = styled(CSVEntry)`
     height: 100%;
+`;
+
+const Pagination = styled.span`
+    margin-left: auto;
+    margin-top: 5px;
+`;
+
+const PaginationLink = styled.a`
+    float: left;
+    padding: 8px 16px;
+    text-decoration: none;
+    font-family: "Open Sans";	
+    font-size: 12px;	
+    font-weight: bold;
+    cursor: pointer;
+    border: 1px solid grey;
+    
+
+    ${props => props.selected && css`
+        color: white;
+        background-color: #F5633A;
+    `}
 `;
