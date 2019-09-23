@@ -249,7 +249,7 @@ function attachErrors(currentStudent, importingStudents, validDisabilities) {
         if(!gradeType.value) {
             studentWithErrors.grade.error = 'Grade type must be specified when a grade is specified';
         } else {
-            if(gradeType === 'percent' || gradeType === 'gpa') {
+            if(gradeType.value === 'percent' || gradeType.value === 'gpa') {
                 studentWithErrors.grade.error = isNaN(+grade.value) ? 'Grade is not a valid number' : studentWithErrors.grade.error;
             } else {
                 studentWithErrors.grade.error = !enums.gradeLetters.find(letter => letter === grade.value.toUpperCase()) ? 'Grade is not a valid letter grade' : studentWithErrors.grade.error;
