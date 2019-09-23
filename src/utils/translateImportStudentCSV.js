@@ -59,6 +59,9 @@ function normalizeValue(field, value) {
     switch(fieldType) {
         case types.string:
         case types.enum:
+            if(typeof field.deserialize === 'function') {
+                return field.deserialize(value);
+            }
             return value;
         case types.boolean:
             return csvDataHelper.yesNoBooleanFromString(value);
