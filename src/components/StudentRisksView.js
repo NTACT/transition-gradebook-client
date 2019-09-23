@@ -191,6 +191,7 @@ function GroupList(props) {
 
   return (
     <ExpandableListItem
+      theme="light"
       {...rest}
       header={
         <GroupListHeader>
@@ -233,9 +234,9 @@ const Value = styled.div`
 `;
 
 const EditIcon = styled.img.attrs({
-  src: require('../assets/edit_icon.png')
+  src: require('../assets/edit_icon_light.png')
 })`
-  opacity: 0.5;
+  opacity: 0.8;
   transition: opacity 0.2s;
   width: 20px;
   height: 19px;

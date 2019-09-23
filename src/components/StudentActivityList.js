@@ -37,7 +37,7 @@ class StudentActivityList extends Component {
       <Root>
         <GroupList>
           {groups.map(([group, activities]) =>
-            <ExpandableListItem key={group.id} 
+            <ExpandableListItem key={group.id} theme="light"
               header={
                 <React.Fragment>
                   <GroupName>{group.name}</GroupName>
@@ -104,7 +104,7 @@ const ActivityListItem = styled(ExpandableListItem.Item)``;
 
 const AddButton = styled(Button)``;
 
-const AddIcon = styled(Icons.RedCirclePlus)`
+const AddIcon = styled(Icons.Plus)`
   height: 22px;
   width: 22px;
 `;
