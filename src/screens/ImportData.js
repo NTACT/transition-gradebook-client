@@ -562,7 +562,7 @@ const ImportButton = styled(BlockButton)`
 
 
 const StyledCSVStudentUploadPreview = styled(CSVStudentUploadPreview)`
-    height: 100%;
+    height: 70%;
     max-height: 500px;
     width: 100%;
     @media ${breakpoints.mediumOrSmall} {
