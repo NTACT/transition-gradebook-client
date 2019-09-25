@@ -23,6 +23,7 @@ import PostSchoolReport from '../components/reports/PostSchoolReport';
 import PreEtsReport from '../components/reports/PreEtsReport';
 import Divider from '../components/Divider';
 import * as breakpoints from '../breakpoints';
+import TrackToGraduateReport from '../components/reports/TrackToGraduateReport';
 
 const subroute = '/Reports';
 const summary = '/Summary';
@@ -34,9 +35,10 @@ const pathNames = {
   riskSummary: subroute + summary + '/RiskSummary',
   numberOfStudents: subroute + summary + '/StudentCount',
   preEts: subroute + summary + '/PreEts',
+  trackToGraduate: subroute + summary + '/Graduate',
   student: subroute + individual + '/Student',
   studentRisk: subroute + individual + '/StudentRisk',
-  postSchool: subroute + individual + '/PostSchool'
+  postSchool: subroute + individual + '/PostSchool',
 };
 
 @inject('store')
@@ -162,6 +164,14 @@ class Reports extends Component {
                     </div>
                   </ListItem>
                 </ReportLink>
+                <ReportLink onClick={() => handleReportClick(pathNames.trackToGraduate)}>
+                  <ListItem active={checkRoute(pathNames.trackToGraduate)}>
+                    <div>
+                     Track to Graduation Report
+                      <ListItemInfo>for one term</ListItemInfo>
+                    </div>
+                  </ListItem>
+                </ReportLink>
               </ReportLinkList>
               <ReportLinkList hidden={reportType !== 'individual'}>
                 <ReportLink
@@ -237,6 +247,14 @@ class Reports extends Component {
               render={() => (
                 <SubRouteWrapper>
                   <PreEtsReport store={store} schoolYears={schoolYears} />
+                </SubRouteWrapper>
+              )}
+            />
+            <Route
+              path={pathNames.trackToGraduate}
+              render={() => (
+                <SubRouteWrapper>
+                  <TrackToGraduateReport store={store} schoolYears={schoolYears} />
                 </SubRouteWrapper>
               )}
             />
