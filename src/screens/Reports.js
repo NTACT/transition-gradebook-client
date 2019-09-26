@@ -167,7 +167,7 @@ class Reports extends Component {
                 <ReportLink onClick={() => handleReportClick(pathNames.trackToGraduate)}>
                   <ListItem active={checkRoute(pathNames.trackToGraduate)}>
                     <div>
-                     Track to Graduation Report
+                     On Track to Graduate Report
                       <ListItemInfo>for one term</ListItemInfo>
                     </div>
                   </ListItem>
