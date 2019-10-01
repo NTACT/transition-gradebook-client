@@ -101,7 +101,7 @@ const CSVStudentUploadPreview = (props) => {
 
     function focusCell(cellId) {
         const pg = cellsByPage[cellId];
-        if(pg) {
+        if(typeof pg !== 'undefined') {
             setPage(pg);
             setFocusRequest({cellId, page: pg});
         }
