@@ -1,26 +1,26 @@
 import { action, computed, observable } from 'mobx';
 import { inject, observer } from 'mobx-react';
-import React, { Component, useState, useEffect } from 'react';
+import React, { Component, useEffect, useState } from 'react';
 import { withRouter } from 'react-router-dom';
-import styled, {css} from 'styled-components';
+import styled, { css } from 'styled-components';
 import sweetalert from 'sweetalert2';
 import * as breakpoints from '../breakpoints';
 import BlockButton from '../components/BlockButton';
 import Column from '../components/Column';
 import CSVFileReport from '../components/CSVFileReport';
+import CSVStudentUploadPreview from '../components/CSVStudentUploadPreview';
 import FileInput from '../components/FileInput';
 import * as Icons from '../components/Icons';
 import Row from '../components/Row';
 import Screen from '../components/Screen';
 import Section from '../components/Section';
 import Select from '../components/Select';
-import TermSelect from '../components/TermSelect';
-import CSVStudentUploadPreview from '../components/CSVStudentUploadPreview';
 import Spinner from '../components/Spinner';
-import parseCSV from '../utils/parseCSV';
-import {translateImportStudentCSV, recheckImport, getDownloadTemplateUrl} from '../utils/translateImportStudentCSV';
+import TermSelect from '../components/TermSelect';
 import first from '../utils/first';
+import parseCSV from '../utils/parseCSV';
 import toggleArrayValue from '../utils/toggleArrayValue';
+import { getDownloadTemplateUrl, recheckImport, translateImportStudentCSV } from '../utils/translateImportStudentCSV';
 
 @withRouter
 @inject('store')
@@ -41,11 +41,24 @@ class ImportData extends Component {
     @observable disabilities = [];
     @observable lastSelected = null;
     @observable pendingCSVDataUpdate = false;
+    @observable currentYearStudents = [];
+    @observable allStudents = [];
+    @observable studentsNotInYear = [];
 
     @action.bound
     async handleSchoolYearChange(e) {
         this.schoolYearId = +e.target.value;
         this.schoolYear = await this.props.store.fetchSchoolYear(this.schoolYearId);
+        this.currentYearStudents = this.schoolYear.students;
+        this.studentsNotInYear = this.allStudents
+            .filter(student => student.schoolYearId !== this.schoolYearId)
+            .map(yearStudent => {
+                const { student } = yearStudent;
+                return {
+                    ...student,
+                    differentYear: true,
+                }
+            });
     }
 
     @action.bound
@@ -70,7 +83,7 @@ class ImportData extends Component {
             if(errors.length) {
                 console.error(errors);
             }
-            const { students, ...fileReport} = await translateImportStudentCSV(data, this.schoolYear.students, this.disabilities);
+            const { students, ...fileReport} = await translateImportStudentCSV(data, [...this.currentYearStudents, ...this.studentsNotInYear], this.disabilities);
             this.importedStudents = students;
             this.fileReport = fileReport;
         } finally {
@@ -146,7 +159,7 @@ class ImportData extends Component {
         this.hoveringWarning = null;
         this.pendingCSVDataUpdate = true;
         try {
-            const { students, ...fileReport } = await recheckImport(updatedCSV, this.schoolYear.students, this.disabilities);
+            const { students, ...fileReport } = await recheckImport(updatedCSV, [...this.currentYearStudents, ...this.studentsNotInYear], this.disabilities);
             this.importedStudents = students;
             this.fileReport = fileReport;
         } finally {
@@ -189,7 +202,7 @@ class ImportData extends Component {
         this.schoolYear = await this.props.store.fetchSchoolYear(this.schoolYearId);
         this.pendingCSVDataUpdate = true;
         try {
-            const { students, ...fileReport} = await recheckImport(this.importedStudents, this.schoolYear.students, this.disabilities);
+            const { students, ...fileReport} = await recheckImport(this.importedStudents, [...this.currentYearStudents, ...this.studentsNotInYear], this.disabilities);
             this.importedStudents = students;
             this.fileReport = fileReport;
         } finally {
@@ -257,7 +270,10 @@ class ImportData extends Component {
     }
 
     async componentDidMount() {
+        this.loading = true;
         this.disabilities = await this.props.store.fetchDisabilities();
+        this.allStudents = await this.props.store.getAllStudents();
+        this.loading = false;
     }
 
     render() {

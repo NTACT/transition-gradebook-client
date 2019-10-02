@@ -146,6 +146,11 @@ function compareFields(existingStudentField, csvField, column) {
     return existingStudentField.toString().toLowerCase() === csvField.toString().toLowerCase();
 }
 
+function isEditingHistoricFields(column) {
+    // The required fields are edited regardless of term
+    return !!csvDataHelper.requiredFields.find(col => col.field === column.field);
+}
+
 function getErrorsForCell(field, data) {
     if(isRequiredAndMissing(field, data)) {
         return `Required data is missing`;
@@ -304,7 +309,11 @@ function attachWarnings(currentStudent, currentStudents) {
             }
 
             if(!compareFields(existingValue, importingValue, column)) {
-                studentWithWarnings[column.field].warning = `Student already exists and value will overwrite current records.`;
+                if(existingStudent.differentYear && isEditingHistoricFields(column)) {
+                    studentWithWarnings[column.field].warning = `Student already exists and value will overwrite records in a different year.`;
+                } else {
+                    studentWithWarnings[column.field].warning = `Student already exists and value will overwrite current records.`;
+                }
             }
         }
     }

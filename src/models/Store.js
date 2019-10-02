@@ -513,4 +513,11 @@ export default class Store {
     this.schoolYears = [];
     this.activityTypeGroups = [];
   }
+
+  @task('Get all students')
+  async getAllStudents() {
+    const result = await this.axios.get(`/api/students/all`);
+    const { students } = result.data;
+    return students;
+  }
 }
