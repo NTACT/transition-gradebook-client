@@ -110,8 +110,8 @@ function compareFields(existingStudentField, csvField, column) {
     }
 
     if(column.type === csvDataHelper.types.date) {
-        const existingAsDate = moment(existingStudentField);
-        const providedAsDate = moment(csvField);
+        const existingAsDate = moment.utc(existingStudentField);
+        const providedAsDate = moment.utc(csvField);
         return existingAsDate.year() === providedAsDate.year() 
             && existingAsDate.month() === providedAsDate.month() 
             && existingAsDate.date() === providedAsDate.date();
