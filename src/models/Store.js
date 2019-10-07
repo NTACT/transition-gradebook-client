@@ -1,5 +1,7 @@
 import axios from 'axios';
-import { first, compact } from 'lodash';
+import first from 'lodash/first';
+import compact from 'lodash/compact';
+import chunk from 'lodash/chunk';
 import { observable, computed, action, runInAction, toJS } from 'mobx';
 import wait from '../utils/wait';
 import parseArrayBuffer from '../utils/parseArrayBuffer';
@@ -438,10 +440,23 @@ export default class Store {
   }
 
   @task('Import students from CSV')
-  async importStudentsFromCSV(schoolYear, term, csvData) {
-    await this.axios.post(`/api/schoolYears/${schoolYear.id}/${term}/import`, csvData);
-    // Create and edit paths are very different, so instead of handling those paths, just re-fetch the school year
-    return this.fetchSchoolYear(schoolYear.id)
+  async importStudentsFromCSV(schoolYear, term, csvData, progressCallback) {
+    // Split into batches if the number of students exceeds 200;
+    const batchSize = csvData.length >= 200 ? 200 : csvData.length;
+    const csvBatches = chunk(csvData, batchSize);
+    console.log(csvBatches);
+    return new Promise(async (resolve, reject) => {
+      await Promise.all(csvBatches.map(async batch => {
+        try {
+          await this.axios.post(`/api/schoolYears/${schoolYear.id}/${term}/import`, batch);
+        } catch(e) {
+          reject(e);
+        }
+      }))
+
+      // Create and edit paths are very different, so instead of handling those paths, just re-fetch the school year
+      resolve(await this.fetchSchoolYear(schoolYear.id));
+    });
   }
 
   @task('Fetch term student list')
