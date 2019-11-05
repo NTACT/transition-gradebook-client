@@ -123,6 +123,7 @@ const ReportInfo = styled(Column)`
     font-size: 12px;	
     font-style: italic;	
     line-height: 17px;
+    flex: 0 0 auto;
 `;
 
 const ReportList = styled(Column)`
@@ -132,7 +133,8 @@ const ListItem = styled(Row)`
     color: #FFFFFF;
     font-family: "Open Sans";	
     cursor: pointer;
-    font-size: 12px;	
+    font-size: 12px;
+    flex: 0 0 auto;	
     &:hover {
         color: #4A4A4A;
     }
@@ -146,6 +148,7 @@ const ReportCount = styled(Row)`
     font-family: "Open Sans";	
     margin-top: 5px;
     font-size: 12px;
+    flex: 0 0 auto;
 `;
 
 const ReportWithLabel = styled(Column)`
