@@ -1,9 +1,23 @@
-import React from 'react';
+import React, {Component} from 'react';
 import styled from 'styled-components';
+import { inject, observer } from 'mobx-react';
 import Screen from '../components/Screen';
 
-export default function About() {
-  return (
+
+@inject('store')
+@observer
+class About extends Component{
+  state = {
+    version: null,
+  }
+  async componentDidMount(){
+    const version = await this.props.store.getVersionNumber(); 
+    this.setState({version})
+  }
+
+  render() {
+    const { state } = this; 
+    return (
     <Root>
       <Main>
         <h2>NTACT</h2>
@@ -19,13 +33,16 @@ export default function About() {
         <h3>Questions about Transition Gradebook?</h3>
         <p>Email us: <a href="mailto:admin@transitiongradebook.com">admin@transitiongradebook.com</a></p>
         <div style={{flex: 1}}>{/* Keeps the footer at the bottom */}</div>
+        { state.version && <VersionLabel>{`Version ${state.version}`}</VersionLabel> }
         <Footer>
           <NTACTLogo/>
         </Footer>
       </Main>
-    </Root>
-  );
+    </Root>  
+  )};
 }
+
+export default About; 
 
 const Root = styled(Screen)`
   display: flex;
@@ -91,4 +108,9 @@ const Footer = styled.div`
 const NTACTLogo = styled.img.attrs({src: require('../assets/ntact_logo.png')})`
   width: 294px;
   height: 63px;
+`;
+
+const VersionLabel = styled.p`
+  margin-top: 200px; 
+  text-align: center; 
 `;
