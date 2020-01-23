@@ -1,4 +1,4 @@
-import React, {Component} from 'react';
+import React, { Component } from 'react';
 import styled from 'styled-components';
 import { inject, observer } from 'mobx-react';
 import Screen from '../components/Screen';
@@ -12,7 +12,7 @@ class About extends Component{
   }
   async componentDidMount(){
     const version = await this.props.store.getVersionNumber(); 
-    this.setState({version})
+    this.setState({ version });
   }
 
   render() {
