@@ -535,4 +535,11 @@ export default class Store {
     const { students } = result.data;
     return students;
   }
+
+  @task('Get version number')
+  async getVersionNumber(){
+    const result = await this.axios.get('/api/application/version');
+    const { version } = result.data; 
+    return version; 
+  }
 }
