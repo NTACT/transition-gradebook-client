@@ -60,7 +60,7 @@
     "nanoid": "^2.0.3",
     "object-assign": "4.1.1",
     "optimize-css-assets-webpack-plugin": "5.0.1",
-    "papaparse": "^5.0.1",
+    "papaparse": "^5.2.0",
     "pnp-webpack-plugin": "1.1.0",
     "postcss-flexbugs-fixes": "4.1.0",
     "postcss-loader": "3.0.0",
