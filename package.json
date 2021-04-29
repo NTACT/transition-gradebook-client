@@ -14,7 +14,7 @@
     "@babel/preset-env": "^7.3.4",
     "@svgr/webpack": "2.4.1",
     "autoprefixer": "7.1.6",
-    "axios": "^0.18.1",
+    "axios": "^0.21.1",
     "babel-core": "7.0.0-bridge.0",
     "babel-eslint": "9.0.0",
     "babel-jest": "23.6.0",
@@ -60,7 +60,7 @@
     "nanoid": "^2.0.3",
     "object-assign": "4.1.1",
     "optimize-css-assets-webpack-plugin": "5.0.1",
-    "papaparse": "^5.0.1",
+    "papaparse": "^5.2.0",
     "pnp-webpack-plugin": "1.1.0",
     "postcss-flexbugs-fixes": "4.1.0",
     "postcss-loader": "3.0.0",
@@ -134,7 +134,7 @@
   "devDependencies": {
     "faker": "^4.1.0",
     "install": "^0.11.0",
-    "npm": "^6.10.3",
+    "npm": "^6.14.6",
     "puppeteer": "^1.19.0"
   },
   "browserslist": [
